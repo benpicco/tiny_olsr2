@@ -29,6 +29,6 @@ void tick(struct node_data* n) {
 }
 
 void cleanup(struct node_data* n) {
-	rfc5444_reader_cleanup(&n->reader);
-	rfc5444_writer_cleanup(&n->writer);
+	reader_cleanup(&n->reader);
+	writer_cleanup(&n->writer);
 }

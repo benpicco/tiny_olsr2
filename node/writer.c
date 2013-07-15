@@ -64,7 +64,7 @@ static struct rfc5444_writer_content_provider _message_content_provider = {
 static void
 _cb_addMessageTLVs(struct rfc5444_writer *wr) {
 	char foo;
-  printf("%s()\n", __func__);
+  printf("%s(%p)\n", __func__, wr);
 
 	/* add message tlv type 0 (ext 0) with 4-byte value 23 */
 	foo = 23;
@@ -79,7 +79,7 @@ _cb_addMessageTLVs(struct rfc5444_writer *wr) {
 
 static void
 _cb_addAddresses(struct rfc5444_writer *wr) {
-  printf("%s()\n", __func__);
+  printf("%s(%p)\n", __func__, wr);
 
 	struct netaddr ip0 = { { 127,0,0,1}, AF_INET, 32 };
 	struct netaddr ip1 = { { 127,0,0,42}, AF_INET, 32 };
@@ -95,7 +95,7 @@ _cb_addAddresses(struct rfc5444_writer *wr) {
  */
 static void
 _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
-  printf("%s()\n", __func__);
+  printf("%s(%p)\n", __func__, wr);
 
 	/* no originator, no sequence number, not hopcount, no hoplimit */
 	rfc5444_writer_set_msg_header(wr, message, false, false, false, false);
@@ -107,7 +107,9 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
  */
 void
 writer_init(struct node_data* n) {
-  printf("%s()\n", __func__);
+  struct rfc5444_writer_message *_msg;
+
+  printf("%s(%p)\n", __func__, n);
 
   /* initialize writer */
   rfc5444_writer_init(&n->writer);
@@ -119,8 +121,8 @@ writer_init(struct node_data* n) {
   rfc5444_writer_register_msgcontentprovider(&n->writer, &_message_content_provider, 0, 0);
 
   /* register message type 1 with 4 byte addresses */
-  n->_msg = rfc5444_writer_register_message(&n->writer, 1, false, 4);
-  n->_msg->addMessageHeader = _cb_addMessageHeader;
+  _msg = rfc5444_writer_register_message(&n->writer, 1, false, 4);
+  _msg->addMessageHeader = _cb_addMessageHeader;
 
   /* set function to send binary packet content */
   n->interface.sendPacket = n->ptr;
@@ -131,7 +133,7 @@ writer_init(struct node_data* n) {
  */
 void
 writer_cleanup(struct node_data* n) {
-  printf("%s()\n", __func__);
+  printf("%s(%p)\n", __func__, n);
 
   rfc5444_writer_cleanup(&n->writer);
 }

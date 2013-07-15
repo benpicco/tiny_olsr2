@@ -42,10 +42,10 @@
 #ifndef WRITER_H_
 #define WRITER_H_
 
-#include "node.h"
-
 #include "common/common_types.h"
 #include "rfc5444/rfc5444_writer.h"
+
+#include "node.h"
 
 void writer_init(struct node_data* n);
 void writer_cleanup(struct node_data* n);

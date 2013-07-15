@@ -144,7 +144,7 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
  */
 void
 reader_init(struct node_data* n) {
-  printf("%s()\n", __func__);
+  printf("%s(%p)\n", __func__, n);
 
   /* initialize reader */
   rfc5444_reader_init(&n->reader);
@@ -162,7 +162,7 @@ reader_init(struct node_data* n) {
  */
 void
 reader_cleanup(struct node_data* n) {
-  printf("%s()\n", __func__);
+  printf("%s(%p)\n", __func__, n);
 
   rfc5444_reader_cleanup(&n->reader);
 }

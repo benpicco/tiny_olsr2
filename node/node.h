@@ -15,7 +15,6 @@ struct node_data {
 	struct rfc5444_reader reader;
 	struct rfc5444_writer writer;
 	struct rfc5444_writer_target interface;
-	struct rfc5444_writer_message *_msg;
 
 	write_packet_func_ptr ptr;
 
