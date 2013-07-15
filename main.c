@@ -1,14 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "common/common_types.h"
+#include "common/netaddr.h"
+
 #include "rfc5444/rfc5444_reader.h"
 #include "rfc5444/rfc5444_writer.h"
+#include "rfc5444/rfc5444_print.h"
+
+#include "node/writer.h"
+#include "node/reader.h"
+#include "node/node.h"
+
+/* for hexfump */
+static struct autobuf _hexbuf;
 
 struct node {
-	struct rfc5444_reader* reader;
-	struct rfc5444_writer* writer;
+	struct node_data* data;
 	struct connection* connections;
-
 	struct node* next;
 };
 
@@ -41,12 +50,11 @@ void connect_node(struct node* node_a, struct node* node_b, float loss, bool bid
 }
 
 static struct node* node_head = 0;
-struct node* add_node(struct rfc5444_reader* reader, struct rfc5444_writer* writer) {
+struct node* add_node(struct node_data* data) {
 	struct node* old_head = node_head;
 	node_head = malloc(sizeof(struct node));
 	node_head->next = old_head;
-	node_head->reader = reader;
-	node_head->writer = writer;
+	node_head->data = data;
 
 	return node_head;
 }
@@ -55,13 +63,19 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
+	/* generate hexdump of packet */
+	abuf_hexdump(&_hexbuf, "\t", buffer, length);
+	rfc5444_print_direct(&_hexbuf, buffer, length);
+
+	/* print hexdump to console */
+	printf("%s", abuf_getptr(&_hexbuf));
+
 	struct node* head = node_head;
 	while (head) {
-		if (head->writer == wr) {
+		if (&head->data->writer == wr) {
 			struct connection* con = head->connections;
 			while (con) {
-				printf("Sending '%s' to %p\n", buffer, con->node);
-				rfc5444_reader_handle_packet(con->node->reader, buffer, length);
+				rfc5444_reader_handle_packet(&con->node->data->reader, buffer, length);
 				con = con->next;
 			}
 			return;
@@ -73,16 +87,18 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 }
 
 int main() {
+	/* initialize buffer for hexdump */
+	abuf_init(&_hexbuf);
 
-	struct node* A = add_node(0, (struct rfc5444_writer*) 1);
-	struct node* B = add_node(0, (struct rfc5444_writer*) 2);
-	struct node* C = add_node(0, (struct rfc5444_writer*) 3);
+	struct node* A = add_node(init_node_data(malloc(sizeof(struct node_data)), write_packet));
+	struct node* B = add_node(init_node_data(malloc(sizeof(struct node_data)), write_packet));
+	struct node* C = add_node(init_node_data(malloc(sizeof(struct node_data)), write_packet));
 
 	connect_node(A, B, 0, true);
 	connect_node(A, C, 0, true);
 
-	char buffer[] = "Hello World!";
-	write_packet((struct rfc5444_writer*) 1, 0, buffer, sizeof buffer);
+	tick(A->data);
 
+	abuf_free(&_hexbuf);
 	return 0;
 }

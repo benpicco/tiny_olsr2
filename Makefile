@@ -1,15 +1,26 @@
 INCLUDE=-I/home/benpicco/µkleos/upstream/oonf_api/src-api -I/home/benpicco/µkleos/upstream/oonf_api/build 
 LNCLUDE=/home/benpicco/µkleos/upstream/oonf_api/build
 
-olsr.o:	main.c
-	gcc -Wall -std=c99 $(INCLUDE) -c main.c -o olsr.o
+CC=gcc -Wall -std=c99 $(INCLUDE) 
 
-olsr:	olsr.o
-	gcc olsr.o $(LNCLUDE)/liboonf_rfc5444.so $(LNCLUDE)/liboonf_common.so -o olsr
+olsr.o:	main.c
+	$(CC) -c main.c -o olsr.o
+
+node.o: node/node.c
+	$(CC) -c node/node.c -o node.o
+
+reader.o: node/reader.c
+	$(CC) -c node/reader.c -o reader.o
+
+writer.o: node/writer.c
+	$(CC) -c node/writer.c -o writer.o
+
+olsr:	olsr.o node.o reader.o writer.o
+	gcc olsr.o node.o reader.o writer.o $(LNCLUDE)/liboonf_rfc5444.so $(LNCLUDE)/liboonf_common.so -o olsr
 
 run:	olsr
 	LD_LIBRARY_PATH=$(LNCLUDE) ./olsr
 
 clean:
-	rm olsr.o
+	rm *.o
 	rm olsr
