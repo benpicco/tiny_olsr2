@@ -1,26 +1,16 @@
-INCLUDE=-I/home/benpicco/µkleos/upstream/oonf_api/src-api -I/home/benpicco/µkleos/upstream/oonf_api/build 
-LNCLUDE=/home/benpicco/µkleos/upstream/oonf_api/build
+INCLUDE=-I../upstream/oonf_api/src-api -I../upstream/oonf_api/build 
+LIBDIR=../upstream/oonf_api/build
 
-CC=gcc -Wall -std=c99 $(INCLUDE) 
+CFLAGS=-Wall -std=c99 $(INCLUDE)
+LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 
-olsr.o:	main.c
-	$(CC) -c main.c -o olsr.o
+.PHONY: clean run
 
-node.o: node/node.c
-	$(CC) -c node/node.c -o node.o
-
-reader.o: node/reader.c
-	$(CC) -c node/reader.c -o reader.o
-
-writer.o: node/writer.c
-	$(CC) -c node/writer.c -o writer.o
-
-olsr:	olsr.o node.o reader.o writer.o
-	gcc olsr.o node.o reader.o writer.o $(LNCLUDE)/liboonf_rfc5444.so $(LNCLUDE)/liboonf_common.so -o olsr
-
-run:	olsr
-	LD_LIBRARY_PATH=$(LNCLUDE) ./olsr
+main:	main.o node/node.o node/reader.o node/writer.o $(LDFLAGS)
 
 clean:
-	rm *.o
-	rm olsr
+	find -name '*.o' -type f -delete
+	rm -f olsr
+
+run:	main
+	LD_LIBRARY_PATH=$(LIBDIR) ./main
