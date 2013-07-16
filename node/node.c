@@ -13,8 +13,7 @@ struct node_data* init_node_data(struct node_data* n, write_packet_func_ptr ptr)
 
 	n->interface.packet_buffer = n->packet_buffer;
 	n->interface.packet_size   = sizeof(n->packet_buffer);
-
-	n->ptr = ptr;
+	n->interface.sendPacket = ptr;
 
 	writer_init(n);
 	reader_init(n);
@@ -29,6 +28,6 @@ void tick(struct node_data* n) {
 }
 
 void cleanup(struct node_data* n) {
-	reader_cleanup(&n->reader);
-	writer_cleanup(&n->writer);
+	reader_cleanup(n);
+	writer_cleanup(n);
 }

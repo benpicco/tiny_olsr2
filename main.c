@@ -23,21 +23,18 @@ struct node {
 
 struct connection {
 	struct node* node;
-	float loss;
-
 	struct connection* next;
 };
 
-void connect_node(struct node* node_a, struct node* node_b, float loss, bool bidirectional) {
+void connect_node(struct node* node_a, struct node* node_b, bool bidirectional) {
 	if (bidirectional)
-		connect_node(node_b, node_a, loss, false);
+		connect_node(node_b, node_a, false);
 
 	printf("%p -> %p\n", node_a, node_b);
 
 	if (node_a->connections == 0) {
 		node_a->connections = malloc(sizeof (struct connection));
 		node_a->connections->node = node_b;
-		node_a->connections->loss = loss;
 		node_a->connections->next = 0;
 	} else {
 		struct connection* con = node_a->connections;
@@ -94,8 +91,8 @@ int main() {
 	struct node* B = add_node(init_node_data(malloc(sizeof(struct node_data)), write_packet));
 	struct node* C = add_node(init_node_data(malloc(sizeof(struct node_data)), write_packet));
 
-	connect_node(A, B, 0, true);
-	connect_node(A, C, 0, true);
+	connect_node(A, B, true);
+	connect_node(A, C, true);
 
 	tick(A->data);
 

@@ -93,7 +93,7 @@ struct rfc5444_reader reader;
  */
 static enum rfc5444_result
 _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
-  char value;
+  int value;
   struct rfc5444_reader_tlvblock_entry* tlv;
   struct netaddr_str nbuf;
 
@@ -115,7 +115,7 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   if (_consumer_entries[0].tlv) {
     /* values of TLVs are not aligned well in memory, so we have to copy them */
     memcpy(&value, _consumer_entries[0].tlv->single_value, sizeof(value));
-    printf("\ttlv 0: %d\n", *_consumer_entries[0].tlv->single_value);
+    printf("\ttlv 0: %d\n", ntohl(value));
   }
 
   /* tlv type 1 was defined mandatory in block callback entries */
@@ -123,7 +123,7 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   tlv = _consumer_entries[1].tlv;
   do {
     memcpy(&value, tlv->single_value, sizeof(value));
-    printf("\ttlv 1: %d\n", value);
+    printf("\ttlv 1: %d\n", ntohl(value));
   } while ((tlv = tlv->next_entry));
 
   return RFC5444_OKAY;
@@ -132,9 +132,18 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 static enum rfc5444_result
 _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   struct netaddr_str nbuf;
+  struct rfc5444_reader_tlvblock_entry* tlv;
+  int value;
 
   printf("_cb_blocktlv_address_okay()\n");
   printf("addr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
+
+  tlv = _consumer_address_entries[0].tlv;
+  while (tlv) {
+    memcpy(&value, tlv->single_value, sizeof(value));
+    printf("\ttlv 0: %d\n", ntohl(value));
+    tlv = tlv->next_entry;
+  }
 
   return RFC5444_OKAY;
 }

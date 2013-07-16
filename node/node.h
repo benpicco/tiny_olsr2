@@ -16,8 +16,6 @@ struct node_data {
 	struct rfc5444_writer writer;
 	struct rfc5444_writer_target interface;
 
-	write_packet_func_ptr ptr;
-
 	struct netaddr addr;
 
 };

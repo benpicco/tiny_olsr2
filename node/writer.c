@@ -57,23 +57,27 @@ static struct rfc5444_writer_content_provider _message_content_provider = {
 	.addAddresses = _cb_addAddresses,
 };
 
+static struct rfc5444_writer_tlvtype addrtlvs[] = {
+	{ .type = 0 },
+};
+
 /**
  * Callback to add message TLVs to a RFC5444 message
  * @param wr
  */
 static void
 _cb_addMessageTLVs(struct rfc5444_writer *wr) {
-	char foo;
+	int foo;
   printf("%s(%p)\n", __func__, wr);
 
 	/* add message tlv type 0 (ext 0) with 4-byte value 23 */
-	foo = 23;
+	foo = htonl(23);
 	rfc5444_writer_add_messagetlv(wr, 0, 0, &foo, sizeof (foo));
 
   /* add message tlv type 1 (ext 0) with 4-byte value 42 */
-	foo = 42;
+	foo = htonl(42);
 	rfc5444_writer_add_messagetlv(wr, 1, 0, &foo, sizeof (foo));
-	foo = 5;
+	foo = htonl(5);
 	rfc5444_writer_add_messagetlv(wr, 1, 0, &foo, sizeof (foo));
 }
 
@@ -83,9 +87,14 @@ _cb_addAddresses(struct rfc5444_writer *wr) {
 
 	struct netaddr ip0 = { { 127,0,0,1}, AF_INET, 32 };
 	struct netaddr ip1 = { { 127,0,0,42}, AF_INET, 32 };
-	rfc5444_writer_add_address(wr, _message_content_provider.creator, &ip0, false);
+	int value = htonl(65535);
+
+	/* add an address with a tlv attached */
+	struct rfc5444_writer_address *addr = rfc5444_writer_add_address(wr, _message_content_provider.creator, &ip0, false);
+	rfc5444_writer_add_addrtlv(wr, addr, &addrtlvs[0], &value, sizeof value, false);
+
+	/* add an address without an tvl */
 	rfc5444_writer_add_address(wr, _message_content_provider.creator, &ip1, false);
-//	rfc5444_writer_add_addrtlv(wr, addr, &_msg_addrtlvs[0], &value, sizeof value, false);
 }
 
 /**
@@ -118,14 +127,11 @@ writer_init(struct node_data* n) {
   rfc5444_writer_register_target(&n->writer, &n->interface);
 
   /* register a message content provider */
-  rfc5444_writer_register_msgcontentprovider(&n->writer, &_message_content_provider, 0, 0);
+  rfc5444_writer_register_msgcontentprovider(&n->writer, &_message_content_provider, addrtlvs, ARRAYSIZE(addrtlvs));
 
   /* register message type 1 with 4 byte addresses */
   _msg = rfc5444_writer_register_message(&n->writer, 1, false, 4);
   _msg->addMessageHeader = _cb_addMessageHeader;
-
-  /* set function to send binary packet content */
-  n->interface.sendPacket = n->ptr;
 }
 
 /**
