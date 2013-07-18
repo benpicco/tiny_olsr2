@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "compat_misc.h"
+
 #include "common/common_types.h"
 #include "common/netaddr.h"
 
@@ -61,7 +63,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	void *buffer, size_t length) {
 
 	/* generate hexdump of packet */
-	abuf_hexdump(&_hexbuf, "\t", buffer, length);
+//	abuf_hexdump(&_hexbuf, "\t", buffer, length);
 	rfc5444_print_direct(&_hexbuf, buffer, length);
 
 	/* print hexdump to console */
@@ -83,7 +85,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	printf("Error: can't write package - node not found\n");
 }
 
-int main() {
+int main(int argc, char **argv) {
 	/* initialize buffer for hexdump */
 	abuf_init(&_hexbuf);
 
