@@ -30,6 +30,7 @@ export CFLAGS = -DRIOT -DOONF_LOG_INFO -DOONF_LOG_DEBUG_INFO
 USEMODULE += auto_init
 USEMODULE += vtimer
 USEMODULE += cc110x_ng
+USEMODULE += config
 USEMODULE += net_help
 USEMODULE += sixlowpan
 USEMODULE += destiny

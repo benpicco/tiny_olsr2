@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #else
 #include <vtimer.h>
+#include <cc110x_ng.h>
 #endif
 
 #include "writer.h"
@@ -23,6 +24,8 @@
 #ifndef RIOT
 int sockfd;
 struct sockaddr_in servaddr;
+#else
+cc110x_packet_t packet;
 #endif
 
 void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
@@ -33,6 +36,11 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 #ifndef RIOT
 	sendto(sockfd, buffer, length, 0,
 		(struct sockaddr*) &servaddr, sizeof(servaddr));
+#else
+	// TODO: no memcpy, set address etc.
+	memcpy(packet.data, buffer, length);
+	packet.length = length;
+	cc110x_send(&packet);
 #endif
 }
 
