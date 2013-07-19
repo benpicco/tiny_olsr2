@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #ifndef RIOT
 #include <unistd.h>
 #include <signal.h>
@@ -9,6 +10,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#else
+#include <vtimer.h>
 #endif
 
 #include "writer.h"
@@ -77,6 +80,17 @@ int enable_asynch(int sock) {
 }
 #endif
 
+void sleep_s(int secs) {
+#ifdef RIOT
+	vtimer_usleep(secs * 1000000);
+#else
+	// process wakes up when a package arrives
+	// go back to sleep to prevent flooding
+	int remaining_sleep = secs;
+	while ((remaining_sleep = sleep(remaining_sleep)));
+#endif
+}
+
 int main(int argc, char** argv) {
 #ifndef RIOT
 	if (argc != 3) {
@@ -91,12 +105,7 @@ int main(int argc, char** argv) {
 	writer_init(write_packet);
 
 	while (1) {
-#ifndef RIOT
-		// process wakes up when a package arrives
-		// go back to sleep to prevent flooding
-		int remaining_sleep = 5;
-		while (remaining_sleep = sleep(remaining_sleep));
-#endif
+		sleep_s(5);
 		writer_tick();
 	}
 

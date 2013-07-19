@@ -155,6 +155,8 @@ writer_init(write_packet_func_ptr ptr) {
 }
 
 void writer_tick(void) {
+	printf("[writer_tick]\n");
+
 	/* send message */
 	rfc5444_writer_create_message_alltarget(&writer, 1);
 	rfc5444_writer_flush(&writer, &interface, false);
