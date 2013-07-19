@@ -45,9 +45,11 @@
 #include "common/common_types.h"
 #include "rfc5444/rfc5444_writer.h"
 
-#include "node.h"
+typedef void (*write_packet_func_ptr)(
+    struct rfc5444_writer *wr, struct rfc5444_writer_target *iface, void *buffer, size_t length);
 
-void writer_init(struct node_data* n);
-void writer_cleanup(struct node_data* n);
+void writer_init(write_packet_func_ptr ptr);
+void writer_tick();
+void writer_cleanup();
 
 #endif /* WRITER_H_ */

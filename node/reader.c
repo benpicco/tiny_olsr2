@@ -152,17 +152,17 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
  * Initialize RFC5444 reader
  */
 void
-reader_init(struct node_data* n) {
-  printf("%s(%p)\n", __func__, n);
+reader_init() {
+  printf("%s()\n", __func__);
 
   /* initialize reader */
-  rfc5444_reader_init(&n->reader);
+  rfc5444_reader_init(&reader);
 
   /* register message consumer */
-  rfc5444_reader_add_message_consumer(&n->reader, &_consumer,
+  rfc5444_reader_add_message_consumer(&reader, &_consumer,
       _consumer_entries, ARRAYSIZE(_consumer_entries));
 
-  rfc5444_reader_add_message_consumer(&n->reader, &_address_consumer,
+  rfc5444_reader_add_message_consumer(&reader, &_address_consumer,
       _consumer_address_entries, ARRAYSIZE(_consumer_address_entries));
 }
 
@@ -170,8 +170,8 @@ reader_init(struct node_data* n) {
  * Cleanup RFC5444 reader
  */
 void
-reader_cleanup(struct node_data* n) {
-  printf("%s(%p)\n", __func__, n);
+reader_cleanup() {
+  printf("%s()\n", __func__);
 
-  rfc5444_reader_cleanup(&n->reader);
+  rfc5444_reader_cleanup(&reader);
 }

@@ -61,6 +61,13 @@ static struct rfc5444_writer_tlvtype addrtlvs[] = {
 	{ .type = 0 },
 };
 
+uint8_t msg_buffer[128];
+uint8_t msg_addrtlvs[1000];
+uint8_t packet_buffer[128];
+
+struct rfc5444_writer writer;
+struct rfc5444_writer_target interface;
+
 /**
  * Callback to add message TLVs to a RFC5444 message
  * @param wr
@@ -115,31 +122,46 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
  * @param ptr pointer to "send_packet" function
  */
 void
-writer_init(struct node_data* n) {
+writer_init(write_packet_func_ptr ptr) {
   struct rfc5444_writer_message *_msg;
 
-  printf("%s(%p)\n", __func__, n);
+  printf("%s()\n", __func__);
+
+  writer.msg_buffer = msg_buffer;
+  writer.msg_size   = sizeof(msg_buffer);
+  writer.addrtlv_buffer = msg_addrtlvs;
+  writer.addrtlv_size   = sizeof(msg_addrtlvs);
+
+  interface.packet_buffer = packet_buffer;
+  interface.packet_size   = sizeof(packet_buffer);
+  interface.sendPacket = ptr;
 
   /* initialize writer */
-  rfc5444_writer_init(&n->writer);
+  rfc5444_writer_init(&writer);
 
   /* register a target (for sending messages to) in writer */
-  rfc5444_writer_register_target(&n->writer, &n->interface);
+  rfc5444_writer_register_target(&writer, &interface);
 
   /* register a message content provider */
-  rfc5444_writer_register_msgcontentprovider(&n->writer, &_message_content_provider, addrtlvs, ARRAYSIZE(addrtlvs));
+  rfc5444_writer_register_msgcontentprovider(&writer, &_message_content_provider, addrtlvs, ARRAYSIZE(addrtlvs));
 
   /* register message type 1 with 4 byte addresses */
-  _msg = rfc5444_writer_register_message(&n->writer, 1, false, 4);
+  _msg = rfc5444_writer_register_message(&writer, 1, false, 4);
   _msg->addMessageHeader = _cb_addMessageHeader;
+}
+
+void writer_tick() {
+	/* send message */
+	rfc5444_writer_create_message_alltarget(&writer, 1);
+	rfc5444_writer_flush(&writer, &interface, false);
 }
 
 /**
  * Cleanup RFC5444 writer
  */
 void
-writer_cleanup(struct node_data* n) {
-  printf("%s(%p)\n", __func__, n);
+writer_cleanup() {
+  printf("%s()\n", __func__);
 
-  rfc5444_writer_cleanup(&n->writer);
+  rfc5444_writer_cleanup(&writer);
 }

@@ -45,9 +45,7 @@
 #include "common/common_types.h"
 #include "rfc5444/rfc5444_reader.h"
 
-#include "node.h"
-
-void reader_init(struct node_data* n);
-void reader_cleanup(struct node_data* n);
+void reader_init();
+void reader_cleanup();
 
 #endif /* READER_H_ */
