@@ -28,12 +28,12 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 }
 
 void init_socket(in_addr_t addr, int port) {
-   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-   memset(&servaddr, 0, sizeof servaddr);
-   servaddr.sin_family = AF_INET;
-   servaddr.sin_addr.s_addr = addr;
-   servaddr.sin_port = htons(port);
+	memset(&servaddr, 0, sizeof servaddr);
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = addr;
+	servaddr.sin_port = htons(port);
 }
 
 void sigio_handler(int sig) {
