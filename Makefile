@@ -17,4 +17,7 @@ clean:
 	rm dispatcher
 
 run:	dispatcher node
+	LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 &
+	LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 &
+	LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 &
 	LD_LIBRARY_PATH=$(LIBDIR) ./dispatcher 9000

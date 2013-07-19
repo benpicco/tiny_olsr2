@@ -72,7 +72,7 @@ static int add_node_data(struct sockaddr_in addr, socklen_t len) {
 }
 
 static int get_id(struct sockaddr_in addr) {
-	struct node *head = node_head;	
+	struct node *head = node_head;
 
 	do {
 		if (head->addr.sin_port == addr.sin_port &&
@@ -118,7 +118,7 @@ static int setup_socket(int port) {
 		printf("Can't create socket");
 		return -2;
 	}
-	
+
 	memset(&si_me, 0, sizeof(si_me));
 	si_me.sin_family = AF_INET;
 	si_me.sin_port = htons(port);
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
 	if ((socket = setup_socket(atoi(argv[1]))) < 0)
 		return -1;
 
-	struct sockaddr_in si_other;	
+	struct sockaddr_in si_other;
 	int n;
 	socklen_t slen = sizeof(si_other);
 	while ((n = recvfrom(socket, buffer, sizeof buffer, 0, (struct sockaddr*) &si_other, &slen))) {
@@ -165,9 +165,9 @@ int main(int argc, char** argv) {
 		if (id < 0)
 			printf("ignoring unknown node");
 		else
-			write_packet(get_id(si_other), socket, buffer, n);	
+			write_packet(get_id(si_other), socket, buffer, n);
 	}
-	
+
 	close(socket);
 	abuf_free(&_hexbuf);
 	return 0;
