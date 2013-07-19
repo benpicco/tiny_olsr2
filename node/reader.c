@@ -167,6 +167,14 @@ reader_init() {
 }
 
 /**
+ * Inject a package into the RFC5444 reader
+ */
+int
+reader_handle_packet(void* buffer, size_t length) {
+  rfc5444_reader_handle_packet(&reader, buffer, length);
+}
+
+/**
  * Cleanup RFC5444 reader
  */
 void

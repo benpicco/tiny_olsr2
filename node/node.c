@@ -37,13 +37,13 @@ void init_socket(in_addr_t addr, int port) {
 }
 
 void sigio_handler(int sig) {
-   char buffer[1500];
-   int length;
+	char buffer[1500];
+	int length;
 
-   if ((length = recvfrom(sockfd, &buffer, sizeof buffer, 0, 0, 0)) == -1)
-       return;
-   buffer[length] = 0;
-   printf("Received: %s", buffer);
+	if ((length = recvfrom(sockfd, &buffer, sizeof buffer, 0, 0, 0)) == -1)
+		return;
+
+	reader_handle_packet(buffer, length);
 }
 
 int enable_asynch(int sock) {
@@ -81,14 +81,13 @@ int main(int argc, char** argv) {
 	reader_init();
 	writer_init(write_packet);
 
-	char buffer[] = "Hello World!\n";
 	while (1) {
+		// process wakes up when a package arrives
+		// go back to sleep to prevent flooding
 		int remaining_sleep = 5;
 		while (remaining_sleep = sleep(remaining_sleep));
 
-		printf("Sending %s", buffer);
-		sendto(sockfd, buffer, sizeof buffer, 0, (struct sockaddr*) &servaddr, sizeof(servaddr));
-//		writer_tick();
+		writer_tick();
 	}
 
 	reader_cleanup();
