@@ -49,7 +49,7 @@ typedef void (*write_packet_func_ptr)(
     struct rfc5444_writer *wr, struct rfc5444_writer_target *iface, void *buffer, size_t length);
 
 void writer_init(write_packet_func_ptr ptr);
-void writer_tick();
-void writer_cleanup();
+void writer_tick(void);
+void writer_cleanup(void);
 
 #endif /* WRITER_H_ */

@@ -1,13 +1,15 @@
 #define _GNU_SOURCE
 
 #include <stdio.h>
+#include <string.h>
+#ifndef RIOT
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#endif
 
 #include "writer.h"
 #include "reader.h"
@@ -15,18 +17,23 @@
 #include "rfc5444/rfc5444_reader.h"
 #include "rfc5444/rfc5444_writer.h"
 
+#ifndef RIOT
 int sockfd;
 struct sockaddr_in servaddr;
+#endif
 
-void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)), 
-	struct rfc5444_writer_target *iface __attribute__((unused)), 
+void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
+	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
 	printf("write_packet called\n");
+#ifndef RIOT
 	sendto(sockfd, buffer, length, 0,
 		(struct sockaddr*) &servaddr, sizeof(servaddr));
+#endif
 }
 
+#ifndef RIOT
 void init_socket(in_addr_t addr, int port) {
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -51,7 +58,7 @@ int enable_asynch(int sock) {
 	struct sigaction sa;
 
 	flags = fcntl(sock, F_GETFL);
-	fcntl(sock, F_SETFL, flags | O_ASYNC); 
+	fcntl(sock, F_SETFL, flags | O_ASYNC);
 
 	sa.sa_flags = 0;
 	sa.sa_handler = sigio_handler;
@@ -65,11 +72,13 @@ int enable_asynch(int sock) {
 
 	if (fcntl(sock, F_SETSIG, SIGIO) < 0)
 		return -1;
-	
+
 	return 0;
 }
+#endif
 
 int main(int argc, char** argv) {
+#ifndef RIOT
 	if (argc != 3) {
 		printf("usage:  %s <IP address> <port>\n", argv[0]);
 		return -1;
@@ -77,16 +86,17 @@ int main(int argc, char** argv) {
 
 	init_socket(inet_addr(argv[1]), atoi(argv[2]));
 	enable_asynch(sockfd);
-
+#endif
 	reader_init();
 	writer_init(write_packet);
 
 	while (1) {
+#ifndef RIOT
 		// process wakes up when a package arrives
 		// go back to sleep to prevent flooding
 		int remaining_sleep = 5;
 		while (remaining_sleep = sleep(remaining_sleep));
-
+#endif
 		writer_tick();
 	}
 

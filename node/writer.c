@@ -1,4 +1,3 @@
-
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
  * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
@@ -41,6 +40,11 @@
 
 #include <string.h>
 #include <stdio.h>
+
+#ifdef RIOT
+#include "net_help/net_help.h"
+#include "compat_misc.h"
+#endif
 
 #include "common/common_types.h"
 #include "common/netaddr.h"
@@ -150,7 +154,7 @@ writer_init(write_packet_func_ptr ptr) {
   _msg->addMessageHeader = _cb_addMessageHeader;
 }
 
-void writer_tick() {
+void writer_tick(void) {
 	/* send message */
 	rfc5444_writer_create_message_alltarget(&writer, 1);
 	rfc5444_writer_flush(&writer, &interface, false);
@@ -160,7 +164,7 @@ void writer_tick() {
  * Cleanup RFC5444 writer
  */
 void
-writer_cleanup() {
+writer_cleanup(void) {
   printf("%s()\n", __func__);
 
   rfc5444_writer_cleanup(&writer);

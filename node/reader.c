@@ -1,4 +1,3 @@
-
 /*
  * The olsr.org Optimized Link-State Routing daemon version 2 (olsrd2)
  * Copyright (c) 2004-2013, the olsr.org team - see HISTORY file
@@ -45,6 +44,11 @@
 #include "common/common_types.h"
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444_reader.h"
+
+#ifdef RIOT
+#include "net_help/net_help.h"
+#include "compat_misc.h"
+#endif
 
 #include "reader.h"
 
@@ -152,7 +156,7 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
  * Initialize RFC5444 reader
  */
 void
-reader_init() {
+reader_init(void) {
   printf("%s()\n", __func__);
 
   /* initialize reader */
@@ -178,7 +182,7 @@ reader_handle_packet(void* buffer, size_t length) {
  * Cleanup RFC5444 reader
  */
 void
-reader_cleanup() {
+reader_cleanup(void) {
   printf("%s()\n", __func__);
 
   rfc5444_reader_cleanup(&reader);
