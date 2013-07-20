@@ -108,6 +108,8 @@ int main(int argc, char** argv) {
 
 	init_socket(inet_addr(argv[1]), atoi(argv[2]));
 	enable_asynch(sockfd);
+#else
+	cc110x_init(0);	// transceiver_pid ??
 #endif
 	reader_init();
 	writer_init(write_packet);
