@@ -175,7 +175,7 @@ reader_init(void) {
  */
 int
 reader_handle_packet(void* buffer, size_t length) {
-  rfc5444_reader_handle_packet(&reader, buffer, length);
+  return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 
 /**

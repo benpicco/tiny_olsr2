@@ -7,7 +7,7 @@
 #include <vtimer.h>
 #include <cc110x_ng.h>
 #include <destiny/socket.h>
-#include <sixlowpan/sixlowip.h>
+#include <net_help/inet_pton.h>
 #else
 #include <unistd.h>
 #include <signal.h>
@@ -18,6 +18,7 @@
 
 #include "writer.h"
 #include "reader.h"
+#include "nhdp.h"
 
 #include "rfc5444/rfc5444_reader.h"
 #include "rfc5444/rfc5444_writer.h"
@@ -25,8 +26,6 @@
 #ifdef RIOT
 cc110x_packet_t packet;
 #else
-typedef struct in6_addr ipv6_addr_t;
-
 int sockfd;
 struct sockaddr_in servaddr;
 #endif
@@ -105,17 +104,24 @@ void sleep_s(int secs) {
 }
 
 int main(int argc, char** argv) {
+	const char* this_ip;
 #ifdef RIOT
 	cc110x_init(0);	// transceiver_pid ??
+	this_ip = "2001::1";
 #else
-	if (argc != 3) {
-		printf("usage:  %s <IP address> <port>\n", argv[0]);
+	if (argc != 4) {
+		printf("usage:  %s <server IP address> <port> <node IP6 address>\n", argv[0]);
 		return -1;
 	}
+	
+	this_ip = argv[3];
 
 	init_socket(inet_addr(argv[1]), atoi(argv[2]));
 	enable_asynch(sockfd);
 #endif
+
+	inet_pton(AF_INET6, this_ip, &node_addr);
+
 	reader_init();
 	writer_init(write_packet);
 
