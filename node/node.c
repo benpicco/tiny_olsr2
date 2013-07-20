@@ -3,16 +3,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#ifndef RIOT
+#ifdef RIOT
+#include <vtimer.h>
+#include <cc110x_ng.h>
+#include <destiny/socket.h>
+#include <sixlowpan/sixlowip.h>
+#else
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <netinet/in.h>
-#else
-#include <vtimer.h>
-#include <cc110x_ng.h>
 #endif
 
 #include "writer.h"
@@ -21,26 +22,30 @@
 #include "rfc5444/rfc5444_reader.h"
 #include "rfc5444/rfc5444_writer.h"
 
-#ifndef RIOT
+#ifdef RIOT
+cc110x_packet_t packet;
+#else
+typedef struct in6_addr ipv6_addr_t;
+
 int sockfd;
 struct sockaddr_in servaddr;
-#else
-cc110x_packet_t packet;
 #endif
+
+ipv6_addr_t node_addr;
 
 void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
 	printf("write_packet called\n");
-#ifndef RIOT
-	sendto(sockfd, buffer, length, 0,
-		(struct sockaddr*) &servaddr, sizeof(servaddr));
-#else
+#ifdef RIOT
 	// TODO: no memcpy, set address etc.
 	memcpy(packet.data, buffer, length);
 	packet.length = length;
 	cc110x_send(&packet);
+#else
+	sendto(sockfd, buffer, length, 0,
+		(struct sockaddr*) &servaddr, sizeof(servaddr));
 #endif
 }
 
@@ -100,7 +105,9 @@ void sleep_s(int secs) {
 }
 
 int main(int argc, char** argv) {
-#ifndef RIOT
+#ifdef RIOT
+	cc110x_init(0);	// transceiver_pid ??
+#else
 	if (argc != 3) {
 		printf("usage:  %s <IP address> <port>\n", argv[0]);
 		return -1;
@@ -108,8 +115,6 @@ int main(int argc, char** argv) {
 
 	init_socket(inet_addr(argv[1]), atoi(argv[2]));
 	enable_asynch(sockfd);
-#else
-	cc110x_init(0);	// transceiver_pid ??
 #endif
 	reader_init();
 	writer_init(write_packet);
