@@ -19,7 +19,7 @@ void* add_tail(struct list_elem** head, size_t size) {
 	return _head->next = malloc(size);
 }
 
-void* find_list(struct list_elem* head, void* needle, int offset) {
+void* _find_list(struct list_elem* head, void* needle, int offset) {
 	while (head) {
 		void** buff = (void*) head + offset;
 
