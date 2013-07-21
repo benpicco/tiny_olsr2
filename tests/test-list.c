@@ -12,15 +12,15 @@ struct test_list {
 };
 
 struct test_list* _get_by_buffer(struct test_list* head, char* buffer) {
-	return find_list(head, buffer);
+	return list_find(head, buffer);
 }
 
 struct test_list* _get_by_value(struct test_list* head, int value) {
-	return find_list(head, value);
+	return list_find(head, value);
 }
 
 struct test_list* _add_test_list(struct test_list** head, char* buffer, int value) {
-	struct test_list* node = add_tail((struct list_elem**) head, sizeof(struct test_list));
+	struct test_list* node = list_add_tail(head);
 
 	node->buffer = buffer;
 	node->value  = value;
@@ -59,7 +59,7 @@ int main(void) {
 
 	puts("-------------");
 
-	list_remove((struct list_elem**) &_head, (struct list_elem*) _get_by_buffer(_head, foo));
+	list_remove(&_head, _get_by_buffer(_head, foo));
 
 	_print_list(_head);
 }

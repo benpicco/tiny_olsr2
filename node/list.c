@@ -6,7 +6,7 @@ struct list_elem {
 	struct list_elem* next;
 };
 
-void* add_tail(struct list_elem** head, size_t size) {
+void* _list_add_tail(struct list_elem** head, size_t size) {
 	struct list_elem* _head = *head;
 
 	if (!_head)
@@ -19,7 +19,7 @@ void* add_tail(struct list_elem** head, size_t size) {
 	return _head->next = malloc(size);
 }
 
-void* _find_list(struct list_elem* head, void* needle, int offset) {
+void* _list_find(struct list_elem* head, void* needle, int offset) {
 	while (head) {
 		void** buff = (void*) head + offset;
 
@@ -31,7 +31,7 @@ void* _find_list(struct list_elem* head, void* needle, int offset) {
 	return 0;
 }
 
-void list_remove(struct list_elem** head, struct list_elem* node) {
+void _list_remove(struct list_elem** head, struct list_elem* node) {
 	struct list_elem* _head = *head;
 	struct list_elem* prev = 0;
 

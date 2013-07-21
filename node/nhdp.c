@@ -18,23 +18,23 @@ struct neighbor* n_head = 0;
 struct neighbor* get_nn_head = 0;
 
 void add_neighbor(struct nhdp_node* n) {
-	struct neighbor* new_n = add_tail((struct list_elem**) &n_head, sizeof(struct neighbor));
+	struct neighbor* new_n = list_add_tail(&n_head);
 	new_n->node = n;
 }
 
 int add_2_hop_neighbor(struct nhdp_node* n, struct nhdp_node* m) {
-	struct neighbor* node = find_list(n_head, n);
+	struct neighbor* node = list_find(n_head, n);
 	if (node) {
-		struct neighbor_2_hop* new_n = add_tail((struct list_elem**) &node->hood, sizeof(struct neighbor_2_hop));
+		struct neighbor_2_hop* new_n = list_add_tail(&node->hood);
 		new_n->node = m;
 	}
 	return 0;
 }
 
 void remove_neighbor(struct nhdp_node* n) {
-	struct neighbor* node = find_list(n_head, n);
+	struct neighbor* node = list_find(n_head, n);
 	if (node)
-		list_remove((struct list_elem**) &n_head,(struct list_elem*) node);
+		list_remove(&n_head, node);
 }
 
 void get_next_neighbor_reset(void) {
