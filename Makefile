@@ -6,8 +6,8 @@ LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 
 .PHONY: clean run
 
-node:	node/node.o node/reader.o node/writer.o $(LDFLAGS)
-	cc node/node.o node/reader.o node/writer.o $(LDFLAGS) -o node/node
+node:	node/node.o node/reader.o node/writer.o node/list.o $(LDFLAGS)
+	cc node/node.o node/reader.o node/writer.o node/list.o $(LDFLAGS) -o node/node
 
 dispatcher:	dispatcher.o $(LDFLAGS)
 
