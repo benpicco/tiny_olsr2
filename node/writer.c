@@ -51,6 +51,7 @@
 #include "rfc5444/rfc5444_writer.h"
 
 #include "writer.h"
+#include "nhdp.h"
 
 static void _cb_addMessageTLVs(struct rfc5444_writer *wr);
 static void _cb_addAddresses(struct rfc5444_writer *wr);
@@ -94,18 +95,16 @@ _cb_addMessageTLVs(struct rfc5444_writer *wr) {
 
 static void
 _cb_addAddresses(struct rfc5444_writer *wr) {
-  printf("%s(%p)\n", __func__, wr);
-
-	struct netaddr ip0 = { { 127,0,0,1}, AF_INET, 32 };
-	struct netaddr ip1 = { { 127,0,0,42}, AF_INET, 32 };
-	int value = htonl(65535);
+	printf("%s(%p)\n", __func__, wr);
+	struct netaddr addr = { {0}, AF_INET6, 128 };
+	memcpy(addr._addr, &node_addr, sizeof node_addr);
 
 	/* add an address with a tlv attached */
-	struct rfc5444_writer_address *addr = rfc5444_writer_add_address(wr, _message_content_provider.creator, &ip0, false);
-	rfc5444_writer_add_addrtlv(wr, addr, &addrtlvs[0], &value, sizeof value, false);
+//	struct rfc5444_writer_address *addr = rfc5444_writer_add_address(wr, _message_content_provider.creator, &ip0, false);
+//	rfc5444_writer_add_addrtlv(wr, addr, &addrtlvs[0], &value, sizeof value, false);
 
 	/* add an address without an tvl */
-	rfc5444_writer_add_address(wr, _message_content_provider.creator, &ip1, false);
+	rfc5444_writer_add_address(wr, _message_content_provider.creator, &addr, false);
 }
 
 /**
@@ -149,8 +148,8 @@ writer_init(write_packet_func_ptr ptr) {
   /* register a message content provider */
   rfc5444_writer_register_msgcontentprovider(&writer, &_message_content_provider, addrtlvs, ARRAYSIZE(addrtlvs));
 
-  /* register message type 1 with 4 byte addresses */
-  _msg = rfc5444_writer_register_message(&writer, 1, false, 4);
+  /* register message type 1 with 16 byte addresses */
+  _msg = rfc5444_writer_register_message(&writer, 1, false, 16);
   _msg->addMessageHeader = _cb_addMessageHeader;
 }
 

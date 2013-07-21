@@ -30,8 +30,6 @@ int sockfd;
 struct sockaddr_in servaddr;
 #endif
 
-ipv6_addr_t node_addr;
-
 void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {

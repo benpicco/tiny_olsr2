@@ -8,6 +8,8 @@
 typedef struct in6_addr ipv6_addr_t;
 #endif
 
+ipv6_addr_t node_addr;
+
 struct nhdp_node {
 	ipv6_addr_t addr;
 };
