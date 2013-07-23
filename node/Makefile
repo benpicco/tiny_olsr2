@@ -14,15 +14,13 @@ export PROJECT =olsr_node
 export BOARD = msba2
 
 # this has to be the absolute path of the RIOT-base dir
-export RIOTBASE =/home/benpicco/µkleos/riot/RIOT
-export RIOTBOARD =$(RIOTBASE)/../boards
-export RIOTLIBS =$(RIOTBASE)/../riot-libs
-export OONFBASE =/home/benpicco/µkleos/oonf_api
-export OLSRBASE =/home/benpicco/µkleos/olsrd2
+export RIOTBASE = $(CURDIR)/../../riot/RIOT
+export RIOTBOARD= $(RIOTBASE)/../boards
+export RIOTLIBS = $(RIOTBASE)/../riot-libs
+export OONFBASE = $(CURDIR)/../../oonf_api
 
 EXTERNAL_MODULES +=$(RIOTLIBS)
 EXTERNAL_MODULES +=$(OONFBASE)
-EXTERNAL_MODULES +=$(OLSRBASE)
 export EXTERNAL_MODULES
 
 # doesn't have any effect :(

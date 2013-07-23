@@ -1,5 +1,5 @@
-INCLUDE=-I../upstream/oonf_api/src-api -I../upstream/oonf_api/build
-LIBDIR=../upstream/oonf_api/build
+INCLUDE=-I../oonf_api/src-api -I../oonf_api/build
+LIBDIR=../oonf_api/build
 
 CFLAGS=-Wall -std=c99 $(INCLUDE)
 LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
