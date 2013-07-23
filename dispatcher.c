@@ -5,12 +5,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "common/common_types.h"
-#include "common/netaddr.h"
-#include "rfc5444/rfc5444_print.h"
-
-/* for hexfump */
-static struct autobuf _hexbuf;
+typedef int bool;
+#define true	1
+#define false	0
 
 struct node {
 	int id;
@@ -84,14 +81,7 @@ static int get_id(struct sockaddr_in addr) {
 }
 
 static void write_packet(int id, int socket, void *buffer, size_t length) {
-	printf("node: %d\n", id);
-
-	/* generate hexdump of packet */
-	abuf_hexdump(&_hexbuf, "\t", buffer, length);
-	rfc5444_print_direct(&_hexbuf, buffer, length);
-
-	/* print hexdump to console */
-	printf("%s", abuf_getptr(&_hexbuf));
+	printf("[node %d sending]\n", id);
 
 	struct node* head = node_head;
 	while (head) {
@@ -141,9 +131,6 @@ int main(int argc, char** argv) {
     	return -1;
 	}
 
-	/* initialize buffer for hexdump */
-	abuf_init(&_hexbuf);
-
 	int id = 0;
 	struct node* A = add_node(++id);
 	struct node* B = add_node(++id);
@@ -169,6 +156,5 @@ int main(int argc, char** argv) {
 	}
 
 	close(socket);
-	abuf_free(&_hexbuf);
 	return 0;
 }
