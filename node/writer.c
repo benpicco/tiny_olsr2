@@ -43,7 +43,6 @@
 
 #ifdef RIOT
 #include "net_help/net_help.h"
-#include "compat_misc.h"
 #endif
 
 #include "common/common_types.h"
