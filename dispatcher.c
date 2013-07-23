@@ -81,7 +81,7 @@ static int get_id(struct sockaddr_in addr) {
 }
 
 static void write_packet(int id, int socket, void *buffer, size_t length) {
-	printf("[node %d sending]\n", id);
+	printf("[node %d sending %d byte]\n", id, length);
 
 	struct node* head = node_head;
 	while (head) {

@@ -9,21 +9,37 @@ struct list_elem {
 void* _list_add_tail(struct list_elem** head, size_t size) {
 	struct list_elem* _head = *head;
 
-	if (!_head)
-		return *head = malloc(size);
+	if (!_head) {
+		*head = malloc(size);
+		(*head) -> next = 0;
+		return *head;
+	}
 
 	while (_head->next) {
 		_head = _head->next;
 	}
 
-	return _head->next = malloc(size);
+	_head = _head->next = malloc(size);
+	_head->next = 0;
+	return _head;
 }
 
-void* _list_find(struct list_elem* head, void* needle, int offset) {
+void* _list_add_head(struct list_elem** head, size_t size) {
+	struct list_elem* _head = *head;
+
+	*head = malloc(size);
+	(*head)->next = _head;
+
+	return *head;
+}
+
+void* _list_find(struct list_elem* head, void* needle, int offset, size_t size) {
 	while (head) {
 		void** buff = (void*) head + offset;
 
-		if (*buff ==  needle)
+		if (size == 0 && *buff == needle)
+			return head;
+		if (size > 0 && !memcmp(*buff, needle, size))
 			return head;
 		head = head->next;
 	}

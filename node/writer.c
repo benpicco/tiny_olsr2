@@ -48,22 +48,37 @@
 
 #include "common/common_types.h"
 #include "common/netaddr.h"
+#include "rfc5444/rfc5444.h"
+#include "rfc5444/rfc5444_iana.h"
 #include "rfc5444/rfc5444_writer.h"
 
 #include "writer.h"
 #include "nhdp.h"
 
+// todo: sensible values
+#define REFRESH_INTERVAL 5
+#define HOLD_TIME 10
+
+/* constants */
+enum {
+  IDX_ADDRTLV_LOCAL_IF,
+  IDX_ADDRTLV_LINK_STATUS,
+  IDX_ADDRTLV_OTHER_NEIGHB,
+};
+
 static void _cb_addMessageTLVs(struct rfc5444_writer *wr);
 static void _cb_addAddresses(struct rfc5444_writer *wr);
 
 static struct rfc5444_writer_content_provider _message_content_provider = {
-	.msg_type = 1,
+	.msg_type = RFC5444_MSGTYPE_HELLO,
 	.addMessageTLVs = _cb_addMessageTLVs,
 	.addAddresses = _cb_addAddresses,
 };
 
-static struct rfc5444_writer_tlvtype addrtlvs[] = {
-	{ .type = 0 },
+static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
+  [IDX_ADDRTLV_LOCAL_IF] =     { .type = RFC5444_ADDRTLV_LOCAL_IF },
+  [IDX_ADDRTLV_LINK_STATUS] =  { .type = RFC5444_ADDRTLV_LINK_STATUS },
+  [IDX_ADDRTLV_OTHER_NEIGHB] = { .type = RFC5444_ADDRTLV_OTHER_NEIGHB },
 };
 
 uint8_t msg_buffer[128];
@@ -79,32 +94,26 @@ struct rfc5444_writer_target interface;
  */
 static void
 _cb_addMessageTLVs(struct rfc5444_writer *wr) {
-	int foo;
-  printf("%s(%p)\n", __func__, wr);
+	uint8_t time_encoded;
 
-	/* add message tlv type 0 (ext 0) with 4-byte value 23 */
-	foo = htonl(23);
-	rfc5444_writer_add_messagetlv(wr, 0, 0, &foo, sizeof (foo));
+	time_encoded = rfc5444_timetlv_encode(REFRESH_INTERVAL);
+  	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0,
+    	&time_encoded, sizeof(time_encoded));
 
-  /* add message tlv type 1 (ext 0) with 4-byte value 42 */
-	foo = htonl(42);
-	rfc5444_writer_add_messagetlv(wr, 1, 0, &foo, sizeof (foo));
-	foo = htonl(5);
-	rfc5444_writer_add_messagetlv(wr, 1, 0, &foo, sizeof (foo));
+  	time_encoded = rfc5444_timetlv_encode(HOLD_TIME);
+  	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_INTERVAL_TIME, 0,
+     	&time_encoded, sizeof(time_encoded));
 }
 
 static void
 _cb_addAddresses(struct rfc5444_writer *wr) {
-	printf("%s(%p)\n", __func__, wr);
-	struct netaddr addr = { {0}, AF_INET6, 128 };
-	memcpy(addr._addr, &node_addr, sizeof node_addr);
+	struct nhdp_node* neighbor;
 
-	/* add an address with a tlv attached */
-//	struct rfc5444_writer_address *addr = rfc5444_writer_add_address(wr, _message_content_provider.creator, &ip0, false);
-//	rfc5444_writer_add_addrtlv(wr, addr, &addrtlvs[0], &value, sizeof value, false);
-
-	/* add an address without an tvl */
-	rfc5444_writer_add_address(wr, _message_content_provider.creator, &addr, false);
+	get_next_neighbor_reset();
+	while ((neighbor = get_next_neighbor())) {
+		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _message_content_provider.creator, neighbor->addr, false);
+		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], &neighbor->linkstatus, sizeof neighbor->linkstatus, false);
+	}
 }
 
 /**
@@ -114,10 +123,11 @@ _cb_addAddresses(struct rfc5444_writer *wr) {
  */
 static void
 _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
-  printf("%s(%p)\n", __func__, wr);
+	printf("_cb_addMessageHeader()\n");
 
-	/* no originator, no sequence number, not hopcount, no hoplimit */
-	rfc5444_writer_set_msg_header(wr, message, false, false, false, false);
+	/* originator, not hopcount, no hoplimit, sequence number */
+	rfc5444_writer_set_msg_header(wr, message, true, false, false, true);
+	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&node_addr));
 }
 
 /**
@@ -146,10 +156,10 @@ writer_init(write_packet_func_ptr ptr) {
   rfc5444_writer_register_target(&writer, &interface);
 
   /* register a message content provider */
-  rfc5444_writer_register_msgcontentprovider(&writer, &_message_content_provider, addrtlvs, ARRAYSIZE(addrtlvs));
+  rfc5444_writer_register_msgcontentprovider(&writer, &_message_content_provider, _nhdp_addrtlvs, ARRAYSIZE(_nhdp_addrtlvs));
 
   /* register message type 1 with 16 byte addresses */
-  _msg = rfc5444_writer_register_message(&writer, 1, false, 16);
+  _msg = rfc5444_writer_register_message(&writer, RFC5444_MSGTYPE_HELLO, false, 16);
   _msg->addMessageHeader = _cb_addMessageHeader;
 }
 
@@ -157,7 +167,7 @@ void writer_tick(void) {
 	printf("[writer_tick]\n");
 
 	/* send message */
-	rfc5444_writer_create_message_alltarget(&writer, 1);
+	rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_HELLO);
 	rfc5444_writer_flush(&writer, &interface, false);
 }
 

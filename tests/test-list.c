@@ -24,7 +24,6 @@ struct test_list* _add_test_list(struct test_list** head, char* buffer, int valu
 
 	node->buffer = buffer;
 	node->value  = value;
-	node->next   = 0;
 
 	return node;
 }
@@ -60,6 +59,11 @@ int main(void) {
 	puts("-------------");
 
 	list_remove(&_head, _get_by_buffer(_head, foo));
-
 	_print_list(_head);
+
+	puts("-------------");
+
+	char buffer[sizeof bar];
+	memcpy(buffer, bar, sizeof buffer);
+	_print_result(list_find_memcmp(_head, buffer));
 }

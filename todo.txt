@@ -1,4 +1,6 @@
 - [ ] port node to RIOT
-- [ ] send NHDP
+- [x] send NHDP
 - [ ] [dispatcher] read graphviz like config
 - [ ] setup CUnit
+- [ ] find out why messages are printed repeatedly
+- [ ] add 2-hop neighbors to database

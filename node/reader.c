@@ -39,10 +39,13 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "common/common_types.h"
 #include "common/netaddr.h"
+#include "rfc5444/rfc5444.h"
+#include "rfc5444/rfc5444_iana.h"
 #include "rfc5444/rfc5444_reader.h"
 
 #ifdef RIOT
@@ -50,7 +53,32 @@
 #include "compat_misc.h"
 #endif
 
+#include "nhdp.h"
 #include "reader.h"
+
+ /* NHDP message TLV array index */
+enum {
+  IDX_TLV_ITIME,
+  IDX_TLV_VTIME,
+  IDX_TLV_WILLINGNESS,
+  IDX_TLV_IPV4ORIG,
+  IDX_TLV_MAC,
+};
+
+/* NHDP address TLV array index pass 1 */
+enum {
+  IDX_ADDRTLV1_LOCAL_IF,
+  IDX_ADDRTLV1_LINK_STATUS,
+};
+
+/* NHDP address TLV array index pass 2 */
+enum {
+  IDX_ADDRTLV2_LOCAL_IF,
+  IDX_ADDRTLV2_LINK_STATUS,
+  IDX_ADDRTLV2_OTHER_NEIGHB,
+  IDX_ADDRTLV2_MPR,
+  IDX_ADDRTLV2_LINKMETRIC,
+};
 
 static enum rfc5444_result _cb_blocktlv_packet_okay(
     struct rfc5444_reader_tlvblock_context *cont);
@@ -58,30 +86,29 @@ static enum rfc5444_result _cb_blocktlv_packet_okay(
 static enum rfc5444_result _cb_blocktlv_address_okay(
     struct rfc5444_reader_tlvblock_context *cont);
 
-/*
- * message consumer entries definition
- * TLV type 0
- * TLV type 1 (mandatory)
- */
-static struct rfc5444_reader_tlvblock_consumer_entry _consumer_entries[] = {
-  { .type = 0 },
-  { .type = 1, .mandatory = true }
+static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
+  [IDX_TLV_ITIME] = { .type = RFC5444_MSGTLV_INTERVAL_TIME, .type_ext = 0, .match_type_ext = true,
+      .mandatory = true, .min_length = 1, .match_length = true },
+  [IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .type_ext = 0, .match_type_ext = true,
+      .mandatory = true, .min_length = 1, .match_length = true },
+  [IDX_TLV_WILLINGNESS] = { .type = RFC5444_MSGTLV_MPR_WILLING, .type_ext = 0, .match_type_ext = true,
+    .min_length = 1, .match_length = true },
 };
 
-static struct rfc5444_reader_tlvblock_consumer_entry _consumer_address_entries[] = {
-  { .type = 0},
+static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_pass1_tlvs[] = {
+  [IDX_ADDRTLV1_LOCAL_IF] = { .type = RFC5444_ADDRTLV_LOCAL_IF, .type_ext = 0, .match_type_ext = true,
+      .min_length = 1, .match_length = true },
+  [IDX_ADDRTLV1_LINK_STATUS] = { .type = RFC5444_ADDRTLV_LINK_STATUS, .type_ext = 0, .match_type_ext = true,
+      .min_length = 1, .match_length = true },
 };
 
 static struct rfc5444_reader_tlvblock_consumer _consumer = {
-  /* parse message type 1 */
-  .msg_id = 1,
-
-  /* use a block callback */
+  .msg_id = RFC5444_MSGTYPE_HELLO,
   .block_callback = _cb_blocktlv_packet_okay,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _address_consumer = {
-  .msg_id = 1,
+  .msg_id = RFC5444_MSGTYPE_HELLO,
   .addrblock_consumer = true,
   .block_callback = _cb_blocktlv_address_okay,
 };
@@ -97,38 +124,26 @@ struct rfc5444_reader reader;
  */
 static enum rfc5444_result
 _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
-  int value;
-  struct rfc5444_reader_tlvblock_entry* tlv;
+  uint8_t value;
   struct netaddr_str nbuf;
-
-  printf("addr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
   printf("%s()\n", __func__);
 
-  printf("\tmessage type: %d\n", cont->type);
-
   if (cont->has_origaddr) {
     printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
+    add_neighbor(&cont->orig_addr, RFC5444_LINKSTATUS_HEARD);
   }
 
   if (cont->has_seqno) {
     printf("\tseqno: %d\n", cont->seqno);
   }
 
-  /* tlv type 0 was not defined mandatory in block callback entries */
-  if (_consumer_entries[0].tlv) {
-    /* values of TLVs are not aligned well in memory, so we have to copy them */
-    memcpy(&value, _consumer_entries[0].tlv->single_value, sizeof(value));
-    printf("\ttlv 0: %d\n", ntohl(value));
-  }
+  /* both VTIME and ITIME were defined as mandatory */
+  value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_ITIME].tlv->single_value);
+  printf("\tITIME: %d\n", value);
 
-  /* tlv type 1 was defined mandatory in block callback entries */
-  /* values of TLVs are not aligned well in memory, so we have to copy them */
-  tlv = _consumer_entries[1].tlv;
-  do {
-    memcpy(&value, tlv->single_value, sizeof(value));
-    printf("\ttlv 1: %d\n", ntohl(value));
-  } while ((tlv = tlv->next_entry));
+  value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
+  printf("\tVTIME: %d\n", value);
 
   return RFC5444_OKAY;
 }
@@ -142,7 +157,7 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   printf("_cb_blocktlv_address_okay()\n");
   printf("addr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
 
-  tlv = _consumer_address_entries[0].tlv;
+  tlv = _nhdp_address_pass1_tlvs[0].tlv;
   while (tlv) {
     memcpy(&value, tlv->single_value, sizeof(value));
     printf("\ttlv 0: %d\n", ntohl(value));
@@ -164,10 +179,10 @@ reader_init(void) {
 
   /* register message consumer */
   rfc5444_reader_add_message_consumer(&reader, &_consumer,
-      _consumer_entries, ARRAYSIZE(_consumer_entries));
+      _nhdp_message_tlvs, ARRAYSIZE(_nhdp_message_tlvs));
 
   rfc5444_reader_add_message_consumer(&reader, &_address_consumer,
-      _consumer_address_entries, ARRAYSIZE(_consumer_address_entries));
+      _nhdp_address_pass1_tlvs, ARRAYSIZE(_nhdp_address_pass1_tlvs));
 }
 
 /**

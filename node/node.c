@@ -20,6 +20,7 @@
 #include "reader.h"
 #include "nhdp.h"
 
+#include "rfc5444/rfc5444_print.h"
 #include "rfc5444/rfc5444_reader.h"
 #include "rfc5444/rfc5444_writer.h"
 
@@ -30,11 +31,22 @@ int sockfd;
 struct sockaddr_in servaddr;
 #endif
 
+/* for hexfump */
+static struct autobuf _hexbuf;
+
 void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
-	printf("write_packet called\n");
+	puts("write_packet()");
+
+	/* generate hexdump of packet */
+	abuf_hexdump(&_hexbuf, "\t", buffer, length);
+	rfc5444_print_direct(&_hexbuf, buffer, length);
+
+	/* print hexdump to console */
+	printf("%s", abuf_getptr(&_hexbuf));
+
 #ifdef RIOT
 	// TODO: no memcpy, set address etc.
 	memcpy(packet.data, buffer, length);
@@ -103,6 +115,10 @@ void sleep_s(int secs) {
 
 int main(int argc, char** argv) {
 	const char* this_ip;
+
+	/* initialize buffer for hexdump */
+	abuf_init(&_hexbuf);
+
 #ifdef RIOT
 	cc110x_init(0);	// transceiver_pid ??
 	this_ip = "2001::1";
@@ -130,4 +146,5 @@ int main(int argc, char** argv) {
 
 	reader_cleanup();
 	writer_cleanup();
+	abuf_free(&_hexbuf);
 }

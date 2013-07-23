@@ -1,30 +1,31 @@
 #ifndef NHDP_H_
 #define NHDP_H_
 
-#ifdef RIOT
-#include <sixlowpan/sixlowip.h>
-#else
-#include <netinet/in.h>
-typedef struct in6_addr ipv6_addr_t;
-#endif
+#include "common/netaddr.h"
 
-ipv6_addr_t node_addr;
+struct netaddr node_addr;
 
 struct nhdp_node {
-	ipv6_addr_t addr;
+	struct nhdp_node* next;
+	struct nhdp_node_2_hop* hood;
+
+	struct netaddr* addr;
+	uint8_t linkstatus;
 };
 
-void add_neighbor(struct nhdp_node* n);
+struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus);
 
 /**
-* add m as a neighbor of n
+* add a new neighbor of n
 * may fail if n is not known
 */
-int add_2_hop_neighbor(struct nhdp_node* n, struct nhdp_node* m);
+int add_2_hop_neighbor(struct nhdp_node* n, struct netaddr* addr, uint8_t linkstatus);
 
 void remove_neighbor(struct nhdp_node* n);
 
 void get_next_neighbor_reset(void);
 struct nhdp_node* get_next_neighbor(void);
+
+void print_neighbors(void);
 
 #endif /* NHDP_H_ */
