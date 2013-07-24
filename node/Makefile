@@ -23,7 +23,6 @@ EXTERNAL_MODULES +=$(RIOTLIBS)
 EXTERNAL_MODULES +=$(OONFBASE)
 export EXTERNAL_MODULES
 
-# doesn't have any effect :(
 export CFLAGS = -DRIOT -DOONF_LOG_INFO -DOONF_LOG_DEBUG_INFO
 
 ## Modules to include. 
