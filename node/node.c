@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 	enable_asynch(sockfd);
 #endif
 
-	inet_pton(AF_INET6, this_ip, &node_addr);
+	inet_pton(AF_INET6, this_ip, &local_addr);
 
 	reader_init();
 	writer_init(write_packet);

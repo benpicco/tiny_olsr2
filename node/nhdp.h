@@ -3,7 +3,7 @@
 
 #include "common/netaddr.h"
 
-struct netaddr node_addr;
+struct netaddr local_addr;
 
 struct nhdp_node {
 	struct nhdp_node* next;
@@ -11,6 +11,12 @@ struct nhdp_node {
 
 	struct netaddr* addr;
 	uint8_t linkstatus;
+};
+
+enum {
+	ADD_2_HOP_OK,
+	ADD_2_HOP_IS_LOCAL,
+	ADD_2HOP_IS_NEIGHBOR
 };
 
 struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus);

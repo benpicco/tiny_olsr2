@@ -14,12 +14,16 @@ struct nhdp_node_2_hop {
 struct nhdp_node* n_head = 0;
 struct nhdp_node* get_nn_head = 0;
 
+struct netaddr* _netaddr_cpy (struct netaddr* addr) {
+	struct netaddr* addr_new = malloc(sizeof(struct netaddr));
+	return memcpy(addr_new, addr, sizeof(struct netaddr));
+}
+
 struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 	struct nhdp_node* new_n = list_find_memcmp(n_head, addr);
 	if (!new_n) {
 		new_n = list_add_head(&n_head);
-		new_n->addr = malloc(sizeof(struct netaddr));
-		memcpy(new_n->addr, addr, sizeof(struct netaddr));
+		new_n->addr = _netaddr_cpy(addr);
 		new_n->linkstatus = linkstatus;
 	}
 
@@ -27,13 +31,22 @@ struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 }
 
 int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t linkstatus) {
-	struct nhdp_node* n = list_find(n_head, addr);
-	if (n) {
-		struct nhdp_node_2_hop* new_m = list_add_head(&n->hood);
-		new_m->addr = addr;
-		new_m->linkstatus = linkstatus;
+	if (memcmp(addr, &local_addr, sizeof local_addr) != 0)
+		return -ADD_2_HOP_IS_LOCAL;
+
+	if(list_find_memcmp(n_head, addr) != 0)
+		return -ADD_2HOP_IS_NEIGHBOR;
+
+	if (list_find(node->hood, addr) != 0) {
+		// todo: update validity time
+		return -ADD_2_HOP_OK;
 	}
-	return 0;
+
+	struct nhdp_node_2_hop* new_n = list_add_head(&node->hood);
+	new_n->addr = _netaddr_cpy(addr);
+	new_n->linkstatus = linkstatus;
+
+	return ADD_2_HOP_OK;
 }
 
 void remove_neighbor(struct nhdp_node* node) {

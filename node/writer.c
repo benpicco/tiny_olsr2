@@ -126,7 +126,7 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
 
 	/* originator, not hopcount, no hoplimit, sequence number */
 	rfc5444_writer_set_msg_header(wr, message, true, false, false, true);
-	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&node_addr));
+	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&local_addr));
 }
 
 /**

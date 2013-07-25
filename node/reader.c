@@ -113,6 +113,7 @@ static struct rfc5444_reader_tlvblock_consumer _address_consumer = {
 };
 
 struct rfc5444_reader reader;
+struct nhdp_node* current_node;
 
 /**
  * This block callback is only called if message tlv type 1 is present,
@@ -130,7 +131,7 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
   if (cont->has_origaddr) {
     printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
-    add_neighbor(&cont->orig_addr, RFC5444_LINKSTATUS_HEARD);
+    current_node = add_neighbor(&cont->orig_addr, RFC5444_LINKSTATUS_HEARD);
   }
 
   if (cont->has_seqno) {
@@ -150,18 +151,18 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 static enum rfc5444_result
 _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   struct netaddr_str nbuf;
+  struct netaddr_str nbuf_orig;
   struct rfc5444_reader_tlvblock_entry* tlv;
-  int value;
+  uint8_t linkstatus;
 
   printf("_cb_blocktlv_address_okay()\n");
-  printf("addr: %s\n", netaddr_to_string(&nbuf, &cont->addr));
+  printf("addr: %s -> %s\n", netaddr_to_string(&nbuf_orig, &cont->orig_addr), netaddr_to_string(&nbuf, &cont->addr));
 
-  tlv = _nhdp_address_pass1_tlvs[0].tlv;
-  while (tlv) {
-    memcpy(&value, tlv->single_value, sizeof(value));
-    printf("\ttlv 0: %d\n", ntohl(value));
-    tlv = tlv->next_entry;
-  }
+
+  if ((tlv = _nhdp_address_pass1_tlvs[IDX_ADDRTLV2_LINK_STATUS].tlv))
+    linkstatus = *tlv->single_value;
+
+  add_2_hop_neighbor(current_node, &cont->addr, linkstatus);
 
   return RFC5444_OKAY;
 }
