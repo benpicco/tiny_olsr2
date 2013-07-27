@@ -127,6 +127,8 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   uint8_t value;
   struct netaddr_str nbuf;
 
+  printf("received package:");
+
   if (cont->has_origaddr) {
     printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
     current_node = add_neighbor(&cont->orig_addr, RFC5444_LINKSTATUS_HEARD);
@@ -148,12 +150,8 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 static enum rfc5444_result
 _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
-  struct netaddr_str nbuf;
-  struct netaddr_str nbuf_orig;
   struct rfc5444_reader_tlvblock_entry* tlv;
-  uint8_t linkstatus;
-
-  printf("addr: %s -> %s\n", netaddr_to_string(&nbuf_orig, &cont->orig_addr), netaddr_to_string(&nbuf, &cont->addr));
+  uint8_t linkstatus = RFC5444_LINKSTATUS_HEARD;
 
   if ((tlv = _nhdp_address_pass1_tlvs[IDX_ADDRTLV2_LINK_STATUS].tlv))
     linkstatus = *tlv->single_value;

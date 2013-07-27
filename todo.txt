@@ -3,4 +3,5 @@
 - [ ] [dispatcher] read graphviz like config
 - [ ] setup CUnit
 - [x] find out why messages are printed repeatedly
-- [ ] add 2-hop neighbors to database
+- [x] add 2-hop neighbors to database
+- [ ] select MPR

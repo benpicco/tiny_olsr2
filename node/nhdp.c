@@ -5,7 +5,7 @@
 #include "nhdp.h"
 
 struct nhdp_node_2_hop {
-	struct neighbor_2_hop* next;
+	struct nhdp_node_2_hop* next;
 
 	struct netaddr* addr;
 	uint8_t linkstatus;
@@ -32,13 +32,13 @@ struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 }
 
 int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t linkstatus) {
-	if (memcmp(addr, &local_addr, sizeof local_addr) != 0)
+	if (!memcmp(addr, &local_addr, sizeof local_addr))
 		return -ADD_2_HOP_IS_LOCAL;
 
-	if(list_find_memcmp(n_head, addr) != 0)
+	if(list_find_memcmp(n_head, addr))
 		return -ADD_2HOP_IS_NEIGHBOR;
 
-	if (list_find(node->hood, addr) != 0) {
+	if (list_find_memcmp(node->hood, addr)) {
 		// todo: update validity time
 		return -ADD_2_HOP_OK;
 	}
@@ -75,6 +75,12 @@ void print_neighbors(void) {
 	struct nhdp_node* node;
 	get_next_neighbor_reset();
 	while ((node = get_next_neighbor())) {
+		struct nhdp_node_2_hop* hood;
 		printf("neighbor: %s\n", netaddr_to_string(&nbuf, node->addr));
+		hood = node->hood;
+		while (hood) {
+			printf("\t->%s (%d)\n", netaddr_to_string(&nbuf, hood->addr), hood->linkstatus);
+			hood = hood->next;
+		}
 	}
 }
