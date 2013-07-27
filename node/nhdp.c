@@ -21,6 +21,7 @@ struct netaddr* _netaddr_cpy (struct netaddr* addr) {
 
 struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 	struct nhdp_node* new_n = list_find_memcmp(n_head, addr);
+
 	if (!new_n) {
 		new_n = list_add_head(&n_head);
 		new_n->addr = _netaddr_cpy(addr);
@@ -74,6 +75,6 @@ void print_neighbors(void) {
 	struct nhdp_node* node;
 	get_next_neighbor_reset();
 	while ((node = get_next_neighbor())) {
-		printf("%s\n", netaddr_to_string(&nbuf, node->addr));
+		printf("neighbor: %s\n", netaddr_to_string(&nbuf, node->addr));
 	}
 }

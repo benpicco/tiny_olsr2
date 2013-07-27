@@ -127,8 +127,6 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   uint8_t value;
   struct netaddr_str nbuf;
 
-  printf("%s()\n", __func__);
-
   if (cont->has_origaddr) {
     printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
     current_node = add_neighbor(&cont->orig_addr, RFC5444_LINKSTATUS_HEARD);
@@ -155,9 +153,7 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   struct rfc5444_reader_tlvblock_entry* tlv;
   uint8_t linkstatus;
 
-  printf("_cb_blocktlv_address_okay()\n");
   printf("addr: %s -> %s\n", netaddr_to_string(&nbuf_orig, &cont->orig_addr), netaddr_to_string(&nbuf, &cont->addr));
-
 
   if ((tlv = _nhdp_address_pass1_tlvs[IDX_ADDRTLV2_LINK_STATUS].tlv))
     linkstatus = *tlv->single_value;
@@ -172,8 +168,6 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
  */
 void
 reader_init(void) {
-  printf("%s()\n", __func__);
-
   /* initialize reader */
   rfc5444_reader_init(&reader);
 
@@ -198,7 +192,5 @@ reader_handle_packet(void* buffer, size_t length) {
  */
 void
 reader_cleanup(void) {
-  printf("%s()\n", __func__);
-
   rfc5444_reader_cleanup(&reader);
 }

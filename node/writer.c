@@ -122,8 +122,6 @@ _cb_addAddresses(struct rfc5444_writer *wr) {
  */
 static void
 _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
-	printf("_cb_addMessageHeader()\n");
-
 	/* originator, not hopcount, no hoplimit, sequence number */
 	rfc5444_writer_set_msg_header(wr, message, true, false, false, true);
 	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&local_addr));
@@ -136,8 +134,6 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
 void
 writer_init(write_packet_func_ptr ptr) {
   struct rfc5444_writer_message *_msg;
-
-  printf("%s()\n", __func__);
 
   writer.msg_buffer = msg_buffer;
   writer.msg_size   = sizeof(msg_buffer);
@@ -175,7 +171,5 @@ void writer_tick(void) {
  */
 void
 writer_cleanup(void) {
-  printf("%s()\n", __func__);
-
   rfc5444_writer_cleanup(&writer);
 }
