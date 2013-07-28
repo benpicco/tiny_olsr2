@@ -1,16 +1,16 @@
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 typedef int bool;
 #define true	1
 #define false	0
 
 struct node {
-	int id;
+	char* name;
 	struct sockaddr_in addr;
 	socklen_t addr_len;
 
@@ -29,7 +29,7 @@ static void connect_node(struct node* node_a, struct node* node_b, bool bidirect
 	if (bidirectional)
 		connect_node(node_b, node_a, false);
 
-	printf("%d -> %d\n", node_a->id, node_b->id);
+	printf("%s -> %s\n", node_a->name, node_b->name);
 
 	if (node_a->connections == 0) {
 		node_a->connections = malloc(sizeof (struct connection));
@@ -45,74 +45,65 @@ static void connect_node(struct node* node_a, struct node* node_b, bool bidirect
 	}
 }
 
-static struct node* find_node(int id) {
+static struct node* find_node(const char* name) {
 	struct node* n = node_head;
 	while (n) {
-		if (n->id == id)
+		if (!strcmp(n->name, name))
 			return n;
 		n = n->next;
 	}
 	return 0;
 }
 
-static struct node* add_node(int id) {
+static struct node* add_node(const char* name) {
 	struct node* old_head = node_head;
 
-	struct node* n = find_node(id);
+	struct node* n = find_node(name);
 	if (n)
 		return n;
 
 	node_head = malloc(sizeof(struct node));
 	node_head->next = old_head;
-	node_head->id = id;
+	node_head->name = strdup(name);
 
 	return node_head;
 }
 
-static int add_node_data(struct sockaddr_in addr, socklen_t len) {
+static struct node* add_node_data(struct sockaddr_in addr, socklen_t len) {
 	struct node *head = node_head;
 	do {
 		if (head->addr.sin_port == 0) {
 			head->addr = addr;
 			head->addr_len = len;
 
-			return head->id;
+			return head;
 		}
 	} while ((head = head->next));
 
-	return -1;
+	return 0;
 }
 
-static int get_id(struct sockaddr_in addr) {
+static struct node* get_node(struct sockaddr_in addr) {
 	struct node *head = node_head;
 
 	do {
 		if (head->addr.sin_port == addr.sin_port &&
 			head->addr.sin_addr.s_addr == addr.sin_addr.s_addr)
-			return head->id;
+			return head;
 	} while ((head = head->next));
 
-	return -1;
+	return 0;
 }
 
-static void write_packet(int id, int socket, void *buffer, size_t length) {
-	printf("[node %d sending %d byte]\n", id, length);
+static void write_packet(struct node* n, int socket, void *buffer, size_t length) {
+	printf("[node %s sending %zd byte]\n", n->name, length);
 
-	struct node* head = node_head;
-	while (head) {
-		if (head->id == id && head->addr.sin_port) {
-			struct connection* con = head->connections;
-			while (con) {
-				if (con->node->addr.sin_port)
-					sendto(socket, buffer, length, 0, (struct sockaddr*) &con->node->addr, con->node->addr_len);
-				con = con->next;
-			}
-			return;
-		}
-		head = head->next;
+	struct connection* con = n->connections;
+	while (con) {
+		if (con->node->addr.sin_port)
+			sendto(socket, buffer, length, 0, (struct sockaddr*) &con->node->addr, con->node->addr_len);
+		con = con->next;
 	}
-
-	printf("Error: can't write package - node not found\n");
 }
 
 static int setup_socket(int port) {
@@ -137,15 +128,6 @@ static int setup_socket(int port) {
 	return s;
 }
 
-static int id_from_string(char* s) {
-	int i = 0;
-	while (*s) {
-		i += *s - 'A';
-		++s;
-	}
-	return i;
-}
-
 int main(int argc, char** argv) {
 	int socket;
 	FILE* fp;
@@ -168,7 +150,7 @@ int main(int argc, char** argv) {
 	bool bidirectional = false;
 	while(EOF != (matches = fscanf(fp, "%s -> %s\n", a, b))) {
 		if (matches == 2) {
-			connect_node(add_node(id_from_string(a)), add_node(id_from_string(b)), bidirectional);
+			connect_node(add_node(a), add_node(b), bidirectional);
 		} else {
 			if (!strncmp(a, "bidirectional", strlen("bidirectional")))
 				bidirectional = true;
@@ -183,16 +165,17 @@ int main(int argc, char** argv) {
 		return -1;
 
 	struct sockaddr_in si_other;
-	int n;
+	size_t size;
 	socklen_t slen = sizeof(si_other);
-	while ((n = recvfrom(socket, buffer, sizeof buffer, 0, (struct sockaddr*) &si_other, &slen))) {
-		int id = get_id(si_other);
-		if (id < 0)
-			id = add_node_data(si_other, slen);
-		if (id < 0)
+	while ((size = recvfrom(socket, buffer, sizeof buffer, 0, (struct sockaddr*) &si_other, &slen))) {
+		struct node* n = get_node(si_other);
+		if (n == 0)
+			n = add_node_data(si_other, slen);
+
+		if (n == 0)
 			printf("ignoring unknown node");
 		else
-			write_packet(get_id(si_other), socket, buffer, n);
+			write_packet(n, socket, buffer, size);
 	}
 
 	close(socket);
