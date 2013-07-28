@@ -1,7 +1,18 @@
-strict digraph {
-concentrate=true
-	A -> B
-	B -> A
-	A -> C
-	C -> A
+digraph {
+subgraph bidirectional {
+	edge [arrowhead = none]
+	Q -> X
+	Q -> Y
+	Q -> Z
+	X -> A
+	X -> B
+	Y -> B
+	Y -> C
+	Z -> C
+	Z -> D
+}
+
+subgraph directional {
+	D -> U
+}
 }

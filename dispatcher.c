@@ -165,13 +165,21 @@ int main(int argc, char** argv) {
 	char b[64];
 
 	int matches = 0;
+	bool bidirectional = false;
 	while(EOF != (matches = fscanf(fp, "%s -> %s\n", a, b))) {
 		if (matches == 2) {
-			connect_node(add_node(id_from_string(a)), add_node(id_from_string(b)), false);
+			connect_node(add_node(id_from_string(a)), add_node(id_from_string(b)), bidirectional);
+		} else {
+			if (!strncmp(a, "bidirectional", strlen("bidirectional")))
+				bidirectional = true;
+			if (!strncmp(a, "directional", strlen("directional")))
+				bidirectional = false;
 		}
 	}
 
 	fclose(fp);
+
+	return 0;
 
 	if ((socket = setup_socket(atoi(argv[2]))) < 0)
 		return -1;

@@ -14,7 +14,7 @@ node:	node/node.o node/reader.o node/writer.o node/list.o node/nhdp.o $(LDFLAGS)
 dispatcher:	dispatcher.o $(LDFLAGS)
 
 graph.svg: graph.gv
-	dot -Tsvg graph.gv > graph.svg
+	neato -Tsvg graph.gv > graph.svg
 
 clean:
 	find -name '*.o' -type f -delete
