@@ -96,7 +96,7 @@ static int get_id(struct sockaddr_in addr) {
 }
 
 static void write_packet(int id, int socket, void *buffer, size_t length) {
-//	printf("[node %d sending %d byte]\n", id, length);
+	printf("[node %d sending %d byte]\n", id, length);
 
 	struct node* head = node_head;
 	while (head) {
@@ -178,8 +178,6 @@ int main(int argc, char** argv) {
 	}
 
 	fclose(fp);
-
-	return 0;
 
 	if ((socket = setup_socket(atoi(argv[2]))) < 0)
 		return -1;
