@@ -8,7 +8,7 @@ LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 
 .PHONY: clean run
 
-NODES := 8
+NODES := 9
 
 node:	node/node.o node/reader.o node/writer.o node/list.o node/nhdp.o $(LDFLAGS)
 	cc node/node.o node/reader.o node/writer.o node/list.o node/nhdp.o $(LDFLAGS) -o node/node

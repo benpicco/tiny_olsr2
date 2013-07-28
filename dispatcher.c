@@ -169,8 +169,10 @@ int main(int argc, char** argv) {
 	socklen_t slen = sizeof(si_other);
 	while ((size = recvfrom(socket, buffer, sizeof buffer, 0, (struct sockaddr*) &si_other, &slen))) {
 		struct node* n = get_node(si_other);
-		if (n == 0)
+		if (n == 0) {
 			n = add_node_data(si_other, slen);
+			sendto(socket, n->name, strlen(n->name), 0, (struct sockaddr*) &n->addr, n->addr_len);
+		}
 
 		if (n == 0)
 			printf("ignoring unknown node");

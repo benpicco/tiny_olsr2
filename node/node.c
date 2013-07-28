@@ -132,6 +132,16 @@ int main(int argc, char** argv) {
 	this_ip = argv[3];
 
 	init_socket(inet_addr(argv[1]), atoi(argv[2]));
+
+	/* send HELLO */
+	sendto(sockfd, this_ip, strlen(this_ip), 0, (struct sockaddr*) &servaddr, sizeof(servaddr));
+	/* get our name */
+	char this_name[32];
+	size_t size = recvfrom(sockfd, this_name, sizeof this_name, 0, 0, 0);
+	this_name[size] = 0;
+
+	printf("This is node %s\n", this_name);
+
 	enable_asynch(sockfd);
 #endif
 
