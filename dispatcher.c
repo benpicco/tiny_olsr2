@@ -45,8 +45,23 @@ static void connect_node(struct node* node_a, struct node* node_b, bool bidirect
 	}
 }
 
+static struct node* find_node(int id) {
+	struct node* n = node_head;
+	while (n) {
+		if (n->id == id)
+			return n;
+		n = n->next;
+	}
+	return 0;
+}
+
 static struct node* add_node(int id) {
 	struct node* old_head = node_head;
+
+	struct node* n = find_node(id);
+	if (n)
+		return n;
+
 	node_head = malloc(sizeof(struct node));
 	node_head->next = old_head;
 	node_head->id = id;
@@ -122,24 +137,43 @@ static int setup_socket(int port) {
 	return s;
 }
 
+static int id_from_string(char* s) {
+	int i = 0;
+	while (*s) {
+		i += *s - 'A';
+		++s;
+	}
+	return i;
+}
+
 int main(int argc, char** argv) {
 	int socket;
+	FILE* fp;
 	char buffer[1500];
 
-	if (argc != 2) {
-    	printf("usage:  %s <port>\n", argv[0]);
+	if (argc != 3) {
+    	printf("usage:  %s <file> <port>\n", argv[0]);
     	return -1;
 	}
 
-	int id = 0;
-	struct node* A = add_node(++id);
-	struct node* B = add_node(++id);
-	struct node* C = add_node(++id);
+	if ((fp = fopen(argv[1],"r")) == NULL) {
+		printf("Cannot open file.\n");
+    	return -2;
+    }
 
-	connect_node(A, B, true);
-	connect_node(A, C, true);
+	char a[64];
+	char b[64];
 
-	if ((socket = setup_socket(atoi(argv[1]))) < 0)
+	int matches = 0;
+	while(EOF != (matches = fscanf(fp, "%s -> %s\n", a, b))) {
+		if (matches == 2) {
+			connect_node(add_node(id_from_string(a)), add_node(id_from_string(b)), false);
+		}
+	}
+
+	fclose(fp);
+
+	if ((socket = setup_socket(atoi(argv[2]))) < 0)
 		return -1;
 
 	struct sockaddr_in si_other;

@@ -23,7 +23,7 @@ kill:
 	-killall dispatcher
 
 run:	dispatcher node kill
-	LD_LIBRARY_PATH=$(LIBDIR) ./dispatcher 9000 &
+	LD_LIBRARY_PATH=$(LIBDIR) ./dispatcher graph.gv 9000 &
 	LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 2001::1 > /dev/stdout	&
 	LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 2001::2 > /dev/null	&
 	LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 2001::3 > /dev/null	&
