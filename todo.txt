@@ -5,3 +5,4 @@
 - [x] find out why messages are printed repeatedly
 - [x] add 2-hop neighbors to database
 - [ ] select MPR
+- [ ] use avl tree?

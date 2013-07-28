@@ -127,7 +127,7 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   uint8_t value;
   struct netaddr_str nbuf;
 
-  printf("received package:");
+  printf("received package:\n");
 
   if (cont->has_origaddr) {
     printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));

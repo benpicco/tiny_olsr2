@@ -7,10 +7,10 @@ struct netaddr local_addr;
 
 struct nhdp_node {
 	struct nhdp_node* next;
-	struct nhdp_node_2_hop* hood;
 
 	struct netaddr* addr;
 	uint8_t linkstatus;
+	uint8_t mpr_neigh;
 };
 
 enum {
