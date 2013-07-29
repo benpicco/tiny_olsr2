@@ -11,6 +11,9 @@ struct nhdp_node_2_hop {
 
 	struct netaddr* addr;
 	uint8_t linkstatus;
+#ifdef DEBUG
+	char* name;
+#endif
 };
 
 struct nhdp_node* n_head = 0;
@@ -31,12 +34,15 @@ struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 		new_n->addr = _netaddr_cpy(addr);
 		new_n->linkstatus = linkstatus;
 		new_n->mpr_neigh = 0;
+#ifdef DEBUG
+		new_n->name = 0;
+#endif
 	}
 
 	return new_n;
 }
 
-int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t linkstatus) {
+int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t linkstatus, char* name) {
 	struct nhdp_node_2_hop* n2_node;
 
 	if (!memcmp(addr, &local_addr, sizeof local_addr))
@@ -60,6 +66,9 @@ int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t lin
 	n2_node->mpr = node;
 	n2_node->addr = _netaddr_cpy(addr);
 	n2_node->linkstatus = linkstatus;
+#ifdef DEBUG
+	n2_node->name = name;
+#endif
 
 	node->mpr_neigh++;
 
@@ -98,7 +107,11 @@ void print_neighbors(void) {
 
 	struct nhdp_node_2_hop* n2 = n2_head;
 	while((n2)) {
+#ifndef DEBUG
 		printf("\t%s -> %s -> (O)\n", netaddr_to_string(&nbuf2, n2->addr), netaddr_to_string(&nbuf, n2->mpr->addr));
+#else
+		printf("\t%s -> %s -> %s\n", n2->name, n2->mpr->name, node_name);
+#endif
 		n2 = n2->next;
 	}
 }

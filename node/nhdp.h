@@ -3,6 +3,15 @@
 
 #include "common/netaddr.h"
 
+#ifndef RIOT
+#define DEBUG
+#endif
+
+#ifdef DEBUG
+char* node_name;
+#define RFC5444_TLV_NODE_NAME 42
+#endif
+
 struct netaddr local_addr;
 
 struct nhdp_node {
@@ -11,6 +20,9 @@ struct nhdp_node {
 	struct netaddr* addr;
 	uint8_t linkstatus;
 	uint8_t mpr_neigh;
+#ifdef DEBUG
+	char* name;
+#endif
 };
 
 enum {
@@ -25,7 +37,7 @@ struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus);
 * add a new neighbor of n
 * may fail if n is not known
 */
-int add_2_hop_neighbor(struct nhdp_node* n, struct netaddr* addr, uint8_t linkstatus);
+int add_2_hop_neighbor(struct nhdp_node* n, struct netaddr* addr, uint8_t linkstatus, char* name);
 
 void remove_neighbor(struct nhdp_node* n);
 

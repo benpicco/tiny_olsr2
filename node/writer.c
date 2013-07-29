@@ -41,6 +41,10 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef DEBUG
+#include <string.h>
+#endif
+
 #ifdef RIOT
 #include "net_help/net_help.h"
 #endif
@@ -63,6 +67,9 @@ enum {
   IDX_ADDRTLV_LOCAL_IF,
   IDX_ADDRTLV_LINK_STATUS,
   IDX_ADDRTLV_OTHER_NEIGHB,
+#ifdef DEBUG
+  IDX_ADDRTLV_NODE_NAME,
+#endif
 };
 
 static void _cb_addMessageTLVs(struct rfc5444_writer *wr);
@@ -78,6 +85,9 @@ static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
   [IDX_ADDRTLV_LOCAL_IF] =     { .type = RFC5444_ADDRTLV_LOCAL_IF },
   [IDX_ADDRTLV_LINK_STATUS] =  { .type = RFC5444_ADDRTLV_LINK_STATUS },
   [IDX_ADDRTLV_OTHER_NEIGHB] = { .type = RFC5444_ADDRTLV_OTHER_NEIGHB },
+#ifdef DEBUG
+  [IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
+#endif
 };
 
 uint8_t msg_buffer[128];
@@ -102,6 +112,9 @@ _cb_addMessageTLVs(struct rfc5444_writer *wr) {
   	time_encoded = rfc5444_timetlv_encode(HOLD_TIME);
   	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_INTERVAL_TIME, 0,
      	&time_encoded, sizeof(time_encoded));
+#ifdef DEBUG
+    rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, node_name, strlen(node_name));
+#endif
 }
 
 static void
@@ -112,6 +125,10 @@ _cb_addAddresses(struct rfc5444_writer *wr) {
 	while ((neighbor = get_next_neighbor())) {
 		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _message_content_provider.creator, neighbor->addr, false);
 		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], &neighbor->linkstatus, sizeof neighbor->linkstatus, false);
+#ifdef DEBUG
+    if (neighbor->name)
+      rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_NODE_NAME], neighbor->name, strlen(neighbor->name), false);
+#endif    
 	}
 }
 

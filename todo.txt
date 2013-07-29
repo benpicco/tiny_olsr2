@@ -6,3 +6,4 @@
 - [x] add 2-hop neighbors to database
 - [ ] select MPR
 - [ ] use avl tree?
+- [x] better debug output, mpr graph?

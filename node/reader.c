@@ -38,7 +38,6 @@
  *
  */
 
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -52,6 +51,10 @@
 #include "net_help/net_help.h"
 #endif
 
+#ifdef DEBUG
+#include <string.h>
+#endif
+
 #include "nhdp.h"
 #include "reader.h"
 
@@ -62,12 +65,18 @@ enum {
   IDX_TLV_WILLINGNESS,
   IDX_TLV_IPV4ORIG,
   IDX_TLV_MAC,
+#ifdef DEBUG
+  IDX_TLV_NODE_NAME,
+#endif
 };
 
 /* NHDP address TLV array index pass 1 */
 enum {
   IDX_ADDRTLV1_LOCAL_IF,
   IDX_ADDRTLV1_LINK_STATUS,
+#ifdef DEBUG
+  IDX_ADDRTLV_NODE_NAME,
+#endif
 };
 
 /* NHDP address TLV array index pass 2 */
@@ -92,6 +101,9 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
       .mandatory = true, .min_length = 1, .match_length = true },
   [IDX_TLV_WILLINGNESS] = { .type = RFC5444_MSGTLV_MPR_WILLING, .type_ext = 0, .match_type_ext = true,
     .min_length = 1, .match_length = true },
+#ifdef DEBUG
+  [IDX_TLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
+#endif
 };
 
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_pass1_tlvs[] = {
@@ -99,6 +111,9 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_pass1_tlvs[] 
       .min_length = 1, .match_length = true },
   [IDX_ADDRTLV1_LINK_STATUS] = { .type = RFC5444_ADDRTLV_LINK_STATUS, .type_ext = 0, .match_type_ext = true,
       .min_length = 1, .match_length = true },
+#ifdef DEBUG
+  [IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
+#endif
 };
 
 static struct rfc5444_reader_tlvblock_consumer _consumer = {
@@ -145,6 +160,14 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
   printf("\tVTIME: %d\n", value);
 
+#ifdef DEBUG
+  if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
+    if (!current_node->name)
+      current_node->name = strndup((char*) _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
+    printf("\tname: %s\n", current_node->name);
+  }
+#endif
+
   return RFC5444_OKAY;
 }
 
@@ -156,7 +179,14 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   if ((tlv = _nhdp_address_pass1_tlvs[IDX_ADDRTLV2_LINK_STATUS].tlv))
     linkstatus = *tlv->single_value;
 
-  add_2_hop_neighbor(current_node, &cont->addr, linkstatus);
+char* name = 0;
+#ifdef DEBUG
+  if ((tlv = _nhdp_address_pass1_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
+    name = strndup((char*) tlv->_value, tlv->length);
+  }
+#endif
+
+  add_2_hop_neighbor(current_node, &cont->addr, linkstatus, name);
 
   return RFC5444_OKAY;
 }

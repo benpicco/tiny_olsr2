@@ -141,6 +141,9 @@ int main(int argc, char** argv) {
 	this_name[size] = 0;
 
 	printf("This is node %s\n", this_name);
+#ifdef DEBUG
+	node_name = strdup(this_name);
+#endif
 
 	enable_asynch(sockfd);
 #endif
