@@ -10,8 +10,7 @@ void* _list_add_tail(struct list_elem** head, size_t size) {
 	struct list_elem* _head = *head;
 
 	if (!_head) {
-		*head = malloc(size);
-		(*head) -> next = 0;
+		*head = calloc(size, 0);
 		return *head;
 	}
 
@@ -19,15 +18,14 @@ void* _list_add_tail(struct list_elem** head, size_t size) {
 		_head = _head->next;
 	}
 
-	_head = _head->next = malloc(size);
-	_head->next = 0;
+	_head = _head->next = calloc(size, 0);
 	return _head;
 }
 
 void* _list_add_head(struct list_elem** head, size_t size) {
 	struct list_elem* _head = *head;
 
-	*head = malloc(size);
+	*head = calloc(size, 1);
 	(*head)->next = _head;
 
 	return *head;

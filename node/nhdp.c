@@ -22,7 +22,7 @@ struct nhdp_node* get_nn_head = 0;
 struct nhdp_node_2_hop* n2_head = 0;
 
 struct netaddr* _netaddr_cpy (struct netaddr* addr) {
-	struct netaddr* addr_new = malloc(sizeof(struct netaddr));
+	struct netaddr* addr_new = calloc(sizeof(struct netaddr), 0);
 	return memcpy(addr_new, addr, sizeof(struct netaddr));
 }
 
@@ -33,10 +33,6 @@ struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 		new_n = list_add_head(&n_head);
 		new_n->addr = _netaddr_cpy(addr);
 		new_n->linkstatus = linkstatus;
-		new_n->mpr_neigh = 0;
-#ifdef DEBUG
-		new_n->name = 0;
-#endif
 	}
 
 	return new_n;

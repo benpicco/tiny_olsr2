@@ -7,3 +7,4 @@
 - [ ] select MPR
 - [ ] use avl tree?
 - [x] better debug output, mpr graph?
+- [x] use calloc instead of malloc (initialized with 0)
