@@ -9,6 +9,7 @@ LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 .PHONY: clean run
 
 NODES := 9
+LOG_DIR := log
 
 node:	node/node.o node/reader.o node/writer.o node/list.o node/nhdp.o $(LDFLAGS)
 	cc node/node.o node/reader.o node/writer.o node/list.o node/nhdp.o $(LDFLAGS) -o node/node
@@ -31,7 +32,7 @@ kill:
 run:	dispatcher node kill graph.svg
 	LD_LIBRARY_PATH=$(LIBDIR) ./dispatcher graph.gv 9000 &
 
-	@mkdir -p /tmp/nodes
+	@mkdir -p $(LOG_DIR)
 	@for i in $(shell seq 1 ${NODES}) ; do \
-		LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 2001::$$i > /tmp/nodes/$$i.log & \
+		LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 2001::$$i > $(LOG_DIR)/$$i.log & \
 	done
