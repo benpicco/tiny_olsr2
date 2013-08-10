@@ -93,10 +93,10 @@ struct nhdp_node* get_next_neighbor(void) {
 
 void print_neighbors(void) {
 	struct netaddr_str nbuf;
-#ifndef DEBUG
 	struct netaddr_str nbuf2;
-#endif
+	struct netaddr_str nbuf3;
 	struct nhdp_node* node;
+
 	get_next_neighbor_reset();
 	while ((node = get_next_neighbor())) {
 #ifdef DEBUG
@@ -109,7 +109,7 @@ void print_neighbors(void) {
 	struct nhdp_node_2_hop* n2 = n2_head;
 	while((n2)) {
 #ifdef DEBUG
-		printf("\t%s -> %s -> %s\n", n2->name, n2->mpr->name, node_name);
+		printf("\t%s (%s) -> %s (%s) -> %s (%s)\n", n2->name, netaddr_to_string(&nbuf, n2->addr), n2->mpr->name, netaddr_to_string(&nbuf2, n2->mpr->addr), node_name, netaddr_to_string(&nbuf3, &local_addr));
 #else
 		printf("\t%s -> %s -> (O)\n", netaddr_to_string(&nbuf2, n2->addr), netaddr_to_string(&nbuf, n2->mpr->addr));
 #endif
