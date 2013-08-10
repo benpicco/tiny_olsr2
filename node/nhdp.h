@@ -3,10 +3,6 @@
 
 #include "common/netaddr.h"
 
-#ifndef RIOT
-#define DEBUG
-#endif
-
 #ifdef DEBUG
 char* node_name;
 #define RFC5444_TLV_NODE_NAME 42
@@ -17,11 +13,11 @@ struct netaddr local_addr;
 struct nhdp_node {
 	struct nhdp_node* next;
 
-	struct netaddr* addr;
-	uint8_t linkstatus;
-	uint8_t mpr_neigh;
+	struct netaddr* addr;	/* node address */
+	uint8_t linkstatus;		/* TODO */
+	uint8_t mpr_neigh;		/* number of nodes reached by this node if it's a mpr */
 #ifdef DEBUG
-	char* name;
+	char* name;				/* node name from graph.gv */
 #endif
 };
 

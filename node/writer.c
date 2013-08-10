@@ -57,20 +57,7 @@
 
 #include "writer.h"
 #include "nhdp.h"
-
-// todo: sensible values
-#define REFRESH_INTERVAL 5
-#define HOLD_TIME 10
-
-/* constants */
-enum {
-  IDX_ADDRTLV_LOCAL_IF,
-  IDX_ADDRTLV_LINK_STATUS,
-  IDX_ADDRTLV_OTHER_NEIGHB,
-#ifdef DEBUG
-  IDX_ADDRTLV_NODE_NAME,
-#endif
-};
+#include "constants.h"
 
 static void _cb_addMessageTLVs(struct rfc5444_writer *wr);
 static void _cb_addAddresses(struct rfc5444_writer *wr);
@@ -82,9 +69,10 @@ static struct rfc5444_writer_content_provider _message_content_provider = {
 };
 
 static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
-  [IDX_ADDRTLV_LOCAL_IF] =     { .type = RFC5444_ADDRTLV_LOCAL_IF },
+  [IDX_ADDRTLV_LOCAL_IF] = { .type = RFC5444_ADDRTLV_LOCAL_IF },
   [IDX_ADDRTLV_LINK_STATUS] =  { .type = RFC5444_ADDRTLV_LINK_STATUS },
-  [IDX_ADDRTLV_OTHER_NEIGHB] = { .type = RFC5444_ADDRTLV_OTHER_NEIGHB },
+  [IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR },
+  [IDX_ADDRTLV_LINKMETRIC] = { .type = RFC5444_ADDRTLV_LINK_METRIC },
 #ifdef DEBUG
   [IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -121,10 +109,13 @@ static void
 _cb_addAddresses(struct rfc5444_writer *wr) {
 	struct nhdp_node* neighbor;
 
+  /* add all neighbors */
 	get_next_neighbor_reset();
 	while ((neighbor = get_next_neighbor())) {
 		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _message_content_provider.creator, neighbor->addr, false);
 		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], &neighbor->linkstatus, sizeof neighbor->linkstatus, false);
+    if (neighbor->mpr_neigh > 0) /* node is a mpr - TODO sensible value*/
+      rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR], &neighbor->mpr_neigh, sizeof neighbor->mpr_neigh, false);
 #ifdef DEBUG
     if (neighbor->name)
       rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_NODE_NAME], neighbor->name, strlen(neighbor->name), false);

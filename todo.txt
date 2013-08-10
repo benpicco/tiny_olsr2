@@ -1,10 +1,4 @@
 - [ ] port node to RIOT
-- [x] send NHDP
-- [x] [dispatcher] read graphviz like config
 - [ ] setup CUnit
-- [x] find out why messages are printed repeatedly
-- [x] add 2-hop neighbors to database
-- [ ] select MPR
 - [ ] use avl tree?
-- [x] better debug output, mpr graph?
-- [x] use calloc instead of malloc (initialized with 0)
+- [x] tell MPRs about that we selected them

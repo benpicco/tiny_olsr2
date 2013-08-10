@@ -57,36 +57,7 @@
 
 #include "nhdp.h"
 #include "reader.h"
-
- /* NHDP message TLV array index */
-enum {
-  IDX_TLV_ITIME,
-  IDX_TLV_VTIME,
-  IDX_TLV_WILLINGNESS,
-  IDX_TLV_IPV4ORIG,
-  IDX_TLV_MAC,
-#ifdef DEBUG
-  IDX_TLV_NODE_NAME,
-#endif
-};
-
-/* NHDP address TLV array index pass 1 */
-enum {
-  IDX_ADDRTLV1_LOCAL_IF,
-  IDX_ADDRTLV1_LINK_STATUS,
-#ifdef DEBUG
-  IDX_ADDRTLV_NODE_NAME,
-#endif
-};
-
-/* NHDP address TLV array index pass 2 */
-enum {
-  IDX_ADDRTLV2_LOCAL_IF,
-  IDX_ADDRTLV2_LINK_STATUS,
-  IDX_ADDRTLV2_OTHER_NEIGHB,
-  IDX_ADDRTLV2_MPR,
-  IDX_ADDRTLV2_LINKMETRIC,
-};
+#include "constants.h"
 
 static enum rfc5444_result _cb_blocktlv_packet_okay(
     struct rfc5444_reader_tlvblock_context *cont);
@@ -106,11 +77,14 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
 #endif
 };
 
-static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_pass1_tlvs[] = {
-  [IDX_ADDRTLV1_LOCAL_IF] = { .type = RFC5444_ADDRTLV_LOCAL_IF, .type_ext = 0, .match_type_ext = true,
+static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
+  [IDX_ADDRTLV_LOCAL_IF] = { .type = RFC5444_ADDRTLV_LOCAL_IF, .type_ext = 0, .match_type_ext = true,
       .min_length = 1, .match_length = true },
-  [IDX_ADDRTLV1_LINK_STATUS] = { .type = RFC5444_ADDRTLV_LINK_STATUS, .type_ext = 0, .match_type_ext = true,
+  [IDX_ADDRTLV_LINK_STATUS] = { .type = RFC5444_ADDRTLV_LINK_STATUS, .type_ext = 0, .match_type_ext = true,
       .min_length = 1, .match_length = true },
+  [IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR,
+      .min_length = 1, .match_length = true },
+  [IDX_ADDRTLV_LINKMETRIC] = { .type = RFC5444_ADDRTLV_LINK_METRIC, .min_length = 2, .match_length = true },
 #ifdef DEBUG
   [IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -176,15 +150,22 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   struct rfc5444_reader_tlvblock_entry* tlv;
   uint8_t linkstatus = RFC5444_LINKSTATUS_HEARD;
 
-  if ((tlv = _nhdp_address_pass1_tlvs[IDX_ADDRTLV2_LINK_STATUS].tlv))
-    linkstatus = *tlv->single_value;
-
-char* name = 0;
+  char* name = 0;
 #ifdef DEBUG
-  if ((tlv = _nhdp_address_pass1_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
+  if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
     name = strndup((char*) tlv->_value, tlv->length);
   }
 #endif
+
+  if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv))
+    linkstatus = *tlv->single_value;
+
+  /* node selected us as mpr */
+  if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv) && netaddr_cmp(&cont->addr, &local_addr) == 0) {
+#ifdef DEBUG
+    printf("\t%s selected us a MPR\n", current_node->name);
+#endif
+  }
 
   add_2_hop_neighbor(current_node, &cont->addr, linkstatus, name);
 
@@ -204,7 +185,7 @@ reader_init(void) {
       _nhdp_message_tlvs, ARRAYSIZE(_nhdp_message_tlvs));
 
   rfc5444_reader_add_message_consumer(&reader, &_address_consumer,
-      _nhdp_address_pass1_tlvs, ARRAYSIZE(_nhdp_address_pass1_tlvs));
+      _nhdp_address_tlvs, ARRAYSIZE(_nhdp_address_tlvs));
 }
 
 /**
