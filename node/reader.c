@@ -152,8 +152,10 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
   char* name = 0;
 #ifdef DEBUG
+  struct netaddr_str nbuf;
   if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
-    name = strndup((char*) tlv->_value, tlv->length);
+    name = strndup((char*) tlv->single_value, tlv->length); // memory leak
+    printf("\t2-hop neighbor: %s (%s)\n", name, netaddr_to_string(&nbuf, &cont->addr));
   }
 #endif
 
