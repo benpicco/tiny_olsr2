@@ -171,7 +171,8 @@ int main(int argc, char** argv) {
 		struct node* n = get_node(si_other);
 		if (n == 0) {
 			n = add_node_data(si_other, slen);
-			sendto(socket, n->name, strlen(n->name), 0, (struct sockaddr*) &n->addr, n->addr_len);
+			if (n)
+				sendto(socket, n->name, strlen(n->name), 0, (struct sockaddr*) &n->addr, n->addr_len);
 		}
 
 		if (n == 0)
