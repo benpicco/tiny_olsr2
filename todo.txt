@@ -4,3 +4,4 @@
 - [x] tell MPRs about that we selected them
 - [ ] TC messages
 - [ ] abstract
+- [ ] make mpr_graph.pdf also includes outdated mpr selections, find a way to remove those
