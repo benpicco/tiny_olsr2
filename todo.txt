@@ -2,3 +2,5 @@
 - [ ] setup CUnit
 - [ ] use avl tree?
 - [x] tell MPRs about that we selected them
+- [ ] TC messages
+- [ ] abstract

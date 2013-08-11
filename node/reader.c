@@ -165,7 +165,8 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   /* node selected us as mpr */
   if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv) && netaddr_cmp(&cont->addr, &local_addr) == 0) {
 #ifdef DEBUG
-    printf("\t%s selected us a MPR\n", current_node->name);
+    // allow MPR selection to be drawn in graphviz
+    printf("\t%s -> %s // [ label=\"MPR\" ];\n", current_node->name, node_name);
 #endif
   }
 

@@ -16,12 +16,16 @@ node:	node/node.o node/reader.o node/writer.o node/list.o node/nhdp.o $(LDFLAGS)
 
 dispatcher:	dispatcher.o $(LDFLAGS)
 
-graph.svg: graph.gv
-	neato -Tsvg graph.gv > graph.svg
+graph.pdf: graph.gv
+	-neato -Tpdf graph.gv > graph.pdf
+
+mpr_graph.pdf: graph.gv log/*.log
+	grep -h \"MPR\" log/* | sort | uniq | cat graph.gv - | neato -Tpdf > mpr_graph.pdf
 
 clean:
 	find -name '*.o' -type f -delete
-	rm graph.svg
+	rm graph.pdf
+	rm mpr_graph.pdf
 	rm node/node
 	rm dispatcher
 
@@ -29,7 +33,7 @@ kill:
 	-killall node
 	-killall dispatcher
 
-run:	dispatcher node kill graph.svg
+run:	dispatcher node kill graph.pdf
 	LD_LIBRARY_PATH=$(LIBDIR) ./dispatcher graph.gv 9000 &
 
 	@mkdir -p $(LOG_DIR)
