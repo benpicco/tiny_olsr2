@@ -1,7 +1,9 @@
 - [ ] port node to RIOT
 - [ ] setup CUnit
 - [ ] use avl tree?
-- [x] tell MPRs about that we selected them
 - [ ] TC messages
-- [ ] abstract
 - [ ] make mpr_graph.pdf also includes outdated mpr selections, find a way to remove those
+- [ ] duplicate set
+- [ ] seq no
+- [ ] validity time
+- [ ] calculate routing table
