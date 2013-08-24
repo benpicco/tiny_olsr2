@@ -1,5 +1,5 @@
 - [ ] port node to RIOT
-- [ ] setup CUnit
+- [x] setup CUnit
 - [ ] use avl tree?
 - [ ] TC messages
 - [ ] make mpr_graph.pdf also includes outdated mpr selections, find a way to remove those
