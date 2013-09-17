@@ -71,6 +71,10 @@ int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t lin
 	return ADD_2_HOP_OK;
 }
 
+struct nhdp_node* get_neighbor(struct netaddr* addr) {
+	return list_find_memcmp(n_head, addr);
+}
+
 void remove_neighbor(struct nhdp_node* node) {
 	// todo: update mpr
 	if (node)

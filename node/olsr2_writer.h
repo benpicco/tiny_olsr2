@@ -39,15 +39,15 @@
  *
  */
 
-#ifndef NHDP_WRITER_H_
-#define NHDP_WRITER_H_
+#ifndef OLSR_WRITER_H_
+#define OLSR_WRITER_H_
 
 #include "common/common_types.h"
 #include "rfc5444/rfc5444_writer.h"
 #include "writer_common.h"
 
-void nhdp_writer_init(write_packet_func_ptr ptr);
-void nhdp_writer_tick(void);
-void nhdp_writer_cleanup(void);
+void olsr_writer_init(write_packet_func_ptr ptr);
+void olsr_writer_tick(void);
+void olsr_writer_cleanup(void);
 
-#endif /* NHDP_WRITER_H_ */
+#endif /* OLSR_WRITER_H_ */

@@ -11,8 +11,8 @@ LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 NODES := 9
 LOG_DIR := log
 
-node:	node/node.o node/nhdp_reader.o node/nhdp_writer.o node/list.o node/nhdp.o $(LDFLAGS)
-	cc node/node.o node/nhdp_reader.o node/nhdp_writer.o node/list.o node/nhdp.o $(LDFLAGS) -o node/node
+node:	node/node.o node/nhdp_reader.o node/nhdp_writer.o node/list.o node/nhdp.o node/olsr2.o node/olsr2_writer.o $(LDFLAGS)
+	cc node/node.o node/nhdp_reader.o node/nhdp_writer.o node/list.o node/nhdp.o node/olsr2.o node/olsr2_writer.o $(LDFLAGS) -o node/node
 
 dispatcher:	dispatcher.o $(LDFLAGS)
 

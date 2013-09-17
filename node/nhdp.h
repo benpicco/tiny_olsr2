@@ -3,12 +3,11 @@
 
 #include "common/netaddr.h"
 
+struct netaddr local_addr;
+
 #ifdef DEBUG
 char* node_name;
-#define RFC5444_TLV_NODE_NAME 42
 #endif
-
-struct netaddr local_addr;
 
 struct nhdp_node {
 	struct nhdp_node* next;
@@ -28,6 +27,8 @@ enum {
 };
 
 struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus);
+
+struct nhdp_node* get_neighbor(struct netaddr* addr);
 
 /**
 * add a new neighbor of n

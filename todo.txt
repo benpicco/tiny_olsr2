@@ -7,3 +7,4 @@
 - [ ] seq no
 - [ ] validity time
 - [ ] calculate routing table
+- [ ] seperate node info from list - common structs
