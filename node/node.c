@@ -16,8 +16,8 @@
 #include <sys/types.h>
 #endif
 
-#include "writer.h"
-#include "reader.h"
+#include "nhdp_writer.h"
+#include "nhdp_reader.h"
 #include "nhdp.h"
 
 #include "rfc5444/rfc5444_print.h"
@@ -67,7 +67,7 @@ void sigio_handler(int sig) {
 	if ((length = recvfrom(sockfd, &buffer, sizeof buffer, 0, 0, 0)) == -1)
 		return;
 
-	reader_handle_packet(buffer, length);
+	nhdp_reader_handle_packet(buffer, length);
 }
 
 void init_socket(in_addr_t addr, int port) {
@@ -152,15 +152,15 @@ int main(int argc, char** argv) {
 	local_addr._type = AF_INET6;
 	local_addr._prefix_len = 128;
 
-	reader_init();
-	writer_init(write_packet);
+	nhdp_reader_init();
+	nhdp_writer_init(write_packet);
 
 	while (1) {
 		sleep_s(5);
-		writer_tick();
+		nhdp_writer_tick();
 	}
 
-	reader_cleanup();
-	writer_cleanup();
+	nhdp_reader_cleanup();
+	nhdp_writer_cleanup();
 	abuf_free(&_hexbuf);
 }

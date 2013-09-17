@@ -56,7 +56,7 @@
 #endif
 
 #include "nhdp.h"
-#include "reader.h"
+#include "nhdp_reader.h"
 #include "constants.h"
 
 static enum rfc5444_result _cb_blocktlv_packet_okay(
@@ -179,7 +179,7 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
  * Initialize RFC5444 reader
  */
 void
-reader_init(void) {
+nhdp_reader_init(void) {
   /* initialize reader */
   rfc5444_reader_init(&reader);
 
@@ -195,7 +195,7 @@ reader_init(void) {
  * Inject a package into the RFC5444 reader
  */
 int
-reader_handle_packet(void* buffer, size_t length) {
+nhdp_reader_handle_packet(void* buffer, size_t length) {
   return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 
@@ -203,6 +203,6 @@ reader_handle_packet(void* buffer, size_t length) {
  * Cleanup RFC5444 reader
  */
 void
-reader_cleanup(void) {
+nhdp_reader_cleanup(void) {
   rfc5444_reader_cleanup(&reader);
 }

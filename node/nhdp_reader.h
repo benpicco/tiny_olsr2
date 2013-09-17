@@ -39,17 +39,14 @@
  *
  */
 
-#ifndef WRITER_H_
-#define WRITER_H_
+#ifndef READER_H_
+#define READER_H_
 
 #include "common/common_types.h"
-#include "rfc5444/rfc5444_writer.h"
+#include "rfc5444/rfc5444_reader.h"
 
-typedef void (*write_packet_func_ptr)(
-    struct rfc5444_writer *wr, struct rfc5444_writer_target *iface, void *buffer, size_t length);
+void nhdp_reader_init(void);
+int nhdp_reader_handle_packet(void* buffer, size_t length);
+void nhdp_reader_cleanup(void);
 
-void writer_init(write_packet_func_ptr ptr);
-void writer_tick(void);
-void writer_cleanup(void);
-
-#endif /* WRITER_H_ */
+#endif /* READER_H_ */

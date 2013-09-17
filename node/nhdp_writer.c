@@ -55,7 +55,7 @@
 #include "rfc5444/rfc5444_iana.h"
 #include "rfc5444/rfc5444_writer.h"
 
-#include "writer.h"
+#include "nhdp_writer.h"
 #include "nhdp.h"
 #include "constants.h"
 
@@ -140,7 +140,7 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
  * @param ptr pointer to "send_packet" function
  */
 void
-writer_init(write_packet_func_ptr ptr) {
+nhdp_writer_init(write_packet_func_ptr ptr) {
   struct rfc5444_writer_message *_msg;
 
   writer.msg_buffer = msg_buffer;
@@ -166,7 +166,7 @@ writer_init(write_packet_func_ptr ptr) {
   _msg->addMessageHeader = _cb_addMessageHeader;
 }
 
-void writer_tick(void) {
+void nhdp_writer_tick(void) {
 	printf("[writer_tick]\n");
 
   print_neighbors();
@@ -180,6 +180,6 @@ void writer_tick(void) {
  * Cleanup RFC5444 writer
  */
 void
-writer_cleanup(void) {
+nhdp_writer_cleanup(void) {
   rfc5444_writer_cleanup(&writer);
 }
