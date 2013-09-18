@@ -39,7 +39,7 @@ struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 		n->addr = _netaddr_cpy(addr);
 		n->linkstatus = linkstatus;
 
-		n->node.key = &n->addr;
+		n->node.key = n->addr;
 		avl_insert(&nhdp_head, &n->node);
 	}
 
@@ -73,7 +73,7 @@ int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t lin
 #ifdef DEBUG
 	n2->name = name;
 #endif
-	n2->node.key = &n2->addr;
+	n2->node.key = n2->addr;
 	avl_insert(&nhdp_2_hop_head, &n2->node);
 
 	node->mpr_neigh++;
