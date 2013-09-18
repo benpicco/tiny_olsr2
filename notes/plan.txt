@@ -1,0 +1,10 @@
+Assume flooding MPR == routoing MPR
+	-> TC messages
+
+Validity time
+
+duplicate set
+
+gather metrics
+	routing MPR
+

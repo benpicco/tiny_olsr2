@@ -1,0 +1,7 @@
+[x] common lists/avl
+[ ] TC writer, gather MPR selectors
+[ ] TC reader -> fill database
+
+--[ Donnerstag ]-------
+
+-> Duplicate set
