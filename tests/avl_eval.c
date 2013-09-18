@@ -36,15 +36,15 @@ int main() {
 
 	add_node(&addr, "C");
 
-	struct olsr_node *n;
+	struct olsr_node *node;
 	struct netaddr_str nbuf;
-	avl_for_each_element(&olsr_head, n, node) {
-		printf("%s - %s\n", n->name, netaddr_to_string(&nbuf, &n->addr));
+	avl_for_each_element(&olsr_head, node, node) {
+		printf("%s - %s\n", node->name, netaddr_to_string(&nbuf, &node->addr));
 	}
 
 	netaddr_from_string(&addr, "2001::1");
-	if ((n = avl_find_element(&olsr_head, &addr, n, node)))
-		printf("Found: %s\n", n->name);
+	if ((node = avl_find_element(&olsr_head, &addr, node, node)))
+		printf("Found: %s\n", node->name);
 	else
 		printf("Not found.\n");
 
