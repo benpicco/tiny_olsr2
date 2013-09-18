@@ -16,9 +16,9 @@
 #include <sys/types.h>
 #endif
 
+#include "nhdp.h"
 #include "nhdp_writer.h"
 #include "nhdp_reader.h"
-#include "nhdp.h"
 
 #include "rfc5444/rfc5444_print.h"
 #include "rfc5444/rfc5444_reader.h"
@@ -152,6 +152,7 @@ int main(int argc, char** argv) {
 	local_addr._type = AF_INET6;
 	local_addr._prefix_len = 128;
 
+	nhdp_init();
 	nhdp_reader_init();
 	nhdp_writer_init(write_packet);
 

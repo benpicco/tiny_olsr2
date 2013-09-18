@@ -1,6 +1,7 @@
 #ifndef NHDP_H_
 #define NHDP_H_
 
+#include "common/avl.h"
 #include "common/netaddr.h"
 
 struct netaddr local_addr;
@@ -9,8 +10,10 @@ struct netaddr local_addr;
 char* node_name;
 #endif
 
+struct avl_tree nhdp_head;
+
 struct nhdp_node {
-	struct nhdp_node* next;
+	struct avl_node node;
 
 	struct netaddr* addr;	/* node address */
 	uint8_t linkstatus;		/* TODO */
@@ -26,6 +29,8 @@ enum {
 	ADD_2HOP_IS_NEIGHBOR
 };
 
+void nhdp_init();
+
 struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus);
 
 struct nhdp_node* get_neighbor(struct netaddr* addr);
@@ -37,9 +42,6 @@ struct nhdp_node* get_neighbor(struct netaddr* addr);
 int add_2_hop_neighbor(struct nhdp_node* n, struct netaddr* addr, uint8_t linkstatus, char* name);
 
 void remove_neighbor(struct nhdp_node* n);
-
-void get_next_neighbor_reset(void);
-struct nhdp_node* get_next_neighbor(void);
 
 void print_neighbors(void);
 

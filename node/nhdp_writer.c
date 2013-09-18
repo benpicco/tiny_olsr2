@@ -49,6 +49,7 @@
 #include "net_help/net_help.h"
 #endif
 
+#include "common/avl.h"
 #include "common/common_types.h"
 #include "common/netaddr.h"
 #include "rfc5444/rfc5444.h"
@@ -106,8 +107,7 @@ _cb_addAddresses(struct rfc5444_writer *wr) {
 	struct nhdp_node* neighbor;
 
   /* add all neighbors */
-	get_next_neighbor_reset();
-	while ((neighbor = get_next_neighbor())) {
+  avl_for_each_element(&nhdp_head, neighbor, node) {
 		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _message_content_provider.creator, neighbor->addr, false);
 		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], &neighbor->linkstatus, sizeof neighbor->linkstatus, false);
     if (neighbor->mpr_neigh > 0) /* node is a mpr - TODO sensible value*/

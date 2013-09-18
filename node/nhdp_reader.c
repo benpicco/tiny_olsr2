@@ -40,6 +40,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef DEBUG
+#include <string.h>
+#endif
 
 #include "common/common_types.h"
 #include "common/netaddr.h"
@@ -49,10 +52,6 @@
 
 #ifdef RIOT
 #include "net_help/net_help.h"
-#endif
-
-#ifdef DEBUG
-#include <string.h>
 #endif
 
 #include "nhdp.h"
