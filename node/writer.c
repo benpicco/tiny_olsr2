@@ -197,6 +197,9 @@ void writer_send_hello(void) {
 }
 
 void writer_send_tc(void) {
+  if (!send_tc_messages)
+    return;
+
   printf("[TC]\n");
 
   /* send message */

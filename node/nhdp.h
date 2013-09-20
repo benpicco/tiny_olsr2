@@ -10,6 +10,8 @@ struct netaddr local_addr;
 char* node_name;
 #endif
 
+bool send_tc_messages;		/* only send TC messages when we are selected as MPR */
+
 struct avl_tree nhdp_head;
 
 struct nhdp_node {
