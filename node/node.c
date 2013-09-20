@@ -19,8 +19,6 @@
 #include "nhdp.h"
 #include "nhdp_writer.h"
 #include "nhdp_reader.h"
-#include "olsr2_writer.h"
-#include "writer_common.h"
 
 #include "rfc5444/rfc5444_print.h"
 #include "rfc5444/rfc5444_reader.h"
@@ -164,12 +162,9 @@ int main(int argc, char** argv) {
 	local_addr._type = AF_INET6;
 	local_addr._prefix_len = 128;
 
-	writer_common_init(write_packet);
-
 	nhdp_init();
 	nhdp_reader_init();
-	nhdp_writer_init();
-	olsr_writer_init();
+	nhdp_writer_init(write_packet);
 
 	while (1) {
 		sleep_s(5);
@@ -178,6 +173,5 @@ int main(int argc, char** argv) {
 
 	nhdp_reader_cleanup();
 	nhdp_writer_cleanup();
-	olsr_writer_cleanup();
 	abuf_free(&_hexbuf);
 }

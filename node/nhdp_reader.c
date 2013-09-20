@@ -56,7 +56,6 @@
 
 #include "nhdp.h"
 #include "nhdp_reader.h"
-#include "olsr2.h"
 #include "constants.h"
 
 static enum rfc5444_result _cb_blocktlv_packet_okay(
