@@ -17,7 +17,7 @@
 #endif
 
 #include "nhdp.h"
-#include "nhdp_writer.h"
+#include "writer.h"
 #include "nhdp_reader.h"
 
 #include "rfc5444/rfc5444_print.h"
@@ -164,14 +164,15 @@ int main(int argc, char** argv) {
 
 	nhdp_init();
 	nhdp_reader_init();
-	nhdp_writer_init(write_packet);
+	writer_init(write_packet);
 
 	while (1) {
 		sleep_s(5);
-		nhdp_writer_tick();
+		writer_send_hello();
+		writer_send_tc();
 	}
 
 	nhdp_reader_cleanup();
-	nhdp_writer_cleanup();
+	writer_cleanup();
 	abuf_free(&_hexbuf);
 }

@@ -56,7 +56,7 @@
 #include "rfc5444/rfc5444_iana.h"
 #include "rfc5444/rfc5444_writer.h"
 
-#include "nhdp_writer.h"
+#include "writer.h"
 #include "nhdp.h"
 #include "constants.h"
 
@@ -195,7 +195,7 @@ _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_messa
  * @param ptr pointer to "send_packet" function
  */
 void
-nhdp_writer_init(write_packet_func_ptr ptr) {
+writer_init(write_packet_func_ptr ptr) {
   struct rfc5444_writer_message *_hello_msg;
   struct rfc5444_writer_message *_tc_msg;
 
@@ -226,8 +226,8 @@ nhdp_writer_init(write_packet_func_ptr ptr) {
   _tc_msg->addMessageHeader = _cb_add_tc_message_header;
 }
 
-void nhdp_writer_tick(void) {
-	printf("[writer_tick]\n");
+void writer_send_hello(void) {
+	printf("[HELLO]\n");
 
   print_neighbors();
 
@@ -236,8 +236,8 @@ void nhdp_writer_tick(void) {
 	rfc5444_writer_flush(&writer, &interface, false);
 }
 
-void olsr_writer_tick(void) {
-  printf("[olsr_writer_tick]\n");
+void writer_send_tc(void) {
+  printf("[TC]\n");
 
   /* send message */
   rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_TC);
@@ -248,6 +248,6 @@ void olsr_writer_tick(void) {
  * Cleanup RFC5444 writer
  */
 void
-nhdp_writer_cleanup(void) {
+writer_cleanup(void) {
   rfc5444_writer_cleanup(&writer);
 }
