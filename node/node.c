@@ -19,6 +19,8 @@
 #include "nhdp.h"
 #include "nhdp_writer.h"
 #include "nhdp_reader.h"
+#include "olsr2_writer.h"
+#include "writer_common.h"
 
 #include "rfc5444/rfc5444_print.h"
 #include "rfc5444/rfc5444_reader.h"
@@ -133,12 +135,22 @@ int main(int argc, char** argv) {
 
 	init_socket(inet_addr(argv[1]), atoi(argv[2]));
 
+	/* set timeout for name probing */
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+	printf("probing for name…\n");
 	/* send HELLO */
 	sendto(sockfd, this_ip, strlen(this_ip), 0, (struct sockaddr*) &servaddr, sizeof(servaddr));
 	/* get our name */
 	char this_name[32];
-	size_t size = recvfrom(sockfd, this_name, sizeof this_name, 0, 0, 0);
-	this_name[size] = 0;
+	ssize_t size = recvfrom(sockfd, this_name, sizeof this_name, 0, 0, 0);
+	if (size < 0) {
+		strcpy(this_name, "(null)");
+	} else
+		this_name[size] = 0;
 
 	printf("This is node %s\n", this_name);
 #ifdef DEBUG
@@ -152,9 +164,12 @@ int main(int argc, char** argv) {
 	local_addr._type = AF_INET6;
 	local_addr._prefix_len = 128;
 
+	writer_common_init(write_packet);
+
 	nhdp_init();
 	nhdp_reader_init();
-	nhdp_writer_init(write_packet);
+	nhdp_writer_init();
+	olsr_writer_init();
 
 	while (1) {
 		sleep_s(5);
@@ -163,5 +178,6 @@ int main(int argc, char** argv) {
 
 	nhdp_reader_cleanup();
 	nhdp_writer_cleanup();
+	olsr_writer_cleanup();
 	abuf_free(&_hexbuf);
 }

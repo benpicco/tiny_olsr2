@@ -44,9 +44,8 @@
 
 #include "common/common_types.h"
 #include "rfc5444/rfc5444_writer.h"
-#include "writer_common.h"
 
-void olsr_writer_init(write_packet_func_ptr ptr);
+void olsr_writer_init(void);
 void olsr_writer_tick(void);
 void olsr_writer_cleanup(void);
 

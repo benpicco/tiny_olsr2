@@ -56,28 +56,26 @@
 #include "rfc5444/rfc5444_writer.h"
 
 #include "olsr2_writer.h"
-#include "olsr2.h"
+#include "writer_common.h"
+#include "nhdp.h"
 #include "constants.h"
 
 static void _cb_addMessageTLVs(struct rfc5444_writer *wr);
 static void _cb_addAddresses(struct rfc5444_writer *wr);
 
 static struct rfc5444_writer_content_provider _message_content_provider = {
-	.msg_type = RFC5444_MSGTYPE_HELLO,
+	.msg_type = RFC5444_MSGTYPE_TC,
 	.addMessageTLVs = _cb_addMessageTLVs,
 	.addAddresses = _cb_addAddresses,
 };
 
 static struct rfc5444_writer_tlvtype _olsrv2_addrtlvs[] = {
-  [IDX_ADDRTLV_NBR_ADDR_TYPE] =  { .type = RFC5444_ADDRTLV_NBR_ADDR_TYPE },
-  [IDX_ADDRTLV_GATEWAY]       =  { .type = RFC5444_ADDRTLV_GATEWAY },
 #ifdef DEBUG
   [IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
 
 struct rfc5444_writer writer;
-struct rfc5444_writer_target interface;
 
 /**
  * Callback to add message TLVs to a RFC5444 message
@@ -101,16 +99,17 @@ _cb_addMessageTLVs(struct rfc5444_writer *wr) {
 
 static void
 _cb_addAddresses(struct rfc5444_writer *wr) {
-	struct nhdp_node* selector;
+  struct nhdp_node* node;
 
   /* add all neighbors */
-	get_next_routing_mpr_selector_reset();
-	while ((selector = get_next_routing_mpr_selector())) {
-		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _message_content_provider.creator, selector->addr, false);
+  avl_for_each_element(&nhdp_head, node, node) {
+    if (node->mpr_selector) {
+		  struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _message_content_provider.creator, node->addr, false);
 #ifdef DEBUG
-    if (selector->name)
-      rfc5444_writer_add_addrtlv(wr, address, &_olsrv2_addrtlvs[IDX_ADDRTLV_NODE_NAME], selector->name, strlen(selector->name), false);
-#endif    
+      if (node->name)
+        rfc5444_writer_add_addrtlv(wr, address, &_olsrv2_addrtlvs[IDX_ADDRTLV_NODE_NAME], node->name, strlen(node->name), false);
+#endif
+    }
 	}
 }
 
@@ -131,17 +130,13 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
  * @param ptr pointer to "send_packet" function
  */
 void
-olsr_writer_init(write_packet_func_ptr ptr) {
+olsr_writer_init(void) {
   struct rfc5444_writer_message *_msg;
 
   writer.msg_buffer = msg_buffer;
   writer.msg_size   = sizeof(msg_buffer);
   writer.addrtlv_buffer = msg_addrtlvs;
   writer.addrtlv_size   = sizeof(msg_addrtlvs);
-
-  interface.packet_buffer = packet_buffer;
-  interface.packet_size   = sizeof(packet_buffer);
-  interface.sendPacket = ptr;
 
   /* initialize writer */
   rfc5444_writer_init(&writer);

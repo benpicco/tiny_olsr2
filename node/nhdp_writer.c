@@ -56,17 +56,18 @@
 #include "rfc5444/rfc5444_iana.h"
 #include "rfc5444/rfc5444_writer.h"
 
+#include "writer_common.h"
 #include "nhdp_writer.h"
 #include "nhdp.h"
 #include "constants.h"
 
-static void _cb_addMessageTLVs(struct rfc5444_writer *wr);
-static void _cb_addAddresses(struct rfc5444_writer *wr);
+static void _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr);
+static void _cb_add_nhdp_addresses(struct rfc5444_writer *wr);
 
-static struct rfc5444_writer_content_provider _message_content_provider = {
+static struct rfc5444_writer_content_provider _hello_message_content_provider = {
 	.msg_type = RFC5444_MSGTYPE_HELLO,
-	.addMessageTLVs = _cb_addMessageTLVs,
-	.addAddresses = _cb_addAddresses,
+	.addMessageTLVs = _cb_add_nhdp_message_TLVs,
+	.addAddresses = _cb_add_nhdp_addresses,
 };
 
 static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
@@ -80,14 +81,13 @@ static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
 };
 
 struct rfc5444_writer writer;
-struct rfc5444_writer_target interface;
 
 /**
  * Callback to add message TLVs to a RFC5444 message
  * @param wr
  */
 static void
-_cb_addMessageTLVs(struct rfc5444_writer *wr) {
+_cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 	uint8_t time_encoded;
 
 	time_encoded = rfc5444_timetlv_encode(REFRESH_INTERVAL);
@@ -103,12 +103,12 @@ _cb_addMessageTLVs(struct rfc5444_writer *wr) {
 }
 
 static void
-_cb_addAddresses(struct rfc5444_writer *wr) {
+_cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 	struct nhdp_node* neighbor;
 
   /* add all neighbors */
   avl_for_each_element(&nhdp_head, neighbor, node) {
-		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _message_content_provider.creator, neighbor->addr, false);
+		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _hello_message_content_provider.creator, neighbor->addr, false);
 		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], &neighbor->linkstatus, sizeof neighbor->linkstatus, false);
     if (neighbor->mpr_neigh > 0) /* node is a mpr - TODO sensible value*/
       rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR], &neighbor->mpr_neigh, sizeof neighbor->mpr_neigh, false);
@@ -125,7 +125,7 @@ _cb_addAddresses(struct rfc5444_writer *wr) {
  * @param message
  */
 static void
-_cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
+_cb_add_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
 	/* originator, not hopcount, no hoplimit, sequence number */
 	rfc5444_writer_set_msg_header(wr, message, true, false, false, true);
 	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&local_addr));
@@ -136,17 +136,13 @@ _cb_addMessageHeader(struct rfc5444_writer *wr, struct rfc5444_writer_message *m
  * @param ptr pointer to "send_packet" function
  */
 void
-nhdp_writer_init(write_packet_func_ptr ptr) {
+nhdp_writer_init(void) {
   struct rfc5444_writer_message *_msg;
 
   writer.msg_buffer = msg_buffer;
   writer.msg_size   = sizeof(msg_buffer);
   writer.addrtlv_buffer = msg_addrtlvs;
   writer.addrtlv_size   = sizeof(msg_addrtlvs);
-
-  interface.packet_buffer = packet_buffer;
-  interface.packet_size   = sizeof(packet_buffer);
-  interface.sendPacket = ptr;
 
   /* initialize writer */
   rfc5444_writer_init(&writer);
@@ -155,11 +151,11 @@ nhdp_writer_init(write_packet_func_ptr ptr) {
   rfc5444_writer_register_target(&writer, &interface);
 
   /* register a message content provider */
-  rfc5444_writer_register_msgcontentprovider(&writer, &_message_content_provider, _nhdp_addrtlvs, ARRAYSIZE(_nhdp_addrtlvs));
+  rfc5444_writer_register_msgcontentprovider(&writer, &_hello_message_content_provider, _nhdp_addrtlvs, ARRAYSIZE(_nhdp_addrtlvs));
 
   /* register message type 1 with 16 byte addresses */
   _msg = rfc5444_writer_register_message(&writer, RFC5444_MSGTYPE_HELLO, false, 16);
-  _msg->addMessageHeader = _cb_addMessageHeader;
+  _msg->addMessageHeader = _cb_add_message_header;
 }
 
 void nhdp_writer_tick(void) {

@@ -5,12 +5,15 @@
 #define REFRESH_INTERVAL 5
 #define HOLD_TIME 10
 
+#define FLOODING_MPR_SELECTOR 1
+#define ROUTING_MPR_SELECTOR  2
+
 #define RFC5444_TLV_NODE_NAME 42
 
 /* NHDP message TLV array index */
 enum {
-  IDX_TLV_ITIME,			/* Interval time */
-  IDX_TLV_VTIME,			/* validity time */
+  IDX_TLV_ITIME,		/* Interval time */
+  IDX_TLV_VTIME,		/* validity time */
   IDX_TLV_WILLINGNESS,		/* willingness - split out to FLOOD and ROUTING? */
 #ifdef DEBUG
   IDX_TLV_NODE_NAME,		/* name of the node */

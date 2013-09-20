@@ -1,5 +1,6 @@
 [x] common lists/avl
-[ ] TC writer, gather MPR selectors
+[-] TC writer, gather MPR selectors
+	use one writer with two providers	
 [ ] TC reader -> fill database
 
 --[ Donnerstag ]-------

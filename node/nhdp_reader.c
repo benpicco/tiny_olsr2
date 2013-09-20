@@ -164,14 +164,14 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
   /* node selected us as mpr */
   if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv) && netaddr_cmp(&cont->addr, &local_addr) == 0) {
-    add_routing_mpr_selector(get_neighbor(&cont->addr));
+    current_node->mpr_selector = ROUTING_MPR_SELECTOR; // arbitrary, todo
 #ifdef DEBUG
     // allow MPR selection to be drawn in graphviz
     printf("\t%s -> %s // [ label=\"MPR\" ];\n", current_node->name, node_name);
 #endif
+  } else { /* no need to try adding us as a 2-hop neighbor */
+    add_2_hop_neighbor(current_node, &cont->addr, linkstatus, name);
   }
-
-  add_2_hop_neighbor(current_node, &cont->addr, linkstatus, name);
 
   return RFC5444_OKAY;
 }
