@@ -1,8 +1,11 @@
 [x] common lists/avl
-[-] TC writer, gather MPR selectors
+[x] TC writer, gather MPR selectors
 	use one writer with two providers	
+
+--[ Freitag ]-------
+
 [ ] TC reader -> fill database
 
---[ Donnerstag ]-------
+ -> Duplicate set
 
--> Duplicate set
+ -> validity time
