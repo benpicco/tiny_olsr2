@@ -18,12 +18,13 @@
 #include "reader.h"
 #include "constants.h"
 
-static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(
-    struct rfc5444_reader_tlvblock_context *cont);
+static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
+static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
 
-static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(
-    struct rfc5444_reader_tlvblock_context *cont);
+static enum rfc5444_result _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
+static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
 
+/* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
   [IDX_TLV_ITIME] = { .type = RFC5444_MSGTLV_INTERVAL_TIME, .type_ext = 0, .match_type_ext = true,
       .mandatory = true, .min_length = 1, .match_length = true },
@@ -49,6 +50,25 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
 #endif
 };
 
+/* TC message */
+static struct rfc5444_reader_tlvblock_consumer_entry _olsr_message_tlvs[] = {
+  [IDX_TLV_ITIME] = { .type = RFC5444_MSGTLV_INTERVAL_TIME, .type_ext = 0, .match_type_ext = true,
+      .mandatory = true, .min_length = 1, .match_length = true },
+  [IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .type_ext = 0, .match_type_ext = true,
+      .mandatory = true, .min_length = 1, .match_length = true },
+  [IDX_TLV_WILLINGNESS] = { .type = RFC5444_MSGTLV_MPR_WILLING, .type_ext = 0, .match_type_ext = true,
+    .min_length = 1, .match_length = true },
+#ifdef DEBUG
+  [IDX_TLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
+#endif
+};
+
+static struct rfc5444_reader_tlvblock_consumer_entry _olsr_address_tlvs[] = {
+#ifdef DEBUG
+  [IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
+#endif
+};
+
 static struct rfc5444_reader_tlvblock_consumer _nhdp_consumer = {
   .msg_id = RFC5444_MSGTYPE_HELLO,
   .block_callback = _cb_nhdp_blocktlv_packet_okay,
@@ -60,22 +80,28 @@ static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
   .block_callback = _cb_nhdp_blocktlv_address_okay,
 };
 
+static struct rfc5444_reader_tlvblock_consumer _olsr_consumer = {
+  .msg_id = RFC5444_MSGTYPE_TC,
+  .block_callback = _cb_olsr_blocktlv_packet_okay,
+};
+
+static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
+  .msg_id = RFC5444_MSGTYPE_TC,
+  .addrblock_consumer = true,
+  .block_callback = _cb_olsr_blocktlv_address_okay,
+};
+
 struct rfc5444_reader reader;
 struct nhdp_node* current_node;
 
-/**
- * This block callback is only called if message tlv type 1 is present,
- * because it was declared as mandatory
- *
- * @param cont
- * @return
- */
+/* HELLO message */
+
 static enum rfc5444_result
 _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   uint8_t value;
   struct netaddr_str nbuf;
 
-  printf("received package:\n");
+  printf("received HELLO package:\n");
 
   if (cont->has_origaddr) {
     printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
@@ -136,6 +162,57 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   return RFC5444_OKAY;
 }
 
+/* TC message */
+
+static enum rfc5444_result
+_cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
+  uint8_t value;
+  struct netaddr_str nbuf;
+
+  printf("received TC package:\n");
+
+  if (cont->has_origaddr) {
+    printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
+  }
+
+  if (cont->has_seqno) {
+    printf("\tseqno: %d\n", cont->seqno);
+  }
+
+  /* both VTIME and ITIME were defined as mandatory */
+  value = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_ITIME].tlv->single_value);
+  printf("\tITIME: %d\n", value);
+
+  value = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
+  printf("\tVTIME: %d\n", value);
+
+#ifdef DEBUG
+  if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
+    char* _name = strndup((char*) _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
+    printf("\tname: %s\n", _name);
+    free(_name);
+  }
+#endif
+
+  return RFC5444_OKAY;
+}
+
+static enum rfc5444_result
+_cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
+  struct rfc5444_reader_tlvblock_entry* tlv;
+
+  char* name = 0;
+#ifdef DEBUG
+  struct netaddr_str nbuf;
+  if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
+    name = strndup((char*) tlv->single_value, tlv->length); // memory leak
+    printf("\tannonces: %s (%s)\n", name, netaddr_to_string(&nbuf, &cont->addr));
+  }
+#endif
+
+  return RFC5444_OKAY;
+}
+
 /**
  * Initialize RFC5444 reader
  */
@@ -143,12 +220,13 @@ void reader_init(void) {
   /* initialize reader */
   rfc5444_reader_init(&reader);
 
-  /* register message consumer */
-  rfc5444_reader_add_message_consumer(&reader, &_nhdp_consumer,
-      _nhdp_message_tlvs, ARRAYSIZE(_nhdp_message_tlvs));
+  /* register HELLO message consumer */
+  rfc5444_reader_add_message_consumer(&reader, &_nhdp_consumer, _nhdp_message_tlvs, ARRAYSIZE(_nhdp_message_tlvs));
+  rfc5444_reader_add_message_consumer(&reader, &_nhdp_address_consumer, _nhdp_address_tlvs, ARRAYSIZE(_nhdp_address_tlvs));
 
-  rfc5444_reader_add_message_consumer(&reader, &_nhdp_address_consumer,
-      _nhdp_address_tlvs, ARRAYSIZE(_nhdp_address_tlvs));
+  /* register TC message consumer */
+  rfc5444_reader_add_message_consumer(&reader, &_olsr_consumer, _olsr_message_tlvs, ARRAYSIZE(_olsr_message_tlvs));
+  rfc5444_reader_add_message_consumer(&reader, &_olsr_address_consumer, _olsr_address_tlvs, ARRAYSIZE(_olsr_address_tlvs));
 }
 
 /**
