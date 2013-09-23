@@ -15,13 +15,13 @@
 #endif
 
 #include "nhdp.h"
-#include "nhdp_reader.h"
+#include "reader.h"
 #include "constants.h"
 
-static enum rfc5444_result _cb_blocktlv_packet_okay(
+static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(
     struct rfc5444_reader_tlvblock_context *cont);
 
-static enum rfc5444_result _cb_blocktlv_address_okay(
+static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(
     struct rfc5444_reader_tlvblock_context *cont);
 
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
@@ -49,15 +49,15 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
 #endif
 };
 
-static struct rfc5444_reader_tlvblock_consumer _consumer = {
+static struct rfc5444_reader_tlvblock_consumer _nhdp_consumer = {
   .msg_id = RFC5444_MSGTYPE_HELLO,
-  .block_callback = _cb_blocktlv_packet_okay,
+  .block_callback = _cb_nhdp_blocktlv_packet_okay,
 };
 
-static struct rfc5444_reader_tlvblock_consumer _address_consumer = {
+static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
   .msg_id = RFC5444_MSGTYPE_HELLO,
   .addrblock_consumer = true,
-  .block_callback = _cb_blocktlv_address_okay,
+  .block_callback = _cb_nhdp_blocktlv_address_okay,
 };
 
 struct rfc5444_reader reader;
@@ -71,7 +71,7 @@ struct nhdp_node* current_node;
  * @return
  */
 static enum rfc5444_result
-_cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
+_cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   uint8_t value;
   struct netaddr_str nbuf;
 
@@ -105,7 +105,7 @@ _cb_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 }
 
 static enum rfc5444_result
-_cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
+_cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   struct rfc5444_reader_tlvblock_entry* tlv;
   uint8_t linkstatus = RFC5444_LINKSTATUS_HEARD;
 
@@ -139,31 +139,28 @@ _cb_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 /**
  * Initialize RFC5444 reader
  */
-void
-nhdp_reader_init(void) {
+void reader_init(void) {
   /* initialize reader */
   rfc5444_reader_init(&reader);
 
   /* register message consumer */
-  rfc5444_reader_add_message_consumer(&reader, &_consumer,
+  rfc5444_reader_add_message_consumer(&reader, &_nhdp_consumer,
       _nhdp_message_tlvs, ARRAYSIZE(_nhdp_message_tlvs));
 
-  rfc5444_reader_add_message_consumer(&reader, &_address_consumer,
+  rfc5444_reader_add_message_consumer(&reader, &_nhdp_address_consumer,
       _nhdp_address_tlvs, ARRAYSIZE(_nhdp_address_tlvs));
 }
 
 /**
  * Inject a package into the RFC5444 reader
  */
-int
-nhdp_reader_handle_packet(void* buffer, size_t length) {
+int reader_handle_packet(void* buffer, size_t length) {
   return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 
 /**
  * Cleanup RFC5444 reader
  */
-void
-nhdp_reader_cleanup(void) {
+void reader_cleanup(void) {
   rfc5444_reader_cleanup(&reader);
 }

@@ -4,8 +4,8 @@
 #include "common/common_types.h"
 #include "rfc5444/rfc5444_reader.h"
 
-void nhdp_reader_init(void);
-int nhdp_reader_handle_packet(void* buffer, size_t length);
-void nhdp_reader_cleanup(void);
+void reader_init(void);
+int reader_handle_packet(void* buffer, size_t length);
+void reader_cleanup(void);
 
 #endif /* READER_H_ */
