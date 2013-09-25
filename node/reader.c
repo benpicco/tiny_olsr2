@@ -53,7 +53,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
 /* TC message */
 static struct rfc5444_reader_tlvblock_consumer_entry _olsr_message_tlvs[] = {
   [IDX_TLV_ITIME] = { .type = RFC5444_MSGTLV_INTERVAL_TIME, .type_ext = 0, .match_type_ext = true,
-      .mandatory = true, .min_length = 1, .match_length = true },
+      .min_length = 1, .match_length = true },
   [IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .type_ext = 0, .match_type_ext = true,
       .mandatory = true, .min_length = 1, .match_length = true },
   [IDX_TLV_WILLINGNESS] = { .type = RFC5444_MSGTLV_MPR_WILLING, .type_ext = 0, .match_type_ext = true,
@@ -201,13 +201,14 @@ static enum rfc5444_result
 _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   struct rfc5444_reader_tlvblock_entry* tlv;
 
-  char* name = 0;
 #ifdef DEBUG
   struct netaddr_str nbuf;
-  if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
-    name = strndup((char*) tlv->single_value, tlv->length); // memory leak
+  if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
+    char* name = strndup((char*) tlv->single_value, tlv->length);
     printf("\tannonces: %s (%s)\n", name, netaddr_to_string(&nbuf, &cont->addr));
+    free(name);
   }
+
 #endif
 
   return RFC5444_OKAY;
