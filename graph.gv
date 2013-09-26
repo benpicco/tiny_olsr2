@@ -1,15 +1,13 @@
 digraph {
 subgraph bidirectional {
 	edge [arrowhead = none]
-	Q -> X
-	Q -> Y
-	Q -> Z
-	X -> A
-	X -> B
-	Y -> B
-	Y -> C
-	Z -> C
-	Z -> D
+	A -> B
+	B -> C
+	C -> D
+	D -> E
+	E -> F
+	F -> G
+	G -> A
 }
 
 subgraph directional {
