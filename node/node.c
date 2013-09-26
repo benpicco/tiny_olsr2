@@ -38,7 +38,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
-	puts("write_packet()");
+	printf("write_packet(%zd bytes)\n", length);
 
 	/* generate hexdump of packet */
 	abuf_hexdump(&_hexbuf, "\t", buffer, length);
@@ -163,9 +163,9 @@ int main(int argc, char** argv) {
 	local_addr._prefix_len = 128;
 
 	nhdp_init();
-	reader_init(write_packet);
+	reader_init();
 	writer_init(write_packet);
-
+	
 	while (1) {
 		sleep_s(5);
 		writer_send_hello();

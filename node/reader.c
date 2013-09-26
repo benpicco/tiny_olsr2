@@ -16,11 +16,11 @@
 
 #include "nhdp.h"
 #include "reader.h"
+#include "writer.h"
 #include "constants.h"
 
 struct rfc5444_reader reader;
 struct nhdp_node* current_node;
-write_packet_func_ptr _write_packet;
 
 static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
@@ -217,27 +217,34 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_t *buffer, size_t length) {
   struct netaddr_str nbuf;
-  printf("_cb_olsr_forward_message()\n");
+  printf("_cb_olsr_forward_message(%zd bytes)\n", length);
  
-  struct nhdp_node* node = 0;
-  printf("sender: %s\n", netaddr_to_string(&nbuf, &context->addr));
+  struct nhdp_node* node = get_neighbor(&context->orig_addr);
+#ifdef DEBUG  
+  printf("sender: %s (%s)\n", netaddr_to_string(&nbuf, &context->orig_addr), node ? node->name : "null");
+#endif
 
-  avl_find_element(&nhdp_head, &context->addr, node, node);
+  if (!node) 
+    printf("I don't know the sender, dropping packet.\n");
 
-  if (node && node->mpr_selector)
-    _write_packet(0, 0, buffer, length);
+  if (node && node->mpr_selector) {
+    printf("forwarding package\n");
+    if (RFC5444_OKAY == rfc5444_writer_forward_msg(&writer, buffer, length))
+      rfc5444_writer_flush(&writer, &interface, true);
+    else
+      printf("failed forwarding package\n");
+
+  }
 }
 
 
 /**
  * Initialize RFC5444 reader
  */
-void reader_init(write_packet_func_ptr ptr) {
+void reader_init(void) {
   /* initialize reader */
   rfc5444_reader_init(&reader);
   reader.forward_message = _cb_olsr_forward_message;
-
-  _write_packet = ptr;
 
   /* register HELLO message consumer */
   rfc5444_reader_add_message_consumer(&reader, &_nhdp_consumer, _nhdp_message_tlvs, ARRAYSIZE(_nhdp_message_tlvs));

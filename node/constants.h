@@ -1,8 +1,6 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
-#include "rfc5444/rfc5444_writer.h"
-
 // todo: sensible values
 #define REFRESH_INTERVAL 5
 #define HOLD_TIME 10
@@ -38,8 +36,5 @@ enum {
   IDX_ADDRTLV_NBR_ADDR_TYPE,
   IDX_ADDRTLV_GATEWAY,
 };
-
-typedef void (*write_packet_func_ptr)(
-  struct rfc5444_writer *wr, struct rfc5444_writer_target *iface, void *buffer, size_t length);
 
 #endif /* CONSTANTS_H_ */

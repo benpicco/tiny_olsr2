@@ -16,16 +16,13 @@
 #include "rfc5444/rfc5444_iana.h"
 #include "rfc5444/rfc5444_writer.h"
 
+#include "constants.h"
 #include "writer.h"
 #include "nhdp.h"
 
 uint8_t msg_buffer[128];
 uint8_t msg_addrtlvs[1000];
 uint8_t packet_buffer[128];
-
-struct rfc5444_writer_target interface;
-
-struct rfc5444_writer writer;
 
 static void _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr);
 static void _cb_add_nhdp_addresses(struct rfc5444_writer *wr);
@@ -139,13 +136,15 @@ static void
 _cb_add_hello_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
 	/* originator, not hopcount, no hoplimit, sequence number */
 	rfc5444_writer_set_msg_header(wr, message, true, false, false, true);
+  rfc5444_writer_set_msg_seqno(wr, message, 1337);
 	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&local_addr));
 }
 
 static void
 _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
-  /* originator, not hopcount, no hoplimit, sequence number */
+  /* originator, hopcount, hoplimit, sequence number */
   rfc5444_writer_set_msg_header(wr, message, true, true, true, true);
+  rfc5444_writer_set_msg_seqno(wr, message, 2342);
   rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&local_addr));
 
   message->hoplimit = 16;
