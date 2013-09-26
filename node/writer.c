@@ -18,7 +18,6 @@
 
 #include "writer.h"
 #include "nhdp.h"
-#include "constants.h"
 
 uint8_t msg_buffer[128];
 uint8_t msg_addrtlvs[1000];
@@ -146,8 +145,10 @@ _cb_add_hello_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_me
 static void
 _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
   /* originator, not hopcount, no hoplimit, sequence number */
-  rfc5444_writer_set_msg_header(wr, message, true, false, false, true);
+  rfc5444_writer_set_msg_header(wr, message, true, true, true, true);
   rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&local_addr));
+
+  message->hoplimit = 16;
 }
 
 /**

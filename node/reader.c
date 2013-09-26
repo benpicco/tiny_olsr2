@@ -18,6 +18,10 @@
 #include "reader.h"
 #include "constants.h"
 
+struct rfc5444_reader reader;
+struct nhdp_node* current_node;
+write_packet_func_ptr _write_packet;
+
 static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
 
@@ -90,9 +94,6 @@ static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
   .addrblock_consumer = true,
   .block_callback = _cb_olsr_blocktlv_address_okay,
 };
-
-struct rfc5444_reader reader;
-struct nhdp_node* current_node;
 
 /* HELLO message */
 
@@ -214,12 +215,29 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   return RFC5444_OKAY;
 }
 
+static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_t *buffer, size_t length) {
+  struct netaddr_str nbuf;
+  printf("_cb_olsr_forward_message()\n");
+ 
+  struct nhdp_node* node = 0;
+  printf("sender: %s\n", netaddr_to_string(&nbuf, &context->addr));
+
+  avl_find_element(&nhdp_head, &context->addr, node, node);
+
+  if (node && node->mpr_selector)
+    _write_packet(0, 0, buffer, length);
+}
+
+
 /**
  * Initialize RFC5444 reader
  */
-void reader_init(void) {
+void reader_init(write_packet_func_ptr ptr) {
   /* initialize reader */
   rfc5444_reader_init(&reader);
+  reader.forward_message = _cb_olsr_forward_message;
+
+  _write_packet = ptr;
 
   /* register HELLO message consumer */
   rfc5444_reader_add_message_consumer(&reader, &_nhdp_consumer, _nhdp_message_tlvs, ARRAYSIZE(_nhdp_message_tlvs));

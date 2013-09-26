@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
 	local_addr._prefix_len = 128;
 
 	nhdp_init();
-	reader_init();
+	reader_init(write_packet);
 	writer_init(write_packet);
 
 	while (1) {
