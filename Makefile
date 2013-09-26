@@ -8,7 +8,7 @@ LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 
 .PHONY: clean run
 
-NODES := 9
+NODES := `grep -- -\> graph.gv | grep -o . | sort | grep [[:alnum:]] | uniq | wc -l`
 LOG_DIR := log
 
 node:	node/node.o node/reader.o node/writer.o node/nhdp.o $(LDFLAGS)
