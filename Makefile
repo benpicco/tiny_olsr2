@@ -38,5 +38,5 @@ run:	dispatcher node kill graph.pdf
 
 	@mkdir -p $(LOG_DIR)
 	@for i in $(shell seq 1 ${NODES}) ; do \
-		LD_LIBRARY_PATH=$(LIBDIR) ./node/node 127.0.0.1 9000 2001::$$i > $(LOG_DIR)/$$i.log & \
+		LD_LIBRARY_PATH=$(LIBDIR) stdbuf -oL ./node/node 127.0.0.1 9000 2001::$$i > $(LOG_DIR)/$$i.log & \
 	done
