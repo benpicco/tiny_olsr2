@@ -152,6 +152,11 @@ _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_messa
   message->hoplimit = 16;
 }
 
+bool
+olsr_message_forwarding_selector(struct rfc5444_writer_target *rfc5444_target) {
+  return true;
+}
+
 /**
  * Initialize RFC5444 writer
  * @param ptr pointer to "send_packet" function
@@ -186,6 +191,7 @@ writer_init(write_packet_func_ptr ptr) {
 
   _hello_msg->addMessageHeader = _cb_add_hello_message_header;
   _tc_msg->addMessageHeader = _cb_add_tc_message_header;
+  _tc_msg->forward_target_selector = olsr_message_forwarding_selector;
 }
 
 void writer_send_hello(void) {
