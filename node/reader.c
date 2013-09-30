@@ -148,15 +148,21 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
   if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv))
     linkstatus = *tlv->single_value;
 
-  /* node selected us as mpr */
-  if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv) && netaddr_cmp(&cont->addr, &local_addr) == 0) {
-    current_node->mpr_selector = ROUTING_MPR_SELECTOR; // arbitrary, todo
-    send_tc_messages = true;
+  /* node broadcasts us as it's neighbor */
+  if (netaddr_cmp(&cont->addr, &local_addr) == 0) {
+    current_node->linkstatus = RFC5444_LINKSTATUS_SYMMETRIC;
+
+    /* node selected us as mpr */
+    if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv)) {
+      current_node->mpr_selector = ROUTING_MPR_SELECTOR; // arbitrary, todo
+      send_tc_messages = true;
 #ifdef DEBUG
-    // allow MPR selection to be drawn in graphviz
-    printf("\t%s -> %s // [ label=\"MPR\" ];\n", current_node->name, node_name);
+      // allow MPR selection to be drawn in graphviz
+      printf("\t%s -> %s // [ label=\"MPR\" ];\n", current_node->name, node_name);
 #endif
-  } else { /* no need to try adding us as a 2-hop neighbor */
+    }
+  } else {
+   /* no need to try adding us as a 2-hop neighbor */
     add_2_hop_neighbor(current_node, &cont->addr, linkstatus, name);
   }
 
@@ -233,7 +239,6 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
       rfc5444_writer_flush(&writer, &interface, true);
     else
       printf("failed forwarding package\n");
-
   }
 }
 
