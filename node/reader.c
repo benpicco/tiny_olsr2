@@ -263,7 +263,7 @@ void reader_init(void) {
 /**
  * Inject a package into the RFC5444 reader
  */
-int reader_handle_packet(void* buffer, size_t length) {
+int reader_handle_packet(void* buffer, size_t length, struct netaddr* src) {
   return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 

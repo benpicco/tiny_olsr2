@@ -29,6 +29,11 @@ cc110x_packet_t packet;
 #else
 int sockfd;
 struct sockaddr_in servaddr;
+
+struct ip_lite {
+	struct netaddr src;
+	size_t length;
+};
 #endif
 
 /* for hexfump */
@@ -54,20 +59,33 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	packet.length = length;
 	cc110x_send(&packet);
 #else
-	sendto(sockfd, buffer, length, 0,
+
+	struct ip_lite* new_buffer = malloc(sizeof(struct ip_lite) + length);
+	memcpy(new_buffer + 1, buffer, length);
+	memcpy(&new_buffer->src, &local_addr, sizeof(struct netaddr));
+	new_buffer->length = length;
+
+	sendto(sockfd, new_buffer, sizeof(struct ip_lite) + new_buffer->length, 0,
 		(struct sockaddr*) &servaddr, sizeof(servaddr));
 #endif
 }
 
 #ifndef RIOT
+
 void sigio_handler(int sig) {
 	char buffer[1500];
-	int length;
 
-	if ((length = recvfrom(sockfd, &buffer, sizeof buffer, 0, 0, 0)) == -1)
+	struct sockaddr_storage sender;
+	socklen_t sendsize = sizeof(sender);
+
+	if (recvfrom(sockfd, &buffer, sizeof buffer, 0, (struct sockaddr*)&sender, &sendsize) == -1)
 		return;
 
-	reader_handle_packet(buffer, length);
+	struct ip_lite* header = (struct ip_lite*) &buffer;
+	struct netaddr_str nbuf;
+	printf("Received packet from %s (%d bytes)\n\n", netaddr_to_string(&nbuf, &header->src), header->length);
+
+	reader_handle_packet(header + 1, header->length, &header->src);
 }
 
 void init_socket(in_addr_t addr, int port) {
