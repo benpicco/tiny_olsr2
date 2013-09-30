@@ -20,6 +20,7 @@
 #include "constants.h"
 
 struct rfc5444_reader reader;
+struct netaddr* current_src;
 struct nhdp_node* current_node;
 
 static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
@@ -104,14 +105,8 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
   printf("received HELLO package:\n");
 
-  if (cont->has_origaddr) {
-    printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
-    current_node = add_neighbor(&cont->orig_addr, RFC5444_LINKSTATUS_HEARD);
-  }
-
-  if (cont->has_seqno) {
-    printf("\tseqno: %d\n", cont->seqno);
-  }
+  printf("\tfrom: %s\n", netaddr_to_string(&nbuf, current_src));
+  current_node = add_neighbor(current_src, RFC5444_LINKSTATUS_HEARD);
 
   /* both VTIME and ITIME were defined as mandatory */
   value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_ITIME].tlv->single_value);
@@ -215,7 +210,6 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
     printf("\tannonces: %s (%s)\n", name, netaddr_to_string(&nbuf, &cont->addr));
     free(name);
   }
-
 #endif
 
   return RFC5444_OKAY;
@@ -225,9 +219,9 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
   struct netaddr_str nbuf;
   printf("_cb_olsr_forward_message(%zd bytes)\n", length);
  
-  struct nhdp_node* node = get_neighbor(&context->orig_addr);
+  struct nhdp_node* node = get_neighbor(current_src);
 #ifdef DEBUG  
-  printf("sender: %s (%s)\n", netaddr_to_string(&nbuf, &context->orig_addr), node ? node->name : "null");
+  printf("sender: %s (%s)\n", netaddr_to_string(&nbuf, current_src), node ? node->name : "null");
 #endif
 
   if (!node) 
@@ -264,6 +258,7 @@ void reader_init(void) {
  * Inject a package into the RFC5444 reader
  */
 int reader_handle_packet(void* buffer, size_t length, struct netaddr* src) {
+  current_src = src;
   return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 

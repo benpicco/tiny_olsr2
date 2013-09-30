@@ -82,9 +82,6 @@ void sigio_handler(int sig) {
 		return;
 
 	struct ip_lite* header = (struct ip_lite*) &buffer;
-	struct netaddr_str nbuf;
-	printf("Received packet from %s (%d bytes)\n\n", netaddr_to_string(&nbuf, &header->src), header->length);
-
 	reader_handle_packet(header + 1, header->length, &header->src);
 }
 
@@ -187,7 +184,10 @@ int main(int argc, char** argv) {
 	while (1) {
 		sleep_s(5);
 		writer_send_hello();
-		writer_send_tc();
+#ifdef DEBUG		
+		if (*node_name == 'A')
+#endif
+			writer_send_tc();
 	}
 
 	reader_cleanup();

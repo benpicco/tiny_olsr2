@@ -129,17 +129,10 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
   }
 }
 
-/**
- * Callback to define the message header for a RFC5444 message
- * @param wr
- * @param message
- */
 static void
 _cb_add_hello_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
-	/* originator, not hopcount, no hoplimit, sequence number */
-	rfc5444_writer_set_msg_header(wr, message, true, false, false, true);
-  rfc5444_writer_set_msg_seqno(wr, message, seq_no++);
-	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(&local_addr));
+	/* no originator, no hopcount, no hoplimit, no sequence number */
+	rfc5444_writer_set_msg_header(wr, message, false, false, false, false);
 }
 
 static void
