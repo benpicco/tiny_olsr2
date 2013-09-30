@@ -18,7 +18,7 @@ struct nhdp_node {
 	struct avl_node node;	/* for 1-hop neighborhood list */
 
 	struct netaddr* addr;	/* node address */
-	uint8_t linkstatus;		/* TODO */
+	uint8_t linkstatus;		/* wheather we have a symetric link */
 	uint8_t mpr_neigh;		/* number of nodes reached by this node if it's an MPR */
 	uint8_t mpr_selector;	/* wheather the node selected us as an MPR */
 #ifdef DEBUG

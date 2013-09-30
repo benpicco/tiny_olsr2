@@ -1,10 +1,5 @@
 - [ ] port node to RIOT
-- [x] setup CUnit
-- [x] use avl tree?
-- [ ] TC messages
 - [ ] make mpr_graph.pdf also includes outdated mpr selections, find a way to remove those
-- [ ] duplicate set
-- [ ] seq no
-- [ ] validity time
+- [ ] validity time for neighbors
 - [ ] calculate routing table
 - [ ] seperate node info from list - common structs

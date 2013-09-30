@@ -1,4 +1,7 @@
 IPv6 or node ids?
+	-> not unique enough
 UDP packages or raw frames?
+	-> we need from, length (and to if we handle routing)
 
-How do we gather metrics?
+currently we assume assume flooding MPR == routoing MPR
+	-> How do we gather metrics?
