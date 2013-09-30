@@ -186,11 +186,13 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	printf("\tseqno: %d\n", cont->seqno);
 	printf("\tVTIME: %d\n", vtime);
 
+  if (!netaddr_cmp(&local_addr, &cont->orig_addr))
+    return RFC5444_DROP_PACKET;
+
   if (is_known_msg(&cont->orig_addr, cont->seqno, vtime)) {
     printf("message already processed, dropping it\n");
     return RFC5444_DROP_PACKET;
   }
-
 
 #ifdef DEBUG
 	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
