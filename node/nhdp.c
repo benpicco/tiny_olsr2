@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "nhdp.h"
+#include "misc.h"
 
 #include "common/avl.h"
 #include "common/avl_comp.h"
@@ -21,11 +22,6 @@ struct nhdp_2_hop_node {
 #endif
 };
 
-struct netaddr* _netaddr_cpy (struct netaddr* addr) {
-	struct netaddr* addr_new = calloc(sizeof(struct netaddr), 0);
-	return memcpy(addr_new, addr, sizeof(struct netaddr));
-}
-
 void nhdp_init() {
 	avl_init(&nhdp_head, avl_comp_netaddr, false);
 	avl_init(&nhdp_2_hop_head, avl_comp_netaddr, false);
@@ -36,7 +32,7 @@ struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 
 	if (!n) {
 		n = calloc(1, sizeof(struct nhdp_node));
-		n->addr = _netaddr_cpy(addr);
+		n->addr = netaddr_cpy(addr);
 		n->linkstatus = linkstatus;
 
 		n->node.key = n->addr;
@@ -68,7 +64,7 @@ int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t lin
 
 	n2 = calloc(1, sizeof(struct nhdp_2_hop_node));
 	n2->mpr = node;
-	n2->addr = _netaddr_cpy(addr);
+	n2->addr = netaddr_cpy(addr);
 	n2->linkstatus = linkstatus;
 #ifdef DEBUG
 	n2->name = name;

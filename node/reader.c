@@ -18,6 +18,7 @@
 #include "reader.h"
 #include "writer.h"
 #include "constants.h"
+#include "duplicate.h"
 
 struct rfc5444_reader reader;
 struct netaddr* current_src;
@@ -168,7 +169,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 static enum rfc5444_result
 _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
-	uint8_t value;
+	uint8_t vtime;
 	struct netaddr_str nbuf;
 
 	printf("received TC package:\n");
@@ -179,15 +180,17 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (!cont->has_seqno)
 		return RFC5444_DROP_PACKET;
 
+  vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
+
 	printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
 	printf("\tseqno: %d\n", cont->seqno);
+	printf("\tVTIME: %d\n", vtime);
 
-	/* both VTIME and ITIME were defined as mandatory */
-	value = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_ITIME].tlv->single_value);
-	printf("\tITIME: %d\n", value);
+  if (is_known_msg(&cont->orig_addr, cont->seqno, vtime)) {
+    printf("message already processed, dropping it\n");
+    return RFC5444_DROP_PACKET;
+  }
 
-	value = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
-	printf("\tVTIME: %d\n", value);
 
 #ifdef DEBUG
 	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
@@ -242,6 +245,7 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
  * Initialize RFC5444 reader
  */
 void reader_init(void) {
+  duplicate_init();
 	/* initialize reader */
 	rfc5444_reader_init(&reader);
 	reader.forward_message = _cb_olsr_forward_message;
