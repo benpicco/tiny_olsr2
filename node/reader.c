@@ -173,13 +173,14 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
   printf("received TC package:\n");
 
-  if (cont->has_origaddr) {
-    printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
-  }
+  if (!cont->has_origaddr)
+    return RFC5444_DROP_PACKET;
 
-  if (cont->has_seqno) {
-    printf("\tseqno: %d\n", cont->seqno);
-  }
+  if (!cont->has_seqno)
+    return RFC5444_DROP_PACKET;
+
+  printf("\torig_addr: %s\n", netaddr_to_string(&nbuf, &cont->orig_addr));
+  printf("\tseqno: %d\n", cont->seqno);
 
   /* both VTIME and ITIME were defined as mandatory */
   value = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_ITIME].tlv->single_value);
