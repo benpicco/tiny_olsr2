@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 #include "nhdp.h"
-#include "misc.h"
 
 #include "common/avl.h"
 #include "common/avl_comp.h"
@@ -32,7 +31,7 @@ struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus) {
 
 	if (!n) {
 		n = calloc(1, sizeof(struct nhdp_node));
-		n->addr = netaddr_cpy(addr);
+		n->addr = netaddr_dup(addr);
 		n->linkstatus = linkstatus;
 
 		n->node.key = n->addr;
@@ -64,7 +63,7 @@ int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t lin
 
 	n2 = calloc(1, sizeof(struct nhdp_2_hop_node));
 	n2->mpr = node;
-	n2->addr = netaddr_cpy(addr);
+	n2->addr = netaddr_dup(addr);
 	n2->linkstatus = linkstatus;
 #ifdef DEBUG
 	n2->name = name;
@@ -88,7 +87,7 @@ void remove_neighbor(struct nhdp_node* node) {
 		avl_remove(&nhdp_head, &node->node);
 		if (node->addr) {
 			printf("free node->addr\n"); // TODO see if this doesn't crash
-			free(node->addr);
+			netaddr_free(node->addr);
 		}
 		free(node);
 	}

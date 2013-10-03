@@ -6,7 +6,6 @@
 #include "common/avl_comp.h"
 
 #include "duplicate.h"
-#include "misc.h"
 
 struct packet {
 	struct packet* next;
@@ -16,7 +15,8 @@ struct packet {
 
 struct olsr_node {
 	struct avl_node node;
-	struct netaddr* addr;
+
+	struct netaddr* addr;		/* node addr */
 	struct packet* processed;
 };
 
@@ -69,7 +69,7 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t validity) {
 	struct olsr_node* n = get_olsr_node(addr);
 	if (!n) {
 		n = calloc(1, sizeof(struct olsr_node));
-		n->addr = netaddr_cpy(addr);
+		n->addr = netaddr_dup(addr);
 
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);
