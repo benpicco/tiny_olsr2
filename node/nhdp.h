@@ -6,7 +6,7 @@
 
 struct netaddr local_addr;
 
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 char* node_name;
 #endif
 
@@ -21,7 +21,7 @@ struct nhdp_node {
 	uint8_t linkstatus;		/* wheather we have a symetric link */
 	uint8_t mpr_neigh;		/* number of nodes reached by this node if it's an MPR */
 	uint8_t mpr_selector;	/* wheather the node selected us as an MPR */
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 	char* name;				/* node name from graph.gv */
 #endif
 };

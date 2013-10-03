@@ -1,8 +1,8 @@
 #include <stdlib.h>
-#include <stdio.h>
 
 #include "nhdp.h"
 #include "util.h"
+#include "debug.h"
 
 #include "common/avl.h"
 #include "common/avl_comp.h"
@@ -17,7 +17,7 @@ struct nhdp_2_hop_node {
 
 	struct netaddr* addr;
 	uint8_t linkstatus;
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 	char* name;
 #endif
 };
@@ -55,7 +55,7 @@ int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t lin
 		if (n2->mpr == node || n2->mpr->mpr_neigh > node->mpr_neigh + 1)
 			return -ADD_2_HOP_OK;
 
-		printf("switching MPR\n");
+		DEBUG("switching MPR\n");
 		n2->mpr->mpr_neigh--;
 		n2->mpr = node;
 		node->mpr_neigh++;
@@ -66,7 +66,7 @@ int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t lin
 	n2->mpr = node;
 	n2->addr = netaddr_dup(addr);
 	n2->linkstatus = linkstatus;
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 	n2->name = name;
 #endif
 	n2->node.key = n2->addr;
@@ -87,33 +87,33 @@ void remove_neighbor(struct nhdp_node* node) {
 	if (node) {
 		avl_remove(&nhdp_head, &node->node);
 		if (node->addr) {
-			printf("free node->addr\n"); // TODO see if this doesn't crash
+			DEBUG("free node->addr\n"); // TODO see if this doesn't crash
 			free(node->addr);
 		}
 		free(node);
 	}
 }
 
+#ifdef ENABLE_DEBUG
 void print_neighbors(void) {
-	struct netaddr_str nbuf;
-	struct netaddr_str nbuf2;
-	struct netaddr_str nbuf3;
 	struct nhdp_node* node;
 
 	avl_for_each_element(&nhdp_head, node, node) {
-#ifdef DEBUG
-		printf("neighbor: %s (%s) (mpr for %d nodes)\n", node->name, netaddr_to_string(&nbuf, node->addr), node->mpr_neigh);
-#else
-		printf("neighbor: %s (mpr for %d nodes)\n", netaddr_to_string(&nbuf, node->addr), node->mpr_neigh);
-#endif
+		DEBUG("neighbor: %s (%s) (mpr for %d nodes)\n",
+			node->name,
+			netaddr_to_string(&nbuf[0], node->addr),
+			node->mpr_neigh);
 	}
 
 	struct nhdp_2_hop_node* n2;
 	avl_for_each_element(&nhdp_2_hop_head, n2, node) {
-#ifdef DEBUG
-		printf("\t%s (%s) -> %s (%s) -> %s (%s)\n", n2->name, netaddr_to_string(&nbuf, n2->addr), n2->mpr->name, netaddr_to_string(&nbuf2, n2->mpr->addr), node_name, netaddr_to_string(&nbuf3, &local_addr));
-#else
-		printf("\t%s -> %s -> (O)\n", netaddr_to_string(&nbuf2, n2->addr), netaddr_to_string(&nbuf, n2->mpr->addr));
-#endif
+		DEBUG("\t%s (%s) -> %s (%s) -> %s (%s)\n",
+			n2->name, netaddr_to_string(&nbuf[0], n2->addr),
+			n2->mpr->name, netaddr_to_string(&nbuf[1], n2->mpr->addr),
+			node_name,
+			netaddr_to_string(&nbuf[2], &local_addr));
 	}
 }
+#else
+void print_neighbors(void) {}
+#endif

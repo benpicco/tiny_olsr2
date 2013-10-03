@@ -15,7 +15,7 @@ struct olsr_node {
 	uint16_t seq_no;			/* last seq_no from last_addr */
 	time_t expires;				/* time when this tuple is invalid */
 	uint8_t distance;			/* hops between us and the node */
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 	char* name;					/* node name from graph.gv */
 #endif
 };
@@ -23,9 +23,6 @@ struct olsr_node {
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq_no, uint8_t vtime, uint8_t distance, char* name);
 bool is_known_msg(struct netaddr* src, uint16_t seq_no);
 void olsr_init();
-
-#ifdef DEBUG
 void print_topology_set();
-#endif
 
 #endif

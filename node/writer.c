@@ -1,7 +1,4 @@
-#include <string.h>
-#include <stdio.h>
-
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 #include <string.h>
 #endif
 
@@ -19,6 +16,7 @@
 #include "constants.h"
 #include "writer.h"
 #include "nhdp.h"
+#include "debug.h"
 
 uint8_t msg_buffer[128];
 uint8_t msg_addrtlvs[1000];
@@ -43,7 +41,7 @@ static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
 	[IDX_ADDRTLV_LINK_STATUS] =	{ .type = RFC5444_ADDRTLV_LINK_STATUS },
 	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR },
 	[IDX_ADDRTLV_LINKMETRIC] = { .type = RFC5444_ADDRTLV_LINK_METRIC },
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
@@ -55,7 +53,7 @@ static struct rfc5444_writer_content_provider _olsr_message_content_provider = {
 };
 
 static struct rfc5444_writer_tlvtype _olsr_addrtlvs[] = {
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
@@ -75,7 +73,7 @@ _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 		time_encoded = rfc5444_timetlv_encode(HOLD_TIME);
 		rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_INTERVAL_TIME, 0,
 		 	&time_encoded, sizeof(time_encoded));
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 		rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, node_name, strlen(node_name));
 #endif
 }
@@ -90,7 +88,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], &neighbor->linkstatus, sizeof neighbor->linkstatus, false);
 		if (neighbor->mpr_neigh > 0) /* node is a mpr - TODO sensible value*/
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR], &neighbor->mpr_neigh, sizeof neighbor->mpr_neigh, false);
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 		if (neighbor->name)
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_NODE_NAME], neighbor->name, strlen(neighbor->name), false);
 #endif		
@@ -108,7 +106,7 @@ _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr) {
 		time_encoded = rfc5444_timetlv_encode(HOLD_TIME);
 		rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_INTERVAL_TIME, 0,
 			&time_encoded, sizeof(time_encoded));
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 		rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, node_name, strlen(node_name));
 #endif
 }
@@ -121,7 +119,7 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 	avl_for_each_element(&nhdp_head, node, node) {
 		if (node->mpr_selector) {
 			struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 			if (node->name)
 				rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_NODE_NAME], node->name, strlen(node->name), false);
 #endif
@@ -188,9 +186,7 @@ writer_init(write_packet_func_ptr ptr) {
 }
 
 void writer_send_hello(void) {
-	printf("[HELLO]\n");
-
-	print_neighbors();
+	DEBUG("[HELLO]\n");
 
 	/* send message */
 	rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_HELLO);
@@ -201,7 +197,7 @@ void writer_send_tc(void) {
 	if (!send_tc_messages)
 		return;
 
-	printf("[TC]\n");
+	DEBUG("[TC]\n");
 
 	/* send message */
 	rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_TC);

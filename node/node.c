@@ -20,6 +20,7 @@
 #include "olsr.h"
 #include "writer.h"
 #include "reader.h"
+#include "debug.h"
 
 #include "rfc5444/rfc5444_print.h"
 #include "rfc5444/rfc5444_reader.h"
@@ -167,7 +168,7 @@ int main(int argc, char** argv) {
 		this_name[size] = 0;
 
 	printf("This is node %s\n", this_name);
-#ifdef DEBUG
+#ifdef ENABLE_DEBUG
 	node_name = strdup(this_name);
 #endif
 
@@ -185,11 +186,10 @@ int main(int argc, char** argv) {
 	
 	while (1) {
 		sleep_s(5);
+		print_neighbors();
 		writer_send_hello();
-#ifdef DEBUG
-		puts("---[ Topology Set ]--");
 		print_topology_set();
-		puts("---------------------");
+#ifdef ENABLE_DEBUG
 		if (*node_name == 'A')
 #endif
 			writer_send_tc();
