@@ -5,3 +5,7 @@ UDP packages or raw frames?
 
 currently we assume assume flooding MPR == routoing MPR
 	-> How do we gather metrics?
+
+Why are nodes in the topology set not unique? Is it sufficient to just store the shortest route?
+
+Why is seq_no associated with last_addr?

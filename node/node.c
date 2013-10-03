@@ -17,6 +17,7 @@
 #endif
 
 #include "nhdp.h"
+#include "olsr.h"
 #include "writer.h"
 #include "reader.h"
 
@@ -178,13 +179,17 @@ int main(int argc, char** argv) {
 	local_addr._prefix_len = 128;
 
 	nhdp_init();
+	olsr_init();
 	reader_init();
 	writer_init(write_packet);
 	
 	while (1) {
 		sleep_s(5);
 		writer_send_hello();
-#ifdef DEBUG		
+#ifdef DEBUG
+		puts("---[ Topology Set ]--");
+		print_topology_set();
+		puts("---------------------");
 		if (*node_name == 'A')
 #endif
 			writer_send_tc();

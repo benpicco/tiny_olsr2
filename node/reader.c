@@ -15,20 +15,26 @@
 #endif
 
 #include "nhdp.h"
+#include "olsr.h"
 #include "reader.h"
 #include "writer.h"
 #include "constants.h"
-#include "duplicate.h"
 
 struct rfc5444_reader reader;
 struct netaddr* current_src;
 struct nhdp_node* current_node;
+
+/* ughh… these variables are needed in the addr callback, but read in the packet callback */
+uint8_t vtime;
+uint8_t hops;
+uint16_t seq_no;
 
 static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
 
 static enum rfc5444_result _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
+static enum rfc5444_result _cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
 
 /* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
@@ -89,6 +95,7 @@ static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
 static struct rfc5444_reader_tlvblock_consumer _olsr_consumer = {
 	.msg_id = RFC5444_MSGTYPE_TC,
 	.block_callback = _cb_olsr_blocktlv_packet_okay,
+	.end_callback = _cb_olsr_end_callback,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
@@ -169,7 +176,6 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 static enum rfc5444_result
 _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
-	uint8_t vtime;
 	struct netaddr_str nbuf;
 
 	printf("received TC package:\n");
@@ -178,6 +184,9 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		return RFC5444_DROP_PACKET;
 
 	if (!cont->has_seqno)
+		return RFC5444_DROP_PACKET;
+
+	if (!cont->has_hopcount || !cont->has_hoplimit)
 		return RFC5444_DROP_PACKET;
 
   vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
@@ -189,10 +198,15 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
   if (!netaddr_cmp(&local_addr, &cont->orig_addr))
     return RFC5444_DROP_PACKET;
 
-  if (is_known_msg(&cont->orig_addr, cont->seqno, vtime)) {
+  if (is_known_msg(&cont->orig_addr, cont->seqno)) {
     printf("message already processed, dropping it\n");
     return RFC5444_DROP_PACKET;
   }
+
+  hops = cont->hopcount;
+  seq_no = cont->seqno;
+
+  // what if address block is empty?
 
 #ifdef DEBUG
 	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
@@ -214,7 +228,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		char* name = strndup((char*) tlv->single_value, tlv->length);
 		printf("\tannonces: %s (%s)\n", name, netaddr_to_string(&nbuf, &cont->addr));
-		free(name);
+		add_olsr_node(&cont->addr, current_src, seq_no, vtime, hops + 1, name);
 	}
 #endif
 
@@ -242,12 +256,18 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
 	}
 }
 
+static enum rfc5444_result
+_cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
+	printf("_cb_olsr_end_callback(%s), current_src is used %d times\n", dropped ? "dropped" : "", current_src->_refs);
+	netaddr_free(current_src);
+
+	return dropped ? RFC5444_OKAY : RFC5444_DROP_PACKET;
+}
 
 /**
  * Initialize RFC5444 reader
  */
 void reader_init(void) {
-  duplicate_init();
 	/* initialize reader */
 	rfc5444_reader_init(&reader);
 	reader.forward_message = _cb_olsr_forward_message;
@@ -265,7 +285,7 @@ void reader_init(void) {
  * Inject a package into the RFC5444 reader
  */
 int reader_handle_packet(void* buffer, size_t length, struct netaddr* src) {
-	current_src = src;
+	current_src = netaddr_dup(src);
 	return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 
