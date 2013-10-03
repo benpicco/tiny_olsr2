@@ -3,7 +3,7 @@ CC=clang
 INCLUDE=-I../oonf_api/src-api -I../oonf_api/build
 LIBDIR=../oonf_api/build
 
-CFLAGS=-Wall -std=c99 -DDEBUG $(INCLUDE)
+CFLAGS=-Wall -std=gnu99 -DDEBUG $(INCLUDE)
 LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 
 .PHONY: clean run
@@ -11,8 +11,8 @@ LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 NODES := `grep -- -\> graph.gv | grep -o . | sort | grep [[:alnum:]] | uniq | wc -l`
 LOG_DIR := log
 
-node:	node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o $(LDFLAGS)
-	cc node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o $(LDFLAGS) -o node/node
+node:	node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o $(LDFLAGS)
+	cc node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o $(LDFLAGS) -o node/node
 
 dispatcher:	dispatcher.o $(LDFLAGS)
 

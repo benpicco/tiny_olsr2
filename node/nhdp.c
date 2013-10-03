@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "nhdp.h"
+#include "util.h"
 
 #include "common/avl.h"
 #include "common/avl_comp.h"
@@ -87,7 +88,7 @@ void remove_neighbor(struct nhdp_node* node) {
 		avl_remove(&nhdp_head, &node->node);
 		if (node->addr) {
 			printf("free node->addr\n"); // TODO see if this doesn't crash
-			netaddr_free(node->addr);
+			free(node->addr);
 		}
 		free(node);
 	}

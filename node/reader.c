@@ -34,7 +34,6 @@ static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_
 
 static enum rfc5444_result _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
-static enum rfc5444_result _cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
 
 /* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
@@ -95,7 +94,6 @@ static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
 static struct rfc5444_reader_tlvblock_consumer _olsr_consumer = {
 	.msg_id = RFC5444_MSGTYPE_TC,
 	.block_callback = _cb_olsr_blocktlv_packet_okay,
-	.end_callback = _cb_olsr_end_callback,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
@@ -256,14 +254,6 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
 	}
 }
 
-static enum rfc5444_result
-_cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
-	printf("_cb_olsr_end_callback(%s), current_src is used %d times\n", dropped ? "dropped" : "", current_src->_refs);
-	netaddr_free(current_src);
-
-	return dropped ? RFC5444_OKAY : RFC5444_DROP_PACKET;
-}
-
 /**
  * Initialize RFC5444 reader
  */
@@ -285,7 +275,7 @@ void reader_init(void) {
  * Inject a package into the RFC5444 reader
  */
 int reader_handle_packet(void* buffer, size_t length, struct netaddr* src) {
-	current_src = netaddr_dup(src);
+	current_src = src;
 	return rfc5444_reader_handle_packet(&reader, buffer, length);
 }
 
