@@ -1,3 +1,5 @@
+ITIME is the same for all nodes, don't send or store it seperately
+
 IPv6 or node ids?
 	-> not unique enough
 UDP packages or raw frames?

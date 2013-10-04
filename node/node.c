@@ -21,6 +21,7 @@
 #include "writer.h"
 #include "reader.h"
 #include "debug.h"
+#include "constants.h"
 
 #include "rfc5444/rfc5444_print.h"
 #include "rfc5444/rfc5444_reader.h"
@@ -145,7 +146,7 @@ int main(int argc, char** argv) {
 		printf("usage:  %s <server IP address> <port> <node IP6 address>\n", argv[0]);
 		return -1;
 	}
-	
+
 	this_ip = argv[3];
 
 	init_socket(inet_addr(argv[1]), atoi(argv[2]));
@@ -189,9 +190,9 @@ int main(int argc, char** argv) {
 	olsr_init();
 	reader_init();
 	writer_init(write_packet);
-	
+
 	while (1) {
-		sleep_s(5);
+		sleep_s(REFRESH_INTERVAL);
 
 		sigprocmask (SIG_BLOCK, &block_io, NULL);	/* prevent 'interupts' from happening */
 

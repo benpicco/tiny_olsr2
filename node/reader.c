@@ -38,7 +38,7 @@ static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_
 /* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
 	[IDX_TLV_ITIME] = { .type = RFC5444_MSGTLV_INTERVAL_TIME, .type_ext = 0, .match_type_ext = true,
-		.mandatory = true, .min_length = 1, .match_length = true },
+		.min_length = 1, .match_length = true },
 	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .type_ext = 0, .match_type_ext = true,
 		.mandatory = true, .min_length = 1, .match_length = true },
 	[IDX_TLV_WILLINGNESS] = { .type = RFC5444_MSGTLV_MPR_WILLING, .type_ext = 0, .match_type_ext = true,
@@ -67,8 +67,6 @@ static struct rfc5444_reader_tlvblock_consumer_entry _olsr_message_tlvs[] = {
 		.min_length = 1, .match_length = true },
 	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .type_ext = 0, .match_type_ext = true,
 		.mandatory = true, .min_length = 1, .match_length = true },
-	[IDX_TLV_WILLINGNESS] = { .type = RFC5444_MSGTLV_MPR_WILLING, .type_ext = 0, .match_type_ext = true,
-		.min_length = 1, .match_length = true },
 #ifdef ENABLE_DEBUG
 	[IDX_TLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -113,10 +111,7 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	DEBUG("\tfrom: %s", netaddr_to_string(&nbuf[0], current_src));
 	current_node = add_neighbor(current_src, RFC5444_LINKSTATUS_HEARD);
 
-	/* both VTIME and ITIME were defined as mandatory */
-	value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_ITIME].tlv->single_value);
-	DEBUG("\tITIME: %d", value);
-
+	/* VTIME is defined as mandatory */
 	value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
 	DEBUG("\tVTIME: %d", value);
 

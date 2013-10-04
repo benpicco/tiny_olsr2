@@ -1,9 +1,8 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
-// todo: sensible values
 #define REFRESH_INTERVAL 5
-#define HOLD_TIME 10
+#define HOLD_TIME (3 * REFRESH_INTERVAL)
 
 #define FLOODING_MPR_SELECTOR 1
 #define ROUTING_MPR_SELECTOR  2
