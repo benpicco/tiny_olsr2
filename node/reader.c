@@ -108,23 +108,23 @@ static enum rfc5444_result
 _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	uint8_t value;
 
-	DEBUG("received HELLO package:\n");
+	DEBUG("received HELLO package:");
 
-	DEBUG("\tfrom: %s\n", netaddr_to_string(&nbuf[0], current_src));
+	DEBUG("\tfrom: %s", netaddr_to_string(&nbuf[0], current_src));
 	current_node = add_neighbor(current_src, RFC5444_LINKSTATUS_HEARD);
 
 	/* both VTIME and ITIME were defined as mandatory */
 	value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_ITIME].tlv->single_value);
-	DEBUG("\tITIME: %d\n", value);
+	DEBUG("\tITIME: %d", value);
 
 	value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
-	DEBUG("\tVTIME: %d\n", value);
+	DEBUG("\tVTIME: %d", value);
 
 #ifdef ENABLE_DEBUG
 	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
 		if (!current_node->name)
 			current_node->name = strndup((char*) _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
-		DEBUG("\tname: %s\n", current_node->name);
+		DEBUG("\tname: %s", current_node->name);
 	}
 #endif
 
@@ -140,7 +140,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #ifdef ENABLE_DEBUG
 	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		name = strndup((char*) tlv->single_value, tlv->length); // memory leak
-		DEBUG("\t2-hop neighbor: %s (%s)\n", name, netaddr_to_string(&nbuf[0], &cont->addr));
+		DEBUG("\t2-hop neighbor: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
 	}
 #endif
 
@@ -157,7 +157,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 			send_tc_messages = true;
 
 			/* allow MPR selection to be drawn in graphviz */
-			DEBUG("\t%s -> %s // [ label=\"MPR\" ];\n", current_node->name, node_name);
+			DEBUG("\t%s -> %s // [ label=\"MPR\" ];", current_node->name, node_name);
 		}
 	} else {
 	 /* no need to try adding us as a 2-hop neighbor */
@@ -171,7 +171,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 static enum rfc5444_result
 _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
-	DEBUG("received TC package:\n");
+	DEBUG("received TC package:");
 
 	if (!cont->has_origaddr)
 		return RFC5444_DROP_PACKET;
@@ -184,15 +184,15 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
   vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
 
-	DEBUG("\torig_addr: %s\n", netaddr_to_string(&nbuf[0], &cont->orig_addr));
-	DEBUG("\tseqno: %d\n", cont->seqno);
-	DEBUG("\tVTIME: %d\n", vtime);
+	DEBUG("\torig_addr: %s", netaddr_to_string(&nbuf[0], &cont->orig_addr));
+	DEBUG("\tseqno: %d", cont->seqno);
+	DEBUG("\tVTIME: %d", vtime);
 
   if (!netaddr_cmp(&local_addr, &cont->orig_addr))
     return RFC5444_DROP_PACKET;
 
   if (is_known_msg(&cont->orig_addr, cont->seqno)) {
-    DEBUG("message already processed, dropping it\n");
+    DEBUG("message already processed, dropping it");
     return RFC5444_DROP_PACKET;
   }
 
@@ -204,7 +204,7 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #ifdef ENABLE_DEBUG
 	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
 		char* _name = strndup((char*) _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
-		DEBUG("\tname: %s\n", _name);
+		DEBUG("\tname: %s", _name);
 		free(_name);
 	}
 #endif
@@ -219,7 +219,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #ifdef ENABLE_DEBUG
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		char* name = strndup((char*) tlv->single_value, tlv->length);
-		DEBUG("\tannonces: %s (%s)\n", name, netaddr_to_string(&nbuf[0], &cont->addr));
+		DEBUG("\tannonces: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
 		add_olsr_node(&cont->addr, current_src, seq_no, vtime, hops + 1, name);
 	}
 #endif
@@ -228,20 +228,20 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 }
 
 static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_t *buffer, size_t length) {
-	DEBUG("_cb_olsr_forward_message(%zd bytes)\n", length);
+	DEBUG("_cb_olsr_forward_message(%zd bytes)", length);
  
 	struct nhdp_node* node = get_neighbor(current_src);
-	DEBUG("sender: %s (%s)\n", netaddr_to_string(&nbuf[0], current_src), node ? node->name : "null");
+	DEBUG("sender: %s (%s)", netaddr_to_string(&nbuf[0], current_src), node ? node->name : "null");
 
 	if (!node) 
-		DEBUG("I don't know the sender, dropping packet.\n");
+		DEBUG("I don't know the sender, dropping packet.");
 
 	if (node && node->mpr_selector) {
-		DEBUG("forwarding package\n");
+		DEBUG("forwarding package");
 		if (RFC5444_OKAY == rfc5444_writer_forward_msg(&writer, buffer, length))
 			rfc5444_writer_flush(&writer, &interface, true);
 		else
-			DEBUG("failed forwarding package\n");
+			DEBUG("failed forwarding package");
 	}
 }
 

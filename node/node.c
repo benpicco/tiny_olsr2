@@ -45,14 +45,14 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
-	printf("write_packet(%zd bytes)\n", length);
+	DEBUG("write_packet(%zd bytes)", length);
 
 	/* generate hexdump of packet */
 	abuf_hexdump(&_hexbuf, "\t", buffer, length);
 	rfc5444_print_direct(&_hexbuf, buffer, length);
 
 	/* print hexdump to console */
-	printf("%s", abuf_getptr(&_hexbuf));
+	puts(abuf_getptr(&_hexbuf));
 
 	abuf_clear(&_hexbuf);
 #ifdef RIOT
@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
 	tv.tv_usec = 0;
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
-	printf("probing for name…\n");
+	DEBUG("probing for name…");
 	/* send HELLO */
 	sendto(sockfd, this_ip, strlen(this_ip), 0, (struct sockaddr*) &servaddr, sizeof(servaddr));
 	/* get our name */
@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
 	} else
 		this_name[size] = 0;
 
-	printf("This is node %s\n", this_name);
+	DEBUG("This is node %s", this_name);
 #ifdef ENABLE_DEBUG
 	node_name = strdup(this_name);
 #endif
@@ -203,6 +203,7 @@ int main(int argc, char** argv) {
 #endif
 			writer_send_tc();
 
+		DEBUG_TICK;
 		sigprocmask (SIG_UNBLOCK, &block_io, NULL);
 	}
 

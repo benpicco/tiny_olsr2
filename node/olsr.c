@@ -19,7 +19,7 @@ struct olsr_node* get_olsr_node(struct netaddr* addr) {
 struct netaddr* _netaddr_reuse (struct netaddr* addr) {
 	struct olsr_node* n = get_olsr_node(addr);
 	if (!n) {
-		DEBUG("Address %s not found, this shouldn't happen\n", netaddr_to_string(&nbuf[0], addr));
+		DEBUG("Address %s not found, this shouldn't happen", netaddr_to_string(&nbuf[0], addr));
 		return netaddr_dup(addr);
 	}
 	return n->addr;
@@ -51,11 +51,11 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 
 	/* we found a shorter route */
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
-		DEBUG("shorter route found\n");
+		DEBUG("shorter route found");
 		n->last_addr = _netaddr_reuse(last_addr);
 	}
 
-	DEBUG("updating topology base\n");
+	DEBUG("updating topology base");
 
 	n->seq_no = seq_no;		/* is_known_msg() should have been called before */
 	n->distance  = distance;
@@ -82,11 +82,11 @@ void olsr_init() {
 
 #ifdef ENABLE_DEBUG
 void print_topology_set() {
-	DEBUG("---[ Topology Set ]--\n");
+	DEBUG("---[ Topology Set ]--");
 
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
-		printf("%s (%s) => %s; %d hops, %zd s [%d]\n",
+		DEBUG("%s (%s) => %s; %d hops, %zd s [%d]",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
@@ -95,7 +95,7 @@ void print_topology_set() {
 			node->seq_no
 			);
 	}
-	DEBUG("---------------------\n");
+	DEBUG("---------------------");
 }
 #else
 void print_topology_set() {}

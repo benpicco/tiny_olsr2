@@ -6,12 +6,15 @@
 #include "common/netaddr.h"
 
 struct netaddr_str nbuf[4];
+int debug_ticks;
 
-#define DEBUG(...)	printf(__VA_ARGS__)
+#define DEBUG(fmt, ...) printf(("[%d] " fmt "\n"), debug_ticks, ##__VA_ARGS__);
+#define DEBUG_TICK		debug_ticks++
 
 #else	/* no ENABLE_DEBUG */
 
 #define DEBUG(...)
+#define DEBUG_TICK
 
 #endif
 #endif

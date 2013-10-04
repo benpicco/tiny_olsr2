@@ -186,7 +186,7 @@ writer_init(write_packet_func_ptr ptr) {
 }
 
 void writer_send_hello(void) {
-	DEBUG("[HELLO]\n");
+	DEBUG("[HELLO]");
 
 	/* send message */
 	rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_HELLO);
@@ -197,7 +197,7 @@ void writer_send_tc(void) {
 	if (!send_tc_messages)
 		return;
 
-	DEBUG("[TC]\n");
+	DEBUG("[TC]");
 
 	/* send message */
 	rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_TC);

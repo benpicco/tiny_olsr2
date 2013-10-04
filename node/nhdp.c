@@ -55,7 +55,7 @@ int add_2_hop_neighbor(struct nhdp_node* node, struct netaddr* addr, uint8_t lin
 		if (n2->mpr == node || n2->mpr->mpr_neigh > node->mpr_neigh + 1)
 			return -ADD_2_HOP_OK;
 
-		DEBUG("switching MPR\n");
+		DEBUG("switching MPR");
 		n2->mpr->mpr_neigh--;
 		n2->mpr = node;
 		node->mpr_neigh++;
@@ -87,7 +87,7 @@ void remove_neighbor(struct nhdp_node* node) {
 	if (node) {
 		avl_remove(&nhdp_head, &node->node);
 		if (node->addr) {
-			DEBUG("free node->addr\n"); // TODO see if this doesn't crash
+			DEBUG("free node->addr"); // TODO see if this doesn't crash
 			free(node->addr);
 		}
 		free(node);
@@ -99,7 +99,7 @@ void print_neighbors(void) {
 	struct nhdp_node* node;
 
 	avl_for_each_element(&nhdp_head, node, node) {
-		DEBUG("neighbor: %s (%s) (mpr for %d nodes)\n",
+		DEBUG("neighbor: %s (%s) (mpr for %d nodes)",
 			node->name,
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->mpr_neigh);
@@ -107,7 +107,7 @@ void print_neighbors(void) {
 
 	struct nhdp_2_hop_node* n2;
 	avl_for_each_element(&nhdp_2_hop_head, n2, node) {
-		DEBUG("\t%s (%s) -> %s (%s) -> %s (%s)\n",
+		DEBUG("\t%s (%s) -> %s (%s) -> %s (%s)",
 			n2->name, netaddr_to_string(&nbuf[0], n2->addr),
 			n2->mpr->name, netaddr_to_string(&nbuf[1], n2->mpr->addr),
 			node_name,
