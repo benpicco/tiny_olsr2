@@ -16,7 +16,7 @@ struct olsr_node* get_olsr_node(struct netaddr* addr) {
 	return avl_find_element(&olsr_head, addr, n, node);
 }
 
-struct netaddr* _netaddr_reuse (struct netaddr* addr) {
+struct netaddr* _netaddr_reuse(struct netaddr* addr) {
 	struct olsr_node* n = get_olsr_node(addr);
 	if (!n) {
 		DEBUG("Address %s not found, this shouldn't happen", netaddr_to_string(&nbuf[0], addr));
@@ -29,6 +29,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 	struct olsr_node* n = get_olsr_node(addr);
 
 	if (!n) {
+		DEBUG("New olsr node: %s, last hop: %s", netaddr_to_string(&nbuf[0], addr), netaddr_to_string(&nbuf[1], last_addr));
 		n = calloc(1, sizeof(struct olsr_node));
 		n->addr = netaddr_dup(addr);
 		n->last_addr = _netaddr_reuse(last_addr);

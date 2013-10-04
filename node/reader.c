@@ -220,7 +220,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		char* name = strndup((char*) tlv->single_value, tlv->length);
 		DEBUG("\tannonces: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
-		add_olsr_node(&cont->addr, current_src, seq_no, vtime, hops + 1, name);
+		add_olsr_node(&cont->addr, &cont->orig_addr, seq_no, vtime, hops + 1, name);
 	}
 #endif
 
