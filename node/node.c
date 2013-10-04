@@ -172,6 +172,12 @@ int main(int argc, char** argv) {
 	node_name = strdup(this_name);
 #endif
 
+	sigset_t block_io;
+
+	/* Initialize the signal mask. */
+	sigemptyset (&block_io);
+	sigaddset (&block_io, SIGIO);
+
 	enable_asynch(sockfd);
 #endif
 
@@ -186,6 +192,9 @@ int main(int argc, char** argv) {
 	
 	while (1) {
 		sleep_s(5);
+
+		sigprocmask (SIG_BLOCK, &block_io, NULL);	/* prevent 'interupts' from happening */
+
 		print_neighbors();
 		writer_send_hello();
 		print_topology_set();
@@ -193,6 +202,8 @@ int main(int argc, char** argv) {
 		if (*node_name == 'A')
 #endif
 			writer_send_tc();
+
+		sigprocmask (SIG_UNBLOCK, &block_io, NULL);
 	}
 
 	reader_cleanup();
