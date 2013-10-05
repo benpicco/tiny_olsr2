@@ -42,6 +42,7 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 		n2->addr = netaddr_dup(addr);
 		n2->distance = 2;
 		n2->next_addr = netaddr_reuse(next_addr);
+		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
 		n2->expires = time(0) + vtime;
 		h2_deriv(n2)->linkstatus = linkstatus;
 #ifdef ENABLE_DEBUG
@@ -69,6 +70,7 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 		DEBUG("switching MPR");
 		n1_old->mpr_neigh--;
 		n2->next_addr = netaddr_reuse(next_addr);
+		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
 		n1->mpr_neigh++;
 	} else
 		DEBUG("TODO: %d hop node became 2-hop-neighbor", n2->distance);
