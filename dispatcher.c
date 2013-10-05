@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -96,7 +97,7 @@ static struct node* get_node(struct sockaddr_in addr) {
 }
 
 static void write_packet(struct node* n, int socket, void *buffer, size_t length) {
-	printf("[node %s sending %zd byte]\n", n->name, length);
+	printf("%snode %s sending %zd byte\n", time(0) % 2 ? "\t" : "" , n->name, length);
 
 	struct connection* con = n->connections;
 	while (con) {
