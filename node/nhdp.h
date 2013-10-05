@@ -4,6 +4,8 @@
 #include "common/avl.h"
 #include "common/netaddr.h"
 
+#include "node.h"
+
 struct netaddr local_addr;
 
 #ifdef ENABLE_DEBUG
@@ -13,18 +15,6 @@ char* node_name;
 bool send_tc_messages;		/* only send TC messages when we are selected as MPR */
 
 struct avl_tree nhdp_head;
-
-struct nhdp_node {
-	struct avl_node node;	/* for 1-hop neighborhood list */
-
-	struct netaddr* addr;	/* node address */
-	uint8_t linkstatus;		/* wheather we have a symetric link */
-	uint8_t mpr_neigh;		/* number of nodes reached by this node if it's an MPR */
-	uint8_t mpr_selector;	/* wheather the node selected us as an MPR */
-#ifdef ENABLE_DEBUG
-	char* name;				/* node name from graph.gv */
-#endif
-};
 
 enum {
 	ADD_2_HOP_OK,
@@ -43,8 +33,6 @@ struct nhdp_node* get_neighbor(struct netaddr* addr);
 * may fail if n is not known
 */
 int add_2_hop_neighbor(struct nhdp_node* n, struct netaddr* addr, uint8_t linkstatus, char* name);
-
-void remove_neighbor(struct nhdp_node* n);
 
 void print_neighbors(void);
 

@@ -22,7 +22,7 @@
 
 struct rfc5444_reader reader;
 struct netaddr* current_src;
-struct nhdp_node* current_node;
+struct olsr_node* current_node;
 
 /* ughh… these variables are needed in the addr callback, but read in the packet callback */
 uint8_t vtime;
@@ -144,11 +144,11 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 	/* node broadcasts us as it's neighbor */
 	if (netaddr_cmp(&cont->addr, &local_addr) == 0) {
-		current_node->linkstatus = RFC5444_LINKSTATUS_SYMMETRIC;
+		h1_deriv(current_node)->linkstatus = RFC5444_LINKSTATUS_SYMMETRIC;
 
 		/* node selected us as mpr */
 		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv)) {
-			current_node->mpr_selector = ROUTING_MPR_SELECTOR; // arbitrary, todo
+			h1_deriv(current_node)->mpr_selector = ROUTING_MPR_SELECTOR; // arbitrary, todo
 			send_tc_messages = true;
 
 			/* allow MPR selection to be drawn in graphviz */
@@ -226,7 +226,7 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
 	DEBUG("_cb_olsr_forward_message(%zd bytes)", length);
  
 	struct nhdp_node* node = get_neighbor(current_src);
-	DEBUG("sender: %s (%s)", netaddr_to_string(&nbuf[0], current_src), node ? node->name : "null");
+	DEBUG("sender: %s (%s)", netaddr_to_string(&nbuf[0], current_src), node ? h1_super(node)->name : "null");
 
 	if (!node) 
 		DEBUG("I don't know the sender, dropping packet.");

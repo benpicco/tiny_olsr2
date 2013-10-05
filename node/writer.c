@@ -78,13 +78,13 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 
 	/* add all neighbors */
 	avl_for_each_element(&nhdp_head, neighbor, node) {
-		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _nhdp_message_content_provider.creator, neighbor->addr, false);
+		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _nhdp_message_content_provider.creator, h1_super(neighbor)->addr, false);
 		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], &neighbor->linkstatus, sizeof neighbor->linkstatus, false);
 		if (neighbor->mpr_neigh > 0) /* node is a mpr - TODO sensible value*/
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR], &neighbor->mpr_neigh, sizeof neighbor->mpr_neigh, false);
 #ifdef ENABLE_DEBUG
-		if (neighbor->name)
-			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_NODE_NAME], neighbor->name, strlen(neighbor->name), false);
+		if (h1_super(neighbor)->name)
+			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_NODE_NAME], h1_super(neighbor)->name, strlen(h1_super(neighbor)->name), false);
 #endif
 	}
 }
@@ -106,10 +106,10 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 	/* add all neighbors */
 	avl_for_each_element(&nhdp_head, node, node) {
 		if (node->mpr_selector) {
-			struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
+			struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, h1_super(node)->addr, false);
 #ifdef ENABLE_DEBUG
-			if (node->name)
-				rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_NODE_NAME], node->name, strlen(node->name), false);
+			if (h1_super(node)->name)
+				rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_NODE_NAME], h1_super(node)->name, strlen(h1_super(node)->name), false);
 #endif
 		}
 	}
