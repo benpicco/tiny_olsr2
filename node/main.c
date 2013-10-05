@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #endif
 
+#include "node.h"
 #include "nhdp.h"
 #include "olsr.h"
 #include "writer.h"
@@ -186,8 +187,7 @@ int main(int argc, char** argv) {
 	local_addr._type = AF_INET6;
 	local_addr._prefix_len = 128;
 
-	nhdp_init();
-	olsr_init();
+	node_init();
 	reader_init();
 	writer_init(write_packet);
 
@@ -197,8 +197,9 @@ int main(int argc, char** argv) {
 		sigprocmask (SIG_BLOCK, &block_io, NULL);	/* prevent 'interupts' from happening */
 
 		print_neighbors();
-		writer_send_hello();
 		print_topology_set();
+
+		writer_send_hello();
 #ifdef ENABLE_DEBUG
 		if (*node_name == 'A')
 #endif

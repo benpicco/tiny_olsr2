@@ -104,16 +104,14 @@ static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
 
 static enum rfc5444_result
 _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
-	uint8_t value;
-
 	DEBUG("received HELLO package:");
 
 	DEBUG("\tfrom: %s", netaddr_to_string(&nbuf[0], current_src));
-	current_node = add_neighbor(current_src, RFC5444_LINKSTATUS_HEARD);
+	current_node = add_neighbor(current_src, RFC5444_LINKSTATUS_HEARD, vtime);
 
 	/* VTIME is defined as mandatory */
-	value = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
-	DEBUG("\tVTIME: %d", value);
+	vtime = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
+	DEBUG("\tVTIME: %d", vtime);
 
 #ifdef ENABLE_DEBUG
 	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
@@ -156,7 +154,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		}
 	} else {
 	 /* no need to try adding us as a 2-hop neighbor */
-		add_2_hop_neighbor(current_node, &cont->addr, linkstatus, name);
+		add_2_hop_neighbor(&cont->addr, current_src, linkstatus, vtime, name);
 	}
 
 	return RFC5444_OKAY;
@@ -225,7 +223,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_t *buffer, size_t length) {
 	DEBUG("_cb_olsr_forward_message(%zd bytes)", length);
  
-	struct nhdp_node* node = get_neighbor(current_src);
+	struct nhdp_node* node = h1_deriv(get_node(current_src));
 	DEBUG("sender: %s (%s)", netaddr_to_string(&nbuf[0], current_src), node ? h1_super(node)->name : "null");
 
 	if (!node) 

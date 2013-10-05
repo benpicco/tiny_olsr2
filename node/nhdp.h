@@ -14,8 +14,6 @@ char* node_name;
 
 bool send_tc_messages;		/* only send TC messages when we are selected as MPR */
 
-struct avl_tree nhdp_head;
-
 enum {
 	ADD_2_HOP_OK,
 	ADD_2_HOP_IS_LOCAL,
@@ -24,15 +22,13 @@ enum {
 
 void nhdp_init();
 
-struct nhdp_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus);
-
-struct nhdp_node* get_neighbor(struct netaddr* addr);
+struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t vtime);
 
 /**
 * add a new neighbor of n
 * may fail if n is not known
 */
-int add_2_hop_neighbor(struct nhdp_node* n, struct netaddr* addr, uint8_t linkstatus, char* name);
+int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t linkstatus, uint8_t vtime, char* name);
 
 void print_neighbors(void);
 

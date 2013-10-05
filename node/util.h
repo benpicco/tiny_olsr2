@@ -10,6 +10,7 @@ struct netaddr_rc {
 
 struct netaddr* netaddr_dup(struct netaddr* addr);
 struct netaddr* netaddr_use(struct netaddr* addr);
+struct netaddr* netaddr_reuse(struct netaddr* addr);
 struct netaddr* netaddr_free(struct netaddr* addr);
 
 #endif

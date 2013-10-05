@@ -2,37 +2,19 @@
 #include <time.h>
 
 #include "common/netaddr.h"
-#include "common/avl_comp.h"
 
 #include "olsr.h"
 #include "util.h"
 #include "debug.h"
 
-static struct avl_tree olsr_head;
-
-
-struct olsr_node* get_olsr_node(struct netaddr* addr) {
-	struct olsr_node *n; // for typeof
-	return avl_find_element(&olsr_head, addr, n, node);
-}
-
-struct netaddr* _netaddr_reuse(struct netaddr* addr) {
-	struct olsr_node* n = get_olsr_node(addr);
-	if (!n) {
-		DEBUG("Address %s not found, this shouldn't happen", netaddr_to_string(&nbuf[0], addr));
-		return netaddr_dup(addr);
-	}
-	return n->addr;
-}
-
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq_no, uint8_t vtime, uint8_t distance, char* name) {
-	struct olsr_node* n = get_olsr_node(addr);
+	struct olsr_node* n = get_node(addr);
 
 	if (!n) {
 		DEBUG("New olsr node: %s, last hop: %s", netaddr_to_string(&nbuf[0], addr), netaddr_to_string(&nbuf[1], last_addr));
 		n = calloc(1, sizeof(struct olsr_node));
 		n->addr = netaddr_dup(addr);
-		n->last_addr = _netaddr_reuse(last_addr);
+		n->last_addr = netaddr_reuse(last_addr);
 		n->expires = time(0) + vtime;
 		n->distance = distance;
 		n->seq_no = seq_no;
@@ -53,7 +35,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 	/* we found a shorter route */
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
 		DEBUG("shorter route found");
-		n->last_addr = _netaddr_reuse(last_addr);
+		n->last_addr = netaddr_reuse(last_addr);
 	}
 
 	DEBUG("updating topology base");
@@ -77,21 +59,18 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no) {
 	return false;
 }
 
-void olsr_init() {
-	avl_init(&olsr_head, avl_comp_netaddr, false);
-}
-
 #ifdef ENABLE_DEBUG
 void print_topology_set() {
 	DEBUG("---[ Topology Set ]--");
 
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s) => %s; %d hops, %zd s [%d]",
+		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d]",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
 			node->distance,
+			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time(0),
 			node->seq_no
 			);
