@@ -11,7 +11,10 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 	struct olsr_node* n = get_node(addr);
 
 	if (!n) {
-		DEBUG("New olsr node: %s, last hop: %s", netaddr_to_string(&nbuf[0], addr), netaddr_to_string(&nbuf[1], last_addr));
+		DEBUG("New olsr node: %s, last hop: %s - distance: %d", 
+			netaddr_to_string(&nbuf[0], addr),
+			netaddr_to_string(&nbuf[1], last_addr),
+			distance);
 		n = calloc(1, sizeof(struct olsr_node));
 		n->addr = netaddr_dup(addr);
 		n->last_addr = netaddr_reuse(last_addr);
@@ -48,7 +51,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 bool is_known_msg(struct netaddr* addr, uint16_t seq_no) {
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
-		if (netaddr_cmp(addr, node->last_addr) == 0) {
+		if (node->last_addr && netaddr_cmp(addr, node->last_addr) == 0) {
 			/* handle overflow gracefully */
 			if (seq_no > node->seq_no || (seq_no < 100 && node->seq_no > 65400))
 				return false;

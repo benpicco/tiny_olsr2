@@ -109,9 +109,14 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	DEBUG("\tfrom: %s", netaddr_to_string(&nbuf[0], current_src));
 	current_node = add_neighbor(current_src, RFC5444_LINKSTATUS_HEARD, vtime);
 
+	/* reset MPR selector state, will be set by _cb_nhdp_blocktlv_address_okay */
+	if (!h1_deriv(current_node)->mpr_selector)
+		send_tc_messages = false;
+	else
+		h1_deriv(current_node)->mpr_selector = 0;
+
 	/* VTIME is defined as mandatory */
 	vtime = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
-	DEBUG("\tVTIME: %d", vtime);
 
 #ifdef ENABLE_DEBUG
 	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
@@ -189,7 +194,7 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
     return RFC5444_DROP_PACKET;
   }
 
-  hops = cont->hopcount;
+  hops = cont->hopcount + 1; /* hopcount starts with 0 for A -> B */
   seq_no = cont->seqno;
 
   // what if address block is empty?
@@ -209,10 +214,14 @@ static enum rfc5444_result
 _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv;
 
+	if (netaddr_cmp(&local_addr, &cont->addr) == 0)
+		return RFC5444_OKAY;
+
 #ifdef ENABLE_DEBUG
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		char* name = strndup((char*) tlv->single_value, tlv->length);
 		DEBUG("\tannonces: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
+		/* hops is hopcount to orig_addr, addr is one more hop */
 		add_olsr_node(&cont->addr, &cont->orig_addr, seq_no, vtime, hops + 1, name);
 	}
 #endif
