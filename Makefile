@@ -11,8 +11,8 @@ LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
 NODES := `grep -- -\> graph.gv | grep -o . | sort | grep [[:alnum:]] | uniq | wc -l`
 LOG_DIR := log
 
-node:	node/main.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o $(LDFLAGS)
-	cc node/main.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o $(LDFLAGS) -o node/node
+node:	node/main.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o $(LDFLAGS)
+	cc node/main.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o $(LDFLAGS) -o node/node
 
 dispatcher:	dispatcher.o $(LDFLAGS)
 
