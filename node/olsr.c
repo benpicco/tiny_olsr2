@@ -6,6 +6,9 @@
 #include "olsr.h"
 #include "util.h"
 #include "debug.h"
+#include "routing.h"
+
+struct free_node* free_nodes_head = 0;
 
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq_no, uint8_t vtime, uint8_t distance, char* name) {
 	struct olsr_node* n = get_node(addr);
@@ -26,6 +29,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 #endif
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);
+		add_free_node(&free_nodes_head, n);
 
 		return;
 	}
@@ -39,6 +43,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
 		DEBUG("shorter route found");
 		n->last_addr = netaddr_reuse(last_addr);
+		add_free_node(&free_nodes_head, n);
 	}
 
 	DEBUG("updating topology base");
@@ -60,6 +65,11 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no) {
 		}
 	}
 	return false;
+}
+
+void olsr_update() {
+	DEBUG("update routing table (%s pending nodes)", free_nodes_head ? "some" : "no");
+	fill_routing_table(&free_nodes_head);
 }
 
 #ifdef ENABLE_DEBUG

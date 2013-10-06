@@ -34,6 +34,7 @@ static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_
 
 static enum rfc5444_result _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
+static enum rfc5444_result _cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
 
 /* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
@@ -92,6 +93,7 @@ static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
 static struct rfc5444_reader_tlvblock_consumer _olsr_consumer = {
 	.msg_id = RFC5444_MSGTYPE_TC,
 	.block_callback = _cb_olsr_blocktlv_packet_okay,
+	.end_callback = _cb_olsr_end_callback,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
@@ -245,6 +247,16 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
 		else
 			DEBUG("failed forwarding package");
 	}
+}
+
+static enum rfc5444_result
+_cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
+	if (dropped)
+		return RFC5444_DROP_PACKET;
+
+	olsr_update();
+
+	return RFC5444_OKAY;
 }
 
 /**
