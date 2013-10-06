@@ -21,15 +21,15 @@ struct sorted_list {
 };
 
 struct test_list* _get_by_buffer(struct test_list* head, char* buffer) {
-	return list_find(head, buffer);
+	return simple_list_find(head, buffer);
 }
 
 struct test_list* _get_by_value(struct test_list* head, int value) {
-	return list_find(head, value);
+	return simple_list_find(head, value);
 }
 
 struct test_list* _add_test_list(struct test_list** head, char* buffer, int value) {
-	struct test_list* node = list_add_tail(head);
+	struct test_list* node = simple_list_add_tail(head);
 
 	node->buffer = buffer;
 	node->value  = value;
@@ -50,7 +50,7 @@ int _is_equal(struct test_list* node, const int value, const char *buffer) {
 	return node != 0 && node->value == value && !strcmp(node->buffer, buffer);
 }
 
-void test_list_fill(struct test_list* _head) {
+void test_simple_list_fill(struct test_list* _head) {
 	START_TEST();
 
 	CHECK_TRUE(_is_equal(_get_by_buffer(_head, bar), 42, bar), "%s", _print_result(_get_by_buffer(_head, bar)));
@@ -59,9 +59,9 @@ void test_list_fill(struct test_list* _head) {
 	END_TEST();
 }
 
-void test_list_remove(struct test_list** __head) {
+void test_simple_list_remove(struct test_list** __head) {
 	struct test_list* _head;
-	list_remove(__head, _get_by_buffer(*__head, foo));
+	simple_list_remove(__head, _get_by_buffer(*__head, foo));
 	_head = *__head;
 
 	START_TEST();
@@ -72,19 +72,19 @@ void test_list_remove(struct test_list** __head) {
 	END_TEST();
 }
 
-void test_list_find(struct test_list* _head) {
+void test_simple_list_find(struct test_list* _head) {
 	char buffer[sizeof bar];
 	memcpy(buffer, bar, sizeof buffer);
 
 	START_TEST();
 
-	CHECK_TRUE(_is_equal(list_find_memcmp(_head, buffer), 42, bar), "%s", _print_result(list_find_memcmp(_head, buffer)));
+	CHECK_TRUE(_is_equal(simple_list_find_memcmp(_head, buffer), 42, bar), "%s", _print_result(simple_list_find_memcmp(_head, buffer)));
 
 	END_TEST();
 }
 
 void _add_sorted_list(struct sorted_list** head, int value) {
-	struct sorted_list* node = list_add_before(head, value);
+	struct sorted_list* node = simple_list_add_before(head, value);
 	node->value = value;
 }
 
@@ -101,7 +101,7 @@ void test_sorted_list() {
 
 	int prev = 0;
 	struct sorted_list* node;
-	list_for_each (head, node) {
+	simple_list_for_each (head, node) {
 		CHECK_TRUE(node->value >= prev, "%d < %d", node->value, prev);
 		prev = node->value;
 	}
@@ -117,14 +117,14 @@ int main(void) {
 	_add_test_list(&_head, baz, 1337);
 
 	struct test_list* node;
-	list_for_each (_head, node)
+	simple_list_for_each (_head, node)
 		printf("%s\n", _print_result(node));
 
 	BEGIN_TESTING(0);
 
-	test_list_fill(_head);
-	test_list_remove(&_head);
-	test_list_find(_head);
+	test_simple_list_fill(_head);
+	test_simple_list_remove(&_head);
+	test_simple_list_find(_head);
 
 	test_sorted_list();
 

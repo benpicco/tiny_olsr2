@@ -2,12 +2,12 @@
 
 #include "list.h"
 
-struct list_elem {
-	struct list_elem* next;
+struct simple_list_elem {
+	struct simple_list_elem* next;
 };
 
-void* _list_add_tail(struct list_elem** head, size_t size) {
-	struct list_elem* _head = *head;
+void* _simple_list_add_tail(struct simple_list_elem** head, size_t size) {
+	struct simple_list_elem* _head = *head;
 
 	if (!_head) {
 		*head = calloc(1, size);
@@ -22,8 +22,8 @@ void* _list_add_tail(struct list_elem** head, size_t size) {
 	return _head;
 }
 
-void* _list_add_head(struct list_elem** head, size_t size) {
-	struct list_elem* _head = *head;
+void* _simple_list_add_head(struct simple_list_elem** head, size_t size) {
+	struct simple_list_elem* _head = *head;
 
 	*head = calloc(size, 1);
 	(*head)->next = _head;
@@ -31,9 +31,9 @@ void* _list_add_head(struct list_elem** head, size_t size) {
 	return *head;
 }
 
-void* _list_add_before(struct list_elem** head, size_t size, int needle, int offset) {
-	struct list_elem* _head = *head;
-	struct list_elem* prev = 0;
+void* _simple_list_add_before(struct simple_list_elem** head, size_t size, int needle, int offset) {
+	struct simple_list_elem* _head = *head;
+	struct simple_list_elem* prev = 0;
 
 	if (!_head) {
 		*head = calloc(1, size);
@@ -62,7 +62,7 @@ void* _list_add_before(struct list_elem** head, size_t size, int needle, int off
 	return _head;
 }
 
-void* _list_find(struct list_elem* head, void* needle, int offset, size_t size) {
+void* _simple_list_find(struct simple_list_elem* head, void* needle, int offset, size_t size) {
 	while (head) {
 		void** buff = (void*) head + offset;
 
@@ -76,9 +76,9 @@ void* _list_find(struct list_elem* head, void* needle, int offset, size_t size) 
 	return 0;
 }
 
-void _list_remove(struct list_elem** head, struct list_elem* node) {
-	struct list_elem* _head = *head;
-	struct list_elem* prev = 0;
+void _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem* node) {
+	struct simple_list_elem* _head = *head;
+	struct simple_list_elem* prev = 0;
 
 	while (_head && _head != node) {
 		prev = _head;
