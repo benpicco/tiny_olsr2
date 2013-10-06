@@ -200,10 +200,7 @@ int main(int argc, char** argv) {
 		print_topology_set();
 
 		writer_send_hello();
-#ifdef ENABLE_DEBUG
-		if (*node_name == 'A')
-#endif
-			writer_send_tc();
+		writer_send_tc();
 
 		DEBUG_TICK;
 		sigprocmask (SIG_UNBLOCK, &block_io, NULL);
