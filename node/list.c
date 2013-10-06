@@ -42,6 +42,8 @@ void* _simple_list_add_before(struct simple_list_elem** head, size_t size, int n
 
 	while(_head) {
 		int* buff = (void*) _head + offset;
+		if (*buff == needle)
+			return _head;
 		if (*buff > needle) {
 			if (prev) {
 				prev->next = calloc(1, size);
