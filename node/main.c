@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
 
 		sigprocmask (SIG_BLOCK, &block_io, NULL);	/* prevent 'interupts' from happening */
 
-		print_neighbors();
+		// print_neighbors();
 		print_topology_set();
 
 		writer_send_hello();

@@ -85,6 +85,7 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 void print_neighbors(void) {
 	struct olsr_node* node;
 
+	DEBUG("1-hop neighbors:");
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->distance == 1)
 			DEBUG("\tneighbor: %s (%s) (mpr for %d nodes)",
@@ -92,7 +93,8 @@ void print_neighbors(void) {
 				netaddr_to_string(&nbuf[0], node->addr),
 				h1_deriv(node)->mpr_neigh);
 	}
-#if 0
+
+	DEBUG("2-hop neighbors:");
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->distance == 2)
 			DEBUG("\t%s (%s) -> %s -> %s (%s)",
@@ -101,7 +103,6 @@ void print_neighbors(void) {
 				node_name,
 				netaddr_to_string(&nbuf[2], &local_addr));
 	}
-#endif
 }
 #else
 void print_neighbors(void) {}
