@@ -27,14 +27,10 @@ void fill_routing_table(struct free_node** head) {
 
 	struct olsr_node* node;
 	struct free_node* fn;
-	int hops = 2;
 	bool noop = false;
 	while (_head && !noop) {
 		noop = true;	/* if no nodes could be removed in an iteration, abort */
 		struct free_node *tmp, *prev = 0;
-
-		++hops;
-		DEBUG("Adding nodes with distance %d", hops);
 
 		simple_list_for_each (_head, fn) {
 start:
@@ -48,8 +44,8 @@ start:
 
 				if (node->next_addr) {
 					fn->node->next_addr = netaddr_use(node->next_addr);
-					DEBUG("%d = %d", fn->node->distance, hops);
-					fn->node->distance = hops;
+					DEBUG("%d = %d", fn->node->distance, node->distance + 1);
+					fn->node->distance = node->distance + 1;
 
 					/* remove free node */
 					tmp = fn->next;
