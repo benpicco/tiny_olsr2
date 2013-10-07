@@ -13,8 +13,14 @@ struct free_node {
 	int hops;
 };
 
+int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
+	return netaddr_cmp(a->addr, b->addr);
+}
+
 void add_free_node(struct free_node** head, struct olsr_node* node) {
-	struct free_node* n = simple_list_add_before(head, node->distance);
+	struct free_node* n = simple_list_find_cmp(*head, node->addr, olsr_node_cmp);
+	if (!n)
+		n = simple_list_add_before(head, node->distance);
 	n->hops = node->distance;
 	n->node = node;
 }
@@ -35,29 +41,33 @@ void fill_routing_table(struct free_node** head) {
 
 		simple_list_for_each (_head, fn) {
 start:
-			DEBUG("simple_list_for_each iteration (%x)", fn);
+			DEBUG("simple_list_for_each iteration (%p)", fn);
 			if ((node = get_node(fn->node->last_addr))) {
 				noop = false;
 				DEBUG("%s (%s) -> %s (%s) -> […] -> %s",
 					netaddr_to_string(&nbuf[0], fn->node->addr), fn->node->name,
 					netaddr_to_string(&nbuf[1], node->addr), node->name,
 					netaddr_to_string(&nbuf[2], node->next_addr));
-				fn->node->next_addr = netaddr_use(node->next_addr);
-				DEBUG("%d = %d", fn->node->distance, hops);
-				fn->node->distance = hops;
 
-				/* remove free node */
-				tmp = fn->next;
-				if (!prev)
-					_head = *head = _head->next;
-				else
-					prev->next = fn->next;
+				if (node->next_addr) {
+					fn->node->next_addr = netaddr_use(node->next_addr);
+					DEBUG("%d = %d", fn->node->distance, hops);
+					fn->node->distance = hops;
 
-				free(fn);
-				if ((fn = tmp))
-					goto start;
-				else
-					break;
+					/* remove free node */
+					tmp = fn->next;
+					if (!prev)
+						_head = *head = _head->next;
+					else
+						prev->next = fn->next;
+
+					free(fn);
+					if ((fn = tmp))
+						goto start;
+					else
+						break;
+				} else
+					DEBUG("Don't know how to route this one yet.");
 			}
 			prev = fn;
 		}
