@@ -27,7 +27,7 @@ struct olsr_node* current_node;
 /* ughh… these variables are needed in the addr callback, but read in the packet callback */
 uint8_t vtime;
 uint8_t hops;
-uint16_t seq_no;
+uint16_t _seq_no;
 
 static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
@@ -196,6 +196,7 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 	DEBUG("\tsender: %s", netaddr_to_string(&nbuf[0], current_src));
 	DEBUG("\tseqno: %d", cont->seqno);
+	DEBUG("\thops: %d", cont->hopcount);
 	DEBUG("\tVTIME: %d", vtime);
 
 	if (is_known_msg(&cont->orig_addr, cont->seqno)) {
@@ -204,7 +205,7 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	}
 
 	hops = cont->hopcount + 1; /* hopcount starts with 0 for A -> B */
-	seq_no = cont->seqno;
+	_seq_no = cont->seqno;
 
 	// what if address block is empty?
 
@@ -225,7 +226,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		char* name = strndup((char*) tlv->single_value, tlv->length);
 		DEBUG("\tannonces: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
 		/* hops is hopcount to orig_addr, addr is one more hop */
-		add_olsr_node(&cont->addr, &cont->orig_addr, seq_no, vtime, hops + 1, name);
+		add_olsr_node(&cont->addr, &cont->orig_addr, _seq_no, vtime, hops + 1, name);
 	}
 #endif
 
