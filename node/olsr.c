@@ -10,6 +10,10 @@
 
 struct free_node* free_nodes_head = 0;
 
+int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
+	return netaddr_cmp(a->addr, b->addr);
+}
+
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq_no, uint8_t vtime, uint8_t distance, char* name) {
 	struct olsr_node* n = get_node(addr);
 

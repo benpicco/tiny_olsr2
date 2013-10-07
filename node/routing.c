@@ -13,14 +13,11 @@ struct free_node {
 	int hops;
 };
 
-int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
-	return netaddr_cmp(a->addr, b->addr);
-}
-
 void add_free_node(struct free_node** head, struct olsr_node* node) {
-	struct free_node* n = simple_list_find_cmp(*head, node->addr, olsr_node_cmp);
+	struct free_node* n = simple_list_find_cmp(*head, node, olsr_node_cmp);
 	if (!n)
 		n = simple_list_add_before(head, node->distance);
+
 	n->hops = node->distance;
 	n->node = node;
 }
