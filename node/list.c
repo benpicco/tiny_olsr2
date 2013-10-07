@@ -42,8 +42,6 @@ void* _simple_list_add_before(struct simple_list_elem** head, size_t size, int n
 
 	while(_head) {
 		int* buff = (void*) _head + offset;
-		if (*buff == needle)
-			return _head;
 		if (*buff > needle) {
 			if (prev) {
 				prev->next = calloc(1, size);
@@ -70,8 +68,21 @@ void* _simple_list_find(struct simple_list_elem* head, void* needle, int offset,
 
 		if (size == 0 && *buff == needle)
 			return head;
-		if (size > 0 && !memcmp(*buff, needle, size))
+		if (size > 0 && memcmp(*buff, needle, size) == 0)
 			return head;
+		head = head->next;
+	}
+
+	return 0;
+}
+
+void* _simple_list_find_cmp(struct simple_list_elem* head, void* needle, int offset, int (compare)(void*, void*)) {
+	while (head) {
+		void** buff = (void*) head + offset;
+
+		if (compare(*buff, needle) == 0)
+			return head;
+
 		head = head->next;
 	}
 

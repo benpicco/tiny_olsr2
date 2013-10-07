@@ -80,6 +80,8 @@ void test_simple_list_find(struct test_list* _head) {
 
 	CHECK_TRUE(_is_equal(simple_list_find_memcmp(_head, buffer), 42, bar), "%s", _print_result(simple_list_find_memcmp(_head, buffer)));
 
+	CHECK_TRUE(_is_equal(simple_list_find_cmp(_head, buffer, strcmp), 42, bar), "%s", _print_result(simple_list_find_cmp(_head, buffer, strcmp)));
+
 	END_TEST();
 }
 
