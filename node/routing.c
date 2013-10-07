@@ -27,7 +27,7 @@ void fill_routing_table(struct free_node** head) {
 
 	struct olsr_node* node;
 	struct free_node* fn;
-	bool noop = false;
+	bool noop = false;	/* when in an iteration there was nothing remove from free nodes */
 	while (_head && !noop) {
 		noop = true;	/* if no nodes could be removed in an iteration, abort */
 		struct free_node *tmp, *prev = 0;
@@ -36,13 +36,14 @@ void fill_routing_table(struct free_node** head) {
 start:
 			DEBUG("simple_list_for_each iteration (%p)", fn);
 			if ((node = get_node(fn->node->last_addr))) {
-				noop = false;
 				DEBUG("%s (%s) -> %s (%s) -> […] -> %s",
 					netaddr_to_string(&nbuf[0], fn->node->addr), fn->node->name,
 					netaddr_to_string(&nbuf[1], node->addr), node->name,
 					netaddr_to_string(&nbuf[2], node->next_addr));
 
 				if (node->next_addr) {
+					noop = false;
+
 					fn->node->next_addr = netaddr_use(node->next_addr);
 					DEBUG("%d = %d", fn->node->distance, node->distance + 1);
 					fn->node->distance = node->distance + 1;
