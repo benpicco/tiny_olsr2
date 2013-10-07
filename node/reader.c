@@ -226,7 +226,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		char* name = strndup((char*) tlv->single_value, tlv->length);
 		DEBUG("\tannonces: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
 		/* hops is hopcount to orig_addr, addr is one more hop */
-		add_olsr_node(&cont->addr, &cont->orig_addr, _seq_no, vtime, hops + 1, name);
+		add_olsr_node(&cont->addr, &cont->orig_addr, vtime, hops + 1, name);
 	}
 #endif
 

@@ -14,7 +14,7 @@ int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
 }
 
-void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq_no, uint8_t vtime, uint8_t distance, char* name) {
+void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
 	struct olsr_node* n = get_node(addr);
 
 	if (!n) {
@@ -27,7 +27,6 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 		n->last_addr = netaddr_reuse(last_addr);
 		n->expires = time(0) + vtime;
 		n->distance = distance;
-		n->seq_no = seq_no;
 #ifdef ENABLE_DEBUG
 		n->name = name;
 #endif
@@ -38,7 +37,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 		return;
 	}
 
-	/* diverging from the spec to save a little space */
+	/* diverging from the spec to save a little space (spec says keep all paths) */
 	// TODO: change this when handling timeouts
 	if (n->distance < distance) {
 		DEBUG("discarding longer (%d > %d) route for %s (%s) via %s",
@@ -58,23 +57,20 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 		// TODO: also add all nodes routing through this one
 	}
 
-	n->seq_no = seq_no;		/* is_known_msg() should have been called before */
-	n->distance  = distance;
 	n->expires = time(0) + vtime;
 }
 
 bool is_known_msg(struct netaddr* addr, uint16_t seq_no) {
-	struct olsr_node* node;
-	avl_for_each_element(&olsr_head, node, node) {
-		if (node->last_addr && netaddr_cmp(addr, node->last_addr) == 0) {
-			/* handle overflow gracefully */
-			if (seq_no > node->seq_no || (seq_no < 100 && node->seq_no > 65400))
-				return false;
-			else
-				return true;
-		}
-	}
-	return false;
+	struct olsr_node* node = get_node(addr);
+	if (!node)
+		return false;
+
+	uint16_t tmp = node->seq_no;
+	node->seq_no = seq_no;
+	if (seq_no > tmp || (seq_no < 100 && tmp > 65400))
+		return false;
+
+	return true;
 }
 
 void olsr_update() {
