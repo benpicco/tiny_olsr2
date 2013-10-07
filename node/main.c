@@ -34,6 +34,8 @@ cc110x_packet_t packet;
 int sockfd;
 struct sockaddr_in servaddr;
 
+sigset_t block_io;
+
 struct ip_lite {
 	struct netaddr src;
 	size_t length;
@@ -80,15 +82,18 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
 void sigio_handler(int sig) {
 	char buffer[1500];
-
 	struct sockaddr_storage sender;
 	socklen_t sendsize = sizeof(sender);
+
+	sigprocmask (SIG_BLOCK, &block_io, NULL);	/* disable 'interupts' */
 
 	if (recvfrom(sockfd, &buffer, sizeof buffer, 0, (struct sockaddr*)&sender, &sendsize) == -1)
 		return;
 
 	struct ip_lite* header = (struct ip_lite*) &buffer;
 	reader_handle_packet(header + 1, header->length, &header->src);
+
+	sigprocmask (SIG_UNBLOCK, &block_io, NULL);	/* enable 'interupts' */
 }
 
 void init_socket(in_addr_t addr, int port) {
@@ -175,8 +180,6 @@ int main(int argc, char** argv) {
 #ifdef ENABLE_DEBUG
 	node_name = strdup(this_name);
 #endif
-
-	sigset_t block_io;
 
 	/* Initialize the signal mask. */
 	sigemptyset (&block_io);
