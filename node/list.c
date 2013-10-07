@@ -76,7 +76,7 @@ void* _simple_list_find(struct simple_list_elem* head, void* needle, int offset,
 	return 0;
 }
 
-void* _simple_list_find_cmp(struct simple_list_elem* head, void* needle, int offset, int (compare)(void*, void*)) {
+void* _simple_list_find_cmp(struct simple_list_elem* head, void* needle, int offset, int compare(void*, void*)) {
 	while (head) {
 		void** buff = (void*) head + offset;
 

@@ -51,6 +51,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 		DEBUG("shorter route found");
 		n->last_addr = netaddr_reuse(last_addr);
 		add_free_node(&free_nodes_head, n);
+		// TODO: also add all nodes routing through this one
 	}
 
 	n->seq_no = seq_no;		/* is_known_msg() should have been called before */

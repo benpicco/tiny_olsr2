@@ -23,7 +23,7 @@ void* _simple_list_add_head(struct simple_list_elem** head, size_t size);
 void* _simple_list_add_tail(struct simple_list_elem** head, size_t size);
 void* _simple_list_add_before(struct simple_list_elem** head, size_t size, int needle, int offset);
 void* _simple_list_find(struct simple_list_elem* head, void* needle, int offset, size_t size);
-void* _simple_list_find_cmp(struct simple_list_elem* head, void* needle, int offset, int (compare)(void*, void*));
+void* _simple_list_find_cmp(struct simple_list_elem* head, void* needle, int offset, int compare(void*, void*));
 void  _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem* node);
 
 #endif /* SIMPLE_LIST_H_ */

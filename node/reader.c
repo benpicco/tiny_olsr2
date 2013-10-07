@@ -106,27 +106,26 @@ static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
 
 static enum rfc5444_result
 _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
-	DEBUG("received HELLO package:");
+	DEBUG("received HELLO message:");
 
-	DEBUG("\tfrom: %s", netaddr_to_string(&nbuf[0], current_src));
+	/* VTIME is defined as mandatory */
+	vtime = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
+
 	current_node = add_neighbor(current_src, RFC5444_LINKSTATUS_HEARD, vtime);
+
+#ifdef ENABLE_DEBUG
+	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
+		if (!current_node->name)
+			current_node->name = strndup((char*) _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
+		DEBUG("\tfrom: %s (%s)", current_node->name, netaddr_to_string(&nbuf[0], current_src));
+	}
+#endif
 
 	/* reset MPR selector state, will be set by _cb_nhdp_blocktlv_address_okay */
 	if (!h1_deriv(current_node)->mpr_selector)
 		send_tc_messages = false;
 	else
 		h1_deriv(current_node)->mpr_selector = 0;
-
-	/* VTIME is defined as mandatory */
-	vtime = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
-
-#ifdef ENABLE_DEBUG
-	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
-		if (!current_node->name)
-			current_node->name = strndup((char*) _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
-		DEBUG("\tname: %s", current_node->name);
-	}
-#endif
 
 	return RFC5444_OKAY;
 }
@@ -171,7 +170,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 static enum rfc5444_result
 _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
-	DEBUG("received TC package:");
+	DEBUG("received TC message:");
 
 	if (!cont->has_origaddr)
 		return RFC5444_DROP_PACKET;
@@ -187,7 +186,15 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 	vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
 
-	DEBUG("\torig_addr: %s", netaddr_to_string(&nbuf[0], &cont->orig_addr));
+#ifdef ENABLE_DEBUG
+	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
+		char* _name = strndup((char*) _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
+		DEBUG("\tfrom: %s (%s)", _name, netaddr_to_string(&nbuf[0], &cont->orig_addr));
+		free(_name);
+	}
+#endif
+
+	DEBUG("\tsender: %s", netaddr_to_string(&nbuf[0], current_src));
 	DEBUG("\tseqno: %d", cont->seqno);
 	DEBUG("\tVTIME: %d", vtime);
 
@@ -201,20 +208,14 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 	// what if address block is empty?
 
-#ifdef ENABLE_DEBUG
-	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
-		char* _name = strndup((char*) _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
-		DEBUG("\tname: %s", _name);
-		free(_name);
-	}
-#endif
-
 	return RFC5444_OKAY;
 }
 
 static enum rfc5444_result
 _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv;
+
+	DEBUG("\t_cb_olsr_blocktlv_address_okay");
 
 	if (netaddr_cmp(&local_addr, &cont->addr) == 0)
 		return RFC5444_OKAY;
@@ -235,17 +236,17 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
 	DEBUG("_cb_olsr_forward_message(%zd bytes)", length);
  
 	struct nhdp_node* node = h1_deriv(get_node(current_src));
-	DEBUG("sender: %s (%s)", netaddr_to_string(&nbuf[0], current_src), node ? h1_super(node)->name : "null");
+	DEBUG("\tsender: %s (%s)", netaddr_to_string(&nbuf[0], current_src), node ? h1_super(node)->name : "null");
 
 	if (!node) 
-		DEBUG("I don't know the sender, dropping packet.");
+		DEBUG("\tI don't know the sender, dropping packet.");
 
 	if (node && node->mpr_selector) {
-		DEBUG("forwarding package");
+		DEBUG("\tforwarding package");
 		if (RFC5444_OKAY == rfc5444_writer_forward_msg(&writer, buffer, length))
 			rfc5444_writer_flush(&writer, &interface, true);
 		else
-			DEBUG("failed forwarding package");
+			DEBUG("\tfailed forwarding package");
 	}
 }
 
