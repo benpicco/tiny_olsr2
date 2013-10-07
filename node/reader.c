@@ -232,22 +232,27 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	return RFC5444_OKAY;
 }
 
-static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_t *buffer, size_t length) {
-	DEBUG("_cb_olsr_forward_message(%zd bytes)", length);
- 
+static void
+_cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_t *buffer, size_t length) {
 	struct nhdp_node* node = h1_deriv(get_node(current_src));
+
+	DEBUG("_cb_olsr_forward_message(%zd bytes)", length);
 	DEBUG("\tsender: %s (%s)", netaddr_to_string(&nbuf[0], current_src), node ? h1_super(node)->name : "null");
 
-	if (!node) 
+	if (!node)  {
 		DEBUG("\tI don't know the sender, dropping packet.");
-
-	if (node && node->mpr_selector) {
-		DEBUG("\tforwarding package");
-		if (RFC5444_OKAY == rfc5444_writer_forward_msg(&writer, buffer, length))
-			rfc5444_writer_flush(&writer, &interface, true);
-		else
-			DEBUG("\tfailed forwarding package");
+		return;
 	}
+
+	if (!node->mpr_selector) {
+		DEBUG("\t%s is not a mpr-selector of ours, dropping packet", h1_super(node)->name);
+		return;
+	}
+
+	if (RFC5444_OKAY == rfc5444_writer_forward_msg(&writer, buffer, length))
+		rfc5444_writer_flush(&writer, &interface, true);
+	else
+		DEBUG("\tfailed forwarding package");
 }
 
 static enum rfc5444_result
