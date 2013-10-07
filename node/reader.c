@@ -182,24 +182,24 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (!cont->has_hopcount || !cont->has_hoplimit)
 		return RFC5444_DROP_PACKET;
 
-  vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
+	if (!netaddr_cmp(&local_addr, &cont->orig_addr))
+		return RFC5444_DROP_PACKET;
+
+	vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
 
 	DEBUG("\torig_addr: %s", netaddr_to_string(&nbuf[0], &cont->orig_addr));
 	DEBUG("\tseqno: %d", cont->seqno);
 	DEBUG("\tVTIME: %d", vtime);
 
-  if (!netaddr_cmp(&local_addr, &cont->orig_addr))
-    return RFC5444_DROP_PACKET;
+	if (is_known_msg(&cont->orig_addr, cont->seqno)) {
+		DEBUG("\tmessage already processed, dropping it");
+		return RFC5444_DROP_PACKET;
+	}
 
-  if (is_known_msg(&cont->orig_addr, cont->seqno)) {
-    DEBUG("message already processed, dropping it");
-    return RFC5444_DROP_PACKET;
-  }
+	hops = cont->hopcount + 1; /* hopcount starts with 0 for A -> B */
+	seq_no = cont->seqno;
 
-  hops = cont->hopcount + 1; /* hopcount starts with 0 for A -> B */
-  seq_no = cont->seqno;
-
-  // what if address block is empty?
+	// what if address block is empty?
 
 #ifdef ENABLE_DEBUG
 	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
@@ -251,8 +251,10 @@ static void _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *con
 
 static enum rfc5444_result
 _cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
-	if (dropped)
+	if (dropped) {
+		DEBUG("\t(dropped)");
 		return RFC5444_DROP_PACKET;
+	}
 
 	olsr_update();
 

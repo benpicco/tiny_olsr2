@@ -12,6 +12,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 	struct olsr_node* n = get_node(addr);
 
 	if (!n) {
+		DEBUG("\tadding new neighbor: %s", netaddr_to_string(&nbuf[0], addr));
 		n = calloc(1, sizeof(struct nhdp_node));
 		n->type = NODE_TYPE_1_HOP;
 		n->addr = netaddr_dup(addr);
@@ -26,8 +27,10 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 	if (n->distance > 1) {
 		DEBUG("TODO: %d hop node became neighbor", n->distance);
 		// TODO
-	} else
+	} else {
+		DEBUG("\textending validity of %s (%s)", n->name, netaddr_to_string(&nbuf[0], addr));
 		n->expires = time(0) + vtime;
+	}
 
 	return n;
 }
@@ -67,7 +70,7 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 			return -ADD_2_HOP_OK;
 		}
 
-		DEBUG("switching MPR");
+		DEBUG("\tswitching MPR");
 		n1_old->mpr_neigh--;
 		n2->next_addr = netaddr_reuse(next_addr);
 		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
@@ -84,20 +87,21 @@ void print_neighbors(void) {
 
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->distance == 1)
-			DEBUG("neighbor: %s (%s) (mpr for %d nodes)",
+			DEBUG("\tneighbor: %s (%s) (mpr for %d nodes)",
 				node->name,
 				netaddr_to_string(&nbuf[0], node->addr),
 				h1_deriv(node)->mpr_neigh);
 	}
-
+#if 0
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->distance == 2)
-			DEBUG("\t%s (%s) -> %s (%s) -> %s (%s)",
+			DEBUG("\t%s (%s) -> %s -> %s (%s)",
 				node->name, netaddr_to_string(&nbuf[0], node->addr),
-				"-", netaddr_to_string(&nbuf[1], node->next_addr),
+				netaddr_to_string(&nbuf[1], node->next_addr),
 				node_name,
 				netaddr_to_string(&nbuf[2], &local_addr));
 	}
+#endif
 }
 #else
 void print_neighbors(void) {}

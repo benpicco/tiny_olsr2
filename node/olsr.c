@@ -14,7 +14,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 	struct olsr_node* n = get_node(addr);
 
 	if (!n) {
-		DEBUG("New olsr node: %s, last hop: %s - distance: %d", 
+		DEBUG("new olsr node: %s, last hop: %s - distance: %d", 
 			netaddr_to_string(&nbuf[0], addr),
 			netaddr_to_string(&nbuf[1], last_addr),
 			distance);
@@ -36,8 +36,15 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 
 	/* diverging from the spec to save a little space */
 	// TODO: change this when handling timeouts
-	if (n->distance < distance)
+	if (n->distance < distance) {
+		DEBUG("discarding longer (%d > %d) route for %s (%s) via %s",
+			distance, n->distance,
+			n->name, netaddr_to_string(&nbuf[0], n->addr),
+			netaddr_to_string(&nbuf[1], last_addr));
 		return;
+	}
+
+	DEBUG("updating TC entry for %s (%s)", n->name, netaddr_to_string(&nbuf[0], n->addr));
 
 	/* we found a shorter route */
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
@@ -45,8 +52,6 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint16_t seq
 		n->last_addr = netaddr_reuse(last_addr);
 		add_free_node(&free_nodes_head, n);
 	}
-
-	DEBUG("updating topology base");
 
 	n->seq_no = seq_no;		/* is_known_msg() should have been called before */
 	n->distance  = distance;
@@ -74,6 +79,7 @@ void olsr_update() {
 
 #ifdef ENABLE_DEBUG
 void print_topology_set() {
+	DEBUG();
 	DEBUG("---[ Topology Set ]--");
 
 	struct olsr_node* node;
@@ -89,6 +95,7 @@ void print_topology_set() {
 			);
 	}
 	DEBUG("---------------------");
+	DEBUG();
 }
 #else
 void print_topology_set() {}

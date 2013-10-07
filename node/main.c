@@ -49,14 +49,16 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
 	DEBUG("write_packet(%zd bytes)", length);
 
+#if 0
 	/* generate hexdump of packet */
 	abuf_hexdump(&_hexbuf, "\t", buffer, length);
 	rfc5444_print_direct(&_hexbuf, buffer, length);
 
 	/* print hexdump to console */
 	puts(abuf_getptr(&_hexbuf));
-
 	abuf_clear(&_hexbuf);
+#endif
+
 #ifdef RIOT
 	// TODO: no memcpy, set address etc.
 	memcpy(packet.data, buffer, length);

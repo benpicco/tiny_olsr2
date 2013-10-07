@@ -22,7 +22,7 @@ uint8_t msg_buffer[128];
 uint8_t msg_addrtlvs[1000];
 uint8_t packet_buffer[128];
 
-uint16_t seq_no = 0;
+uint16_t seq_no = 1;
 
 static void _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr);
 static void _cb_add_nhdp_addresses(struct rfc5444_writer *wr);
