@@ -78,6 +78,14 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 #endif
 }
 
+void enable_receive() {
+	sigprocmask (SIG_UNBLOCK, &block_io, NULL);
+}
+
+void disable_receive() {
+	sigprocmask (SIG_BLOCK, &block_io, NULL);
+}
+
 #ifndef RIOT
 
 void sigio_handler(int sig) {
@@ -85,15 +93,14 @@ void sigio_handler(int sig) {
 	struct sockaddr_storage sender;
 	socklen_t sendsize = sizeof(sender);
 
-	sigprocmask (SIG_BLOCK, &block_io, NULL);	/* disable 'interupts' */
+	disable_receive();
 
-	if (recvfrom(sockfd, &buffer, sizeof buffer, 0, (struct sockaddr*)&sender, &sendsize) == -1)
-		return;
+	while (recvfrom(sockfd, &buffer, sizeof buffer, 0, (struct sockaddr*)&sender, &sendsize) > 0) {
+		struct ip_lite* header = (struct ip_lite*) &buffer;
 
-	struct ip_lite* header = (struct ip_lite*) &buffer;
-	reader_handle_packet(header + 1, header->length, &header->src);
-
-	sigprocmask (SIG_UNBLOCK, &block_io, NULL);	/* enable 'interupts' */
+		reader_handle_packet(header + 1, header->length, &header->src);
+	}
+	enable_receive();
 }
 
 void init_socket(in_addr_t addr, int port) {
@@ -199,7 +206,7 @@ int main(int argc, char** argv) {
 	while (1) {
 		sleep_s(REFRESH_INTERVAL);
 
-		sigprocmask (SIG_BLOCK, &block_io, NULL);	/* prevent 'interupts' from happening */
+		disable_receive();
 
 		// print_neighbors();
 		print_topology_set();
@@ -208,7 +215,7 @@ int main(int argc, char** argv) {
 		writer_send_tc();
 
 		DEBUG_TICK;
-		sigprocmask (SIG_UNBLOCK, &block_io, NULL);
+		enable_receive();
 	}
 
 	reader_cleanup();
