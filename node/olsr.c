@@ -22,6 +22,19 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
 	return n;
 }
 
+void _routing_changed(struct netaddr* last_addr, int hops) {
+	struct olsr_node* node;
+	avl_for_each_element(&olsr_head, node, node) {
+		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
+			netaddr_free(node->last_addr);
+			node->last_addr = netaddr_use(last_addr);
+			node->distance = hops;
+			add_free_node(&free_nodes_head, node);	// todo: this can be done more efficiently
+			_routing_changed(node->addr, hops + 1);
+		} 
+	}
+}
+
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
 	struct olsr_node* n = get_node(addr);
 
@@ -60,7 +73,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		DEBUG("shorter route found");
 		n->last_addr = netaddr_reuse(last_addr);
 		add_free_node(&free_nodes_head, n);
-		// TODO: also add all nodes routing through this one
+		_routing_changed(addr, distance + 1);
 	}
 
 	n->expires = time(0) + vtime;
