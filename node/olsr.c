@@ -14,24 +14,30 @@ int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
 }
 
+struct olsr_node* _new_olsr_node(struct netaddr* addr) {
+	struct olsr_node* n = calloc(1, sizeof(struct olsr_node));
+	n->addr = netaddr_dup(addr);
+	n->node.key = n->addr;
+	avl_insert(&olsr_head, &n->node);
+	return n;
+}
+
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
 	struct olsr_node* n = get_node(addr);
 
-	if (!n) {
+	if (n == NULL || n->last_addr == NULL) {
 		DEBUG("new olsr node: %s, last hop: %s - distance: %d", 
 			netaddr_to_string(&nbuf[0], addr),
 			netaddr_to_string(&nbuf[1], last_addr),
 			distance);
-		n = calloc(1, sizeof(struct olsr_node));
-		n->addr = netaddr_dup(addr);
+		if (n == NULL)
+			n = _new_olsr_node(addr);
 		n->last_addr = netaddr_reuse(last_addr);
-		n->expires = time(0) + vtime;
 		n->distance = distance;
+		n->expires = time(0) + vtime;
 #ifdef ENABLE_DEBUG
 		n->name = name;
 #endif
-		n->node.key = n->addr;
-		avl_insert(&olsr_head, &n->node);
 		add_free_node(&free_nodes_head, n);
 
 		return;
@@ -62,8 +68,11 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 bool is_known_msg(struct netaddr* addr, uint16_t seq_no) {
 	struct olsr_node* node = get_node(addr);
-	if (!node)
+	if (!node) {
+		node = _new_olsr_node(addr);
+		node->seq_no = seq_no;
 		return false;
+	}
 
 	uint16_t tmp = node->seq_no;
 	node->seq_no = seq_no;

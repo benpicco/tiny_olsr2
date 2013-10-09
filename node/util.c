@@ -25,7 +25,7 @@ struct netaddr* netaddr_reuse(struct netaddr* addr) {
 
 struct netaddr* netaddr_free(struct netaddr* addr) {
 	struct netaddr_rc* addr_rc = (struct netaddr_rc*) addr;
-	if (--addr_rc->_refs == 0) {
+	if (addr != NULL && --addr_rc->_refs == 0) {
 		free(addr_rc);
 		return 0;
 	}

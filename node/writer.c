@@ -78,7 +78,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 
 	/* add all neighbors */
 	avl_for_each_element(&olsr_head, neighbor, node) {
-		if (neighbor->distance > 1)
+		if (neighbor->distance != 1)
 			continue;
 
 		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, 

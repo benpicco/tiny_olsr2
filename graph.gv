@@ -8,7 +8,6 @@ subgraph bidirectional {
 	E -> F
 	F -> G
 	G -> H
-	H -> A
 }
 
 subgraph directional {

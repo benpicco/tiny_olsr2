@@ -6,12 +6,6 @@
 
 #include "node.h"
 
-struct netaddr local_addr;
-
-#ifdef ENABLE_DEBUG
-char* node_name;
-#endif
-
 bool send_tc_messages;		/* only send TC messages when we are selected as MPR */
 
 enum {

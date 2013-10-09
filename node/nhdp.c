@@ -8,14 +8,30 @@
 
 #include "common/avl.h"
 
+struct olsr_node* _node_replace(struct olsr_node* old_n, struct olsr_node* new_n) {
+	new_n->addr = old_n->addr;
+	new_n->seq_no = old_n->seq_no;
+
+	avl_remove(&olsr_head, &old_n->node);
+	free(old_n);
+
+	return new_n;
+} 
+
 struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t vtime) {
 	struct olsr_node* n = get_node(addr);
 
-	if (!n) {
+	if (n == NULL || n->last_addr == NULL) {
 		DEBUG("\tadding new neighbor: %s", netaddr_to_string(&nbuf[0], addr));
-		n = calloc(1, sizeof(struct nhdp_node));
+		if (n == NULL) {
+			n = calloc(1, sizeof(struct nhdp_node));
+			n->addr = netaddr_dup(addr);
+		} else {
+			DEBUG("\tneighbor already existed as placeholder");
+			n = _node_replace(n, calloc(1, sizeof(struct nhdp_node)));
+		}
 		n->type = NODE_TYPE_1_HOP;
-		n->addr = netaddr_dup(addr);
+		n->last_addr = &local_addr;
 		n->expires = time(0) + vtime;
 		n->distance = 1;
 		h1_deriv(n)->linkstatus = linkstatus;
@@ -39,8 +55,14 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 	struct nhdp_node* n1 = h1_deriv(get_node(next_addr));
 	struct olsr_node* n2 = get_node(addr);
 
-	if(!n2) {
-		n2 = calloc(1, sizeof(struct nhdp_2_hop_node));
+	if(n2 == NULL || n2->last_addr == NULL) {
+		if (n2 == NULL) {
+			n2 = calloc(1, sizeof(struct nhdp_2_hop_node));
+			n2->addr = netaddr_dup(addr);
+		} else {
+			DEBUG("\t2-hop neighbor already existed as placeholder");
+			n2 = _node_replace(n2, calloc(1, sizeof(struct nhdp_2_hop_node)));
+		}
 		n2->type = NODE_TYPE_2_HOP;
 		n2->addr = netaddr_dup(addr);
 		n2->distance = 2;

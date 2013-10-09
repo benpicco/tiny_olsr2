@@ -7,6 +7,12 @@
 #include "common/avl_comp.h"
 #include "common/netaddr.h"
 
+struct netaddr local_addr;
+
+#ifdef ENABLE_DEBUG
+char* node_name;
+#endif
+
 struct avl_tree olsr_head;
 
 enum {
