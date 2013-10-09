@@ -68,7 +68,7 @@ _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0, &time_encoded, sizeof(time_encoded));
 
 #ifdef ENABLE_DEBUG
-	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, node_name, strlen(node_name));
+	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, local_name, strlen(local_name));
 #endif
 }
 
@@ -104,7 +104,7 @@ _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr) {
 	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0, &time_encoded, sizeof(time_encoded));
 
 #ifdef ENABLE_DEBUG
-	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, node_name, strlen(node_name));
+	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, local_name, strlen(local_name));
 #endif
 }
 

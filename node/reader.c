@@ -156,7 +156,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 			send_tc_messages = true;
 
 			/* allow MPR selection to be drawn in graphviz */
-			DEBUG("\t%s -> %s // [ label=\"MPR\" ];", current_node->name, node_name);
+			DEBUG("\t%s -> %s // [ label=\"MPR\" ];", current_node->name, local_name);
 		}
 	} else {
 	 /* no need to try adding us as a 2-hop neighbor */

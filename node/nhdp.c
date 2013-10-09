@@ -122,7 +122,7 @@ void print_neighbors(void) {
 			DEBUG("\t%s (%s) -> %s -> %s (%s)",
 				node->name, netaddr_to_string(&nbuf[0], node->addr),
 				netaddr_to_string(&nbuf[1], node->next_addr),
-				node_name,
+				local_name,
 				netaddr_to_string(&nbuf[2], &local_addr));
 	}
 }

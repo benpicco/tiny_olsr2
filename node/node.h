@@ -10,7 +10,7 @@
 struct netaddr local_addr;
 
 #ifdef ENABLE_DEBUG
-char* node_name;
+char* local_name;
 #endif
 
 struct avl_tree olsr_head;

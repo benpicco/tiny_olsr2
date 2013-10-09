@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
 
 	DEBUG("This is node %s", this_name);
 #ifdef ENABLE_DEBUG
-	node_name = strdup(this_name);
+	local_name = strdup(this_name);
 #endif
 
 	/* Initialize the signal mask. */
