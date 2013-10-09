@@ -117,7 +117,7 @@ int enable_asynch(int sock) {
 	struct sigaction sa;
 
 	flags = fcntl(sock, F_GETFL);
-	fcntl(sock, F_SETFL, flags | O_ASYNC);
+	fcntl(sock, F_SETFL, flags | O_ASYNC | O_NONBLOCK);
 
 	sa.sa_flags = 0;
 	sa.sa_handler = sigio_handler;

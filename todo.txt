@@ -3,4 +3,3 @@
 - [ ] metrics & hysteresis
 - [ ] vtime needs to be an absolute timestamp
 - [ ] should h1_deriv etc return 0 when assertions fail?
-- [x] find cause for packet loss across multiple hops
