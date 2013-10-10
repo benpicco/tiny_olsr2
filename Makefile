@@ -4,17 +4,19 @@ INCLUDE=-I../oonf_api/src-api -I../oonf_api/build
 LIBDIR=../oonf_api/build
 
 CFLAGS=-Wall -std=gnu99 -DENABLE_DEBUG $(INCLUDE)
-LDFLAGS=$(LIBDIR)/liboonf_rfc5444.so $(LIBDIR)/liboonf_common.so
+LDFLAGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
 
 NODES := `grep -- -\> graph.gv | grep -o . | sort | grep [[:alnum:]] | uniq | wc -l`
 LOG_DIR := log
 
-node:	node/main.o node/routing.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o $(LDFLAGS)
-	cc node/main.o node/routing.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o $(LDFLAGS) -o node/node
+objects = node/main.o node/routing.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o
 
-dispatcher:	dispatcher.o $(LDFLAGS)
+node:	$(objects)
+	cc $(objects) -o node/node $(LDFLAGS)
+
+dispatcher:	dispatcher.o
 
 graph.pdf: graph.gv
 	-neato -Tpdf graph.gv > graph.pdf
