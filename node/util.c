@@ -20,7 +20,7 @@ struct netaddr* netaddr_reuse(struct netaddr* addr) {
 		DEBUG("Address %s not found, this shouldn't happen", netaddr_to_string(&nbuf[0], addr));
 		return netaddr_dup(addr);
 	}
-	return n->addr;
+	return netaddr_use(n->addr);
 }
 
 struct netaddr* netaddr_free(struct netaddr* addr) {
