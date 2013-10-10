@@ -26,9 +26,10 @@ void _routing_changed(struct netaddr* last_addr, int hops) {
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
-			netaddr_free(node->last_addr);
+			struct netaddr* tmp = node->last_addr;
 			node->last_addr = netaddr_use(last_addr);
 			node->distance = hops;
+			netaddr_free(tmp);
 			add_free_node(&free_nodes_head, node);	// todo: this can be done more efficiently
 			_routing_changed(node->addr, hops + 1);
 		} 

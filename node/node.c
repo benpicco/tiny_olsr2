@@ -1,6 +1,8 @@
 #include "node.h"
 
 void node_init() {
+	_local_addr._refs = 1;
+	local_addr = (struct netaddr*) &_local_addr;
 	avl_init(&olsr_head, avl_comp_netaddr, false);
 }
 

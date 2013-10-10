@@ -70,7 +70,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
 	struct ip_lite* new_buffer = malloc(sizeof(struct ip_lite) + length);
 	memcpy(new_buffer + 1, buffer, length);
-	memcpy(&new_buffer->src, &local_addr, sizeof(struct netaddr));
+	memcpy(&new_buffer->src, local_addr, sizeof(struct netaddr));
 	new_buffer->length = length;
 
 	sendto(sockfd, new_buffer, sizeof(struct ip_lite) + new_buffer->length, 0,
@@ -195,11 +195,12 @@ int main(int argc, char** argv) {
 	enable_asynch(sockfd);
 #endif
 
-	inet_pton(AF_INET6, this_ip, local_addr._addr);
-	local_addr._type = AF_INET6;
-	local_addr._prefix_len = 128;
-
 	node_init();
+
+	inet_pton(AF_INET6, this_ip, local_addr->_addr);
+	local_addr->_type = AF_INET6;
+	local_addr->_prefix_len = 128;
+
 	reader_init();
 	writer_init(write_packet);
 

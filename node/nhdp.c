@@ -31,7 +31,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 			n = _node_replace(n, calloc(1, sizeof(struct nhdp_node)));
 		}
 		n->type = NODE_TYPE_1_HOP;
-		n->last_addr = &local_addr;
+		n->last_addr = netaddr_use(local_addr);
 		n->expires = time(0) + vtime;
 		n->distance = 1;
 		h1_deriv(n)->linkstatus = linkstatus;
@@ -123,7 +123,7 @@ void print_neighbors(void) {
 				node->name, netaddr_to_string(&nbuf[0], node->addr),
 				netaddr_to_string(&nbuf[1], node->next_addr),
 				local_name,
-				netaddr_to_string(&nbuf[2], &local_addr));
+				netaddr_to_string(&nbuf[2], local_addr));
 	}
 }
 #else

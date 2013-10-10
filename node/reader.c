@@ -147,7 +147,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		linkstatus = *tlv->single_value;
 
 	/* node broadcasts us as it's neighbor */
-	if (netaddr_cmp(&cont->addr, &local_addr) == 0) {
+	if (netaddr_cmp(&cont->addr, local_addr) == 0) {
 		h1_deriv(current_node)->linkstatus = RFC5444_LINKSTATUS_SYMMETRIC;
 
 		/* node selected us as mpr */
@@ -181,7 +181,7 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (!cont->has_hopcount || !cont->has_hoplimit)
 		return RFC5444_DROP_PACKET;
 
-	if (!netaddr_cmp(&local_addr, &cont->orig_addr))
+	if (!netaddr_cmp(local_addr, &cont->orig_addr))
 		return RFC5444_DROP_PACKET;
 
 	vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
@@ -218,7 +218,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 	DEBUG("\t_cb_olsr_blocktlv_address_okay");
 
-	if (netaddr_cmp(&local_addr, &cont->addr) == 0)
+	if (netaddr_cmp(local_addr, &cont->addr) == 0)
 		return RFC5444_OKAY;
 
 #ifdef ENABLE_DEBUG

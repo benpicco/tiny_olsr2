@@ -7,7 +7,10 @@
 #include "common/avl_comp.h"
 #include "common/netaddr.h"
 
-struct netaddr local_addr;
+#include "util.h"
+
+struct netaddr_rc _local_addr;
+struct netaddr* local_addr;
 
 #ifdef ENABLE_DEBUG
 char* local_name;
