@@ -184,10 +184,10 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (!netaddr_cmp(local_addr, &cont->orig_addr))
 		return RFC5444_DROP_PACKET;
 
-	if (is_known_msg(&cont->orig_addr, cont->seqno))
-		return RFC5444_DROP_PACKET;
-
 	vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
+
+	if (is_known_msg(&cont->orig_addr, cont->seqno, vtime))
+		return RFC5444_DROP_PACKET;
 
 #ifdef ENABLE_DEBUG
 	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {

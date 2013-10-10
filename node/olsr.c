@@ -10,6 +10,8 @@
 
 struct free_node* free_nodes_head = 0;
 
+void _remove_olsr_node(struct olsr_node* node);
+
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
 }
@@ -34,6 +36,49 @@ void _routing_changed(struct netaddr* last_addr, int hops) {
 			_routing_changed(node->addr, hops + 1);
 		} 
 	}
+}
+
+/*
+ * we don't store alternative routes (yet) so remove all child nodes if a parent dies
+ */
+void _remove_children(struct netaddr* last_addr) {
+	struct olsr_node *node, *safe;
+	avl_for_each_element_safe(&olsr_head, node, node, safe) {
+		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
+			DEBUG("\talso removing %s (%s)",
+				node->name, netaddr_to_string(&nbuf[0], node->addr));
+			_remove_olsr_node(node);
+		}
+	}
+}
+
+void _remove_expired() {
+	struct olsr_node *node, *safe;
+	avl_for_each_element_safe(&olsr_head, node, node, safe) {
+		if (node->expires < time(0)) {
+			DEBUG("%s (%s) expired, removing it",
+				node->name, netaddr_to_string(&nbuf[0], node->addr));
+			_remove_olsr_node(node);
+		}
+	}
+}
+
+void _remove_olsr_node(struct olsr_node* node) {
+	avl_remove(&olsr_head, &node->node);
+
+	if (node->distance == 2) {
+		struct olsr_node* n1 = get_node(node->last_addr);
+		if (n1 != NULL)
+			h1_deriv(n1)->mpr_neigh--; // TODO: select new MPR
+	}
+	
+	if (node->distance > 1)
+		_remove_children(node->addr);
+
+	netaddr_free(node->next_addr);
+	netaddr_free(node->last_addr);
+	netaddr_free(node->addr);
+	free(node);
 }
 
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
@@ -83,11 +128,12 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 	n->expires = time(0) + vtime;
 }
 
-bool is_known_msg(struct netaddr* addr, uint16_t seq_no) {
+bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 	struct olsr_node* node = get_node(addr);
 	if (!node) {
 		node = _new_olsr_node(addr);
 		node->seq_no = seq_no;
+		node->expires = time(0) + vtime;
 		return false;
 	}
 
@@ -105,6 +151,7 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no) {
 void olsr_update() {
 	DEBUG("update routing table (%s pending nodes)", free_nodes_head ? "some" : "no");
 	fill_routing_table(&free_nodes_head);
+	_remove_expired();
 }
 
 #ifdef ENABLE_DEBUG
