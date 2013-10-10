@@ -12,6 +12,9 @@ struct olsr_node* _node_replace(struct olsr_node* old_n, struct olsr_node* new_n
 	new_n->addr = old_n->addr;
 	new_n->seq_no = old_n->seq_no;
 
+	netaddr_free(old_n->next_addr);
+	netaddr_free(old_n->last_addr);
+
 	avl_remove(&olsr_head, &old_n->node);
 	free(old_n);
 
@@ -32,6 +35,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 		}
 		n->type = NODE_TYPE_1_HOP;
 		n->last_addr = netaddr_use(local_addr);
+		n->next_addr = netaddr_use(n->addr);
 		n->expires = time(0) + vtime;
 		n->distance = 1;
 		h1_deriv(n)->linkstatus = linkstatus;
