@@ -59,7 +59,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 	/* diverging from the spec to save a little space (spec says keep all paths) */
 	// TODO: change this when handling timeouts
-	if (n->distance < distance) {
+	if (distance > n->distance) {
 		DEBUG("discarding longer (%d > %d) route for %s (%s) via %s",
 			distance, n->distance,
 			n->name, netaddr_to_string(&nbuf[0], n->addr),
@@ -69,9 +69,12 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 	DEBUG("updating TC entry for %s (%s)", n->name, netaddr_to_string(&nbuf[0], n->addr));
 
-	/* we found a shorter route */
+	/* we found an alternative route */
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
+		if (distance == n->distance)
+			return;
 		DEBUG("shorter route found");
+		netaddr_free(n->last_addr);
 		n->last_addr = netaddr_reuse(last_addr);
 		add_free_node(&free_nodes_head, n);
 		_routing_changed(addr, distance + 1);
