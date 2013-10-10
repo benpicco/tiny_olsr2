@@ -28,6 +28,7 @@ void fill_routing_table(struct free_node** head) {
 	struct olsr_node* node;
 	struct free_node* fn;
 	bool noop = false;	/* when in an iteration there was nothing remove from free nodes */
+	bool delete = false;
 	while (_head && !noop) {
 		noop = true;	/* if no nodes could be removed in an iteration, abort */
 		struct free_node *tmp, *prev = 0;
@@ -35,6 +36,11 @@ void fill_routing_table(struct free_node** head) {
 		simple_list_for_each (_head, fn) {
 start:
 			DEBUG("simple_list_for_each iteration (%p)", fn);
+			if (fn->node->expires < time(0)) {
+				delete = true;
+				DEBUG("%s (%s) expired in free_node list", 
+					fn->node->name, netaddr_to_string(&nbuf[0], fn->node->addr));
+			} else
 			if ((node = get_node(fn->node->last_addr))) {
 				DEBUG("%s (%s) -> %s (%s) -> […] -> %s",
 					netaddr_to_string(&nbuf[0], fn->node->addr), fn->node->name,
@@ -48,21 +54,27 @@ start:
 					DEBUG("%d = %d", fn->node->distance, node->distance + 1);
 					fn->node->distance = node->distance + 1;
 
-					/* remove free node */
-					tmp = fn->next;
-					if (!prev)
-						_head = *head = _head->next;
-					else
-						prev->next = fn->next;
-
-					free(fn);
-					if ((fn = tmp))
-						goto start;
-					else
-						break;
+					delete = true;
 				} else
 					DEBUG("Don't know how to route this one yet.");
 			}
+
+			if (delete) {
+				delete = false;
+				/* remove free node */
+				tmp = fn->next;
+				if (!prev)
+					_head = *head = _head->next;
+				else
+					prev->next = fn->next;
+
+				free(fn);
+				if ((fn = tmp))
+					goto start;
+				else
+					break;
+			}
+
 			prev = fn;
 		}
 	}
