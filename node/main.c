@@ -42,24 +42,11 @@ struct ip_lite {
 };
 #endif
 
-/* for hexfump */
-static struct autobuf _hexbuf;
-
 void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
 	DEBUG("write_packet(%zd bytes)", length);
-
-#if 0
-	/* generate hexdump of packet */
-	abuf_hexdump(&_hexbuf, "\t", buffer, length);
-	rfc5444_print_direct(&_hexbuf, buffer, length);
-
-	/* print hexdump to console */
-	puts(abuf_getptr(&_hexbuf));
-	abuf_clear(&_hexbuf);
-#endif
 
 #ifdef RIOT
 	// TODO: no memcpy, set address etc.
@@ -150,12 +137,12 @@ void sleep_s(int secs) {
 int main(int argc, char** argv) {
 	const char* this_ip;
 
-	/* initialize buffer for hexdump */
-	abuf_init(&_hexbuf);
+	node_init();
 
 #ifdef RIOT
 	cc110x_init(0);	// transceiver_pid ??
 	this_ip = "2001::1";
+	inet_pton(AF_INET6, this_ip, local_addr->_addr);
 #else
 	if (argc != 4) {
 		printf("usage:  %s <server IP address> <port> <node IP6 address>\n", argv[0]);
@@ -171,6 +158,11 @@ int main(int argc, char** argv) {
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
+	inet_pton(AF_INET6, this_ip, local_addr->_addr);
+
+	/* for ease of debugging, keep the nodes in order */
+	usleep(local_addr->_addr[15] * 10000);
 
 	DEBUG("probing for name…");
 	/* send HELLO */
@@ -195,9 +187,7 @@ int main(int argc, char** argv) {
 	enable_asynch(sockfd);
 #endif
 
-	node_init();
 
-	inet_pton(AF_INET6, this_ip, local_addr->_addr);
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 128;
 
@@ -221,5 +211,4 @@ int main(int argc, char** argv) {
 
 	reader_cleanup();
 	writer_cleanup();
-	abuf_free(&_hexbuf);
 }
