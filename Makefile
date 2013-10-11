@@ -3,12 +3,12 @@ CC=clang
 INCLUDE=-I../oonf_api/src-api -I../oonf_api/build
 LIBDIR=../oonf_api/build
 
-CFLAGS=-Wall -std=gnu99 -DENABLE_DEBUG $(INCLUDE)
+CFLAGS=-Wall -std=gnu99 -DENABLE_DEBUG -DNODES=$(NODES) $(INCLUDE)
 LDFLAGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
 
-NODES := `grep -- -\> graph.gv | grep -o . | sort | grep [[:alnum:]] | uniq | wc -l`
+NODES = $(shell grep -- -\> graph.gv | grep -o . | sort | grep [[:alnum:]] | uniq | wc -l)
 LOG_DIR := log
 
 objects = node/main.o node/routing.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o

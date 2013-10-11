@@ -21,10 +21,23 @@ char _t_buf[9];
 
 #define DEBUG_TICK		debug_ticks++
 
+static inline bool is_valid_neighbor(struct netaddr* a, struct netaddr* b) {
+	if (a == NULL || b == NULL)
+		return true;
+	if ((a->_addr[15] == 1 && b->_addr[15] == NODES) || 
+		(b->_addr[15] == 1 && a->_addr[15] == NODES))
+		return true;
+	return (a->_addr[15] - b->_addr[15] == 1) || (b->_addr[15] - a->_addr[15] == 1);
+}
+
 #else	/* no ENABLE_DEBUG */
 
 #define DEBUG(...)
 #define DEBUG_TICK
+
+static inline bool is_valid_neighbor(struct netaddr* a, struct netaddr* b) {
+	return true;
+}
 
 #endif
 #endif
