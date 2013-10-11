@@ -24,16 +24,23 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
 	return n;
 }
 
-void _routing_changed(struct netaddr* last_addr, int hops) {
+/*
+ * nodes with last_addr can now be routed in n hops 
+ */
+void _routing_changed(struct netaddr* last_addr, struct netaddr* next_addr, int hops) {
+	DEBUG("_routing_changed(%s => %s, %d)", 
+		netaddr_to_string(&nbuf[0], last_addr),
+		netaddr_to_string(&nbuf[1], next_addr), hops);
+
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
-			struct netaddr* tmp = node->last_addr;
-			node->last_addr = netaddr_use(last_addr);
+
+			struct netaddr* tmp = node->next_addr;
+			node->next_addr = netaddr_use(next_addr);
 			node->distance = hops;
 			netaddr_free(tmp);
-			add_free_node(&free_nodes_head, node);	// todo: this can be done more efficiently
-			_routing_changed(node->addr, hops + 1);
+			_routing_changed(node->addr, next_addr, hops + 1);
 		} 
 	}
 }
@@ -114,15 +121,29 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 	DEBUG("updating TC entry for %s (%s)", n->name, netaddr_to_string(&nbuf[0], n->addr));
 
-	/* we found an alternative route */
+	/* we found a better route */
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
 		if (distance == n->distance)
 			return;
-		DEBUG("shorter route found");
+		DEBUG("shorter route found (old: %d hops over %s new: %d hops over %s)",
+			n->distance, netaddr_to_string(&nbuf[0], n->last_addr),
+			distance, netaddr_to_string(&nbuf[1], last_addr));
+
+		assert(is_valid_neighbor(n->addr, last_addr));
+
 		netaddr_free(n->last_addr);
 		n->last_addr = netaddr_reuse(last_addr);
 		add_free_node(&free_nodes_head, n);
-		_routing_changed(addr, distance + 1);
+
+		/* see if we can route the new shorter route yet */
+		struct netaddr* next_addr = get_node(last_addr)->next_addr;
+		if (next_addr != NULL) {
+			netaddr_use(next_addr);
+			netaddr_free(n->next_addr);
+			n->next_addr = next_addr;
+
+			_routing_changed(addr, next_addr, distance + 1);
+		}
 	}
 
 	n->expires = time(0) + vtime;
@@ -161,14 +182,15 @@ void print_topology_set() {
 
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d]",
+		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d] %s valid",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
 			node->distance,
 			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time(0),
-			node->seq_no
+			node->seq_no,
+			is_valid_neighbor(node->addr, node->last_addr) ? "" : "not"
 			);
 	}
 	DEBUG("---------------------");
