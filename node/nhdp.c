@@ -52,6 +52,8 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 		n->expires = time(0) + vtime;
 	}
 
+	assert(is_valid_neighbor(n->addr, n->last_addr));
+
 	return n;
 }
 
@@ -81,6 +83,9 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 		avl_insert(&olsr_head, &n2->node);
 
 		n1->mpr_neigh++;
+
+		assert(is_valid_neighbor(n2->addr, n2->last_addr));
+
 		return ADD_2_HOP_OK;
 	}
 
@@ -103,6 +108,8 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 		n1->mpr_neigh++;
 	} else
 		DEBUG("TODO: %d hop node became 2-hop-neighbor", n2->distance);
+
+	assert(is_valid_neighbor(n2->addr, n2->last_addr));
 
 	return ADD_2_HOP_OK;
 }

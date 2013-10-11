@@ -9,5 +9,10 @@ currently we assume assume flooding MPR == routoing MPR
 	-> How do we gather metrics?
 
 Why are nodes in the topology set not unique? Is it sufficient to just store the shortest route?
+	-> store alt routes in a seperate list
 
 Why is seq_no associated with last_addr?
+	probably misread this? it's irrelevant anyway
+
+routing.c only needed for the uncommon case?
+When would we actually have to traverse the entire olsr node list more than once without it?
