@@ -104,7 +104,12 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 #ifdef ENABLE_DEBUG
 		n->name = name;
 #endif
-		add_free_node(&free_nodes_head, n);
+
+		struct netaddr* next_addr = get_node(last_addr)->next_addr;
+		if (next_addr != NULL)
+			n->next_addr = netaddr_use(next_addr);
+		else
+			add_free_node(&free_nodes_head, n);
 
 		return;
 	}
@@ -133,7 +138,6 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 		netaddr_free(n->last_addr);
 		n->last_addr = netaddr_reuse(last_addr);
-		add_free_node(&free_nodes_head, n);
 
 		/* see if we can route the new shorter route yet */
 		struct netaddr* next_addr = get_node(last_addr)->next_addr;
@@ -143,7 +147,8 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 			n->next_addr = next_addr;
 
 			_routing_changed(addr, next_addr, distance + 1);
-		}
+		} else
+			add_free_node(&free_nodes_head, n);
 	}
 
 	n->expires = time(0) + vtime;
