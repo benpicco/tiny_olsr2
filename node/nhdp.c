@@ -24,19 +24,18 @@ struct olsr_node* _node_replace(struct olsr_node* old_n, struct olsr_node* new_n
 struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t vtime) {
 	struct olsr_node* n = get_node(addr);
 
-	if (n == NULL || n->last_addr == NULL) {
+	if (n == NULL || n->last_addr == NULL || n->distance > 1) {
 		DEBUG("\tadding new neighbor: %s", netaddr_to_string(&nbuf[0], addr));
 		if (n == NULL) {
 			n = calloc(1, sizeof(struct nhdp_node));
 			n->addr = netaddr_dup(addr);
 		} else {
-			DEBUG("\tneighbor already existed as placeholder");
+			DEBUG("\t%s became a neighbor", netaddr_to_string(&nbuf[0], addr));
 			n = _node_replace(n, calloc(1, sizeof(struct nhdp_node)));
 		}
 		n->type = NODE_TYPE_1_HOP;
 		n->last_addr = netaddr_use(local_addr);
 		n->next_addr = netaddr_use(n->addr);
-		n->expires = time(0) + vtime;
 		n->distance = 1;
 		h1_deriv(n)->linkstatus = linkstatus;
 
@@ -44,13 +43,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 		avl_insert(&olsr_head, &n->node);
 	}
 
-	if (n->distance > 1) {
-		DEBUG("TODO: %d hop node became neighbor", n->distance);
-		// TODO
-	} else {
-		DEBUG("\textending validity of %s (%s)", n->name, netaddr_to_string(&nbuf[0], addr));
-		n->expires = time(0) + vtime;
-	}
+	n->expires = time(0) + vtime;
 
 	assert(is_valid_neighbor(n->addr, n->last_addr));
 
@@ -61,16 +54,15 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 	struct nhdp_node* n1 = h1_deriv(get_node(next_addr));
 	struct olsr_node* n2 = get_node(addr);
 
-	if(n2 == NULL || n2->last_addr == NULL) {
+	if(n2 == NULL || n2->last_addr == NULL || n2->distance > 2) {
 		if (n2 == NULL) {
 			n2 = calloc(1, sizeof(struct nhdp_2_hop_node));
 			n2->addr = netaddr_dup(addr);
 		} else {
-			DEBUG("\t2-hop neighbor already existed as placeholder");
+			DEBUG("\t%s became a 2-hop neighbor", netaddr_to_string(&nbuf[0], addr));
 			n2 = _node_replace(n2, calloc(1, sizeof(struct nhdp_2_hop_node)));
 		}
 		n2->type = NODE_TYPE_2_HOP;
-		n2->addr = netaddr_dup(addr);
 		n2->distance = 2;
 		n2->next_addr = netaddr_reuse(next_addr);
 		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
@@ -106,8 +98,7 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 		n2->next_addr = netaddr_reuse(next_addr);
 		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
 		n1->mpr_neigh++;
-	} else
-		DEBUG("TODO: %d hop node became 2-hop-neighbor", n2->distance);
+	}
 
 	assert(is_valid_neighbor(n2->addr, n2->last_addr));
 

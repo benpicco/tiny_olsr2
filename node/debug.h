@@ -2,6 +2,7 @@
 #define DEBUG_H_
 
 #ifdef ENABLE_DEBUG
+#include <execinfo.h>
 #include <stdio.h>
 #include <time.h>
 #include "common/netaddr.h"
@@ -28,6 +29,23 @@ static inline bool is_valid_neighbor(struct netaddr* a, struct netaddr* b) {
 		(b->_addr[15] == 1 && a->_addr[15] == NODES))
 		return true;
 	return (a->_addr[15] - b->_addr[15] == 1) || (b->_addr[15] - a->_addr[15] == 1);
+}
+
+static inline void print_trace(void) {
+	void *array[10];
+	size_t size;
+	char **strings;
+	size_t i;
+
+	size = backtrace (array, 10);
+	strings = backtrace_symbols (array, size);
+
+	printf ("Obtained %zd stack frames.\n", size);
+
+	for (i = 0; i < size; i++)
+		printf ("%s\n", strings[i]);
+
+	free (strings);
 }
 
 #else	/* no ENABLE_DEBUG */

@@ -8,6 +8,7 @@
 #include "common/netaddr.h"
 
 #include "util.h"
+#include "debug.h"
 
 struct netaddr_rc _local_addr;
 struct netaddr* local_addr;
@@ -22,6 +23,14 @@ enum {
 	NODE_TYPE_OLSR,
 	NODE_TYPE_1_HOP,
 	NODE_TYPE_2_HOP
+};
+
+/* simple list to store alternative routes */
+struct alt_route {
+	struct alt_route* next;
+
+	struct netaddr* last_addr;
+	time_t expires;
 };
 
 struct olsr_node {
@@ -58,15 +67,32 @@ struct nhdp_2_hop_node {
 static inline struct olsr_node* h1_super(struct nhdp_node* n)		{ return (struct olsr_node*) n; }
 static inline struct olsr_node* h2_super(struct nhdp_2_hop_node* n)	{ return (struct olsr_node*) n; }
 static inline struct nhdp_node* h1_deriv(struct olsr_node* n) {
-	assert(n);
-	assert(n->distance == 1);
-	assert(n->type == NODE_TYPE_1_HOP);
+	if (n == NULL) {
+		DEBUG("WARN: %s(NULL) called", __func__);
+		print_trace();
+		return 0;
+	}
+
+	if (n->distance != 1) {
+		DEBUG("WARN: %s(%s), distance = %d", __func__, n->name, n->distance);
+		print_trace();
+		return 0;
+	}
+
 	return (struct nhdp_node*) n;
 }
 static inline struct nhdp_2_hop_node* h2_deriv(struct olsr_node* n) {
-	assert(n);
-	assert(n->distance == 2);
-	assert(n->type == NODE_TYPE_2_HOP);
+	if (n == NULL) {
+		DEBUG("WARN: %s(NULL) called", __func__);
+		print_trace();
+		return 0;
+	}
+
+	if (n->distance != 2) {
+		DEBUG("WARN: %s(%s), distance = %d", __func__, n->name, n->distance);
+		print_trace();
+		return 0;
+	}
 	return (struct nhdp_2_hop_node*) n;
 }
 

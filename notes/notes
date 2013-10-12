@@ -16,3 +16,6 @@ Why is seq_no associated with last_addr?
 
 routing.c only needed for the uncommon case?
 When would we actually have to traverse the entire olsr node list more than once without it?
+
+add sender_addr parameter to is_known_msg() so we can actually route the TC originator?
+	last_addr = null -> problem?
