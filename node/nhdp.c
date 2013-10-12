@@ -25,8 +25,8 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 	struct olsr_node* n = get_node(addr);
 
 	if (n == NULL || n->last_addr == NULL || n->distance > 1) {
-		DEBUG("\tadding new neighbor: %s", netaddr_to_string(&nbuf[0], addr));
 		if (n == NULL) {
+			DEBUG("\tadding new neighbor: %s", netaddr_to_string(&nbuf[0], addr));
 			n = calloc(1, sizeof(struct nhdp_node));
 			n->addr = netaddr_dup(addr);
 		} else {

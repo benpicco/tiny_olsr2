@@ -67,32 +67,21 @@ struct nhdp_2_hop_node {
 static inline struct olsr_node* h1_super(struct nhdp_node* n)		{ return (struct olsr_node*) n; }
 static inline struct olsr_node* h2_super(struct nhdp_2_hop_node* n)	{ return (struct olsr_node*) n; }
 static inline struct nhdp_node* h1_deriv(struct olsr_node* n) {
-	if (n == NULL) {
-		DEBUG("WARN: %s(NULL) called", __func__);
-		print_trace();
+	if (n == NULL)
 		return 0;
-	}
 
-	if (n->distance != 1) {
-		DEBUG("WARN: %s(%s), distance = %d", __func__, n->name, n->distance);
-		print_trace();
+	if (n->distance != 1)
 		return 0;
-	}
 
 	return (struct nhdp_node*) n;
 }
 static inline struct nhdp_2_hop_node* h2_deriv(struct olsr_node* n) {
-	if (n == NULL) {
-		DEBUG("WARN: %s(NULL) called", __func__);
-		print_trace();
+	if (n == NULL)
 		return 0;
-	}
 
-	if (n->distance != 2) {
-		DEBUG("WARN: %s(%s), distance = %d", __func__, n->name, n->distance);
-		print_trace();
+	if (n->distance != 2)
 		return 0;
-	}
+
 	return (struct nhdp_2_hop_node*) n;
 }
 
