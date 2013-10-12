@@ -23,28 +23,6 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
 }
 
 /*
- * nodes with last_addr can now be routed in n hops 
- */
-void _routing_changed(struct netaddr* last_addr, struct netaddr* next_addr, uint8_t hops) {
-	DEBUG("_routing_changed(%s => %s, %d)", 
-		netaddr_to_string(&nbuf[0], last_addr),
-		netaddr_to_string(&nbuf[1], next_addr), hops);
-
-	struct olsr_node* node;
-	avl_for_each_element(&olsr_head, node, node) {
-		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
-
-			struct netaddr* tmp = node->next_addr;
-			node->next_addr = netaddr_use(next_addr);
-			node->distance = hops;
-			netaddr_free(tmp);
-			assert(is_valid_neighbor(node->addr, last_addr));
-			_routing_changed(node->addr, next_addr, hops + 1);
-		} 
-	}
-}
-
-/*
  * this should set alternative routes for children if availiable
  */
 void _update_children(struct netaddr* last_addr) {
@@ -143,29 +121,9 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 		netaddr_free(n->last_addr);
 		n->last_addr = netaddr_reuse(last_addr);
+		n->distance = distance;
 
-		/* see if we can route the new shorter route yet */
-		struct olsr_node* last_hop = get_node(last_addr);
-
-		if (last_hop != NULL && last_hop->next_addr != NULL) {
-
-			/* last_hop may not have been updated yet, avoid possible loop */
-			if (last_hop->distance + 1 != distance) {
-				DEBUG("%s says distance is %d, should be %d", 
-					netaddr_to_string(&nbuf[0], last_hop->addr),
-					last_hop->distance + 1, distance);
-				return;
-			}
-
-
-			netaddr_use(last_hop->next_addr);
-			netaddr_free(n->next_addr);
-			n->next_addr = last_hop->next_addr;
-			n->distance = distance;
-
-			_routing_changed(addr, last_hop->next_addr, distance + 1);
-		} else
-			add_free_node(&free_nodes_head, n);
+		add_free_node(&free_nodes_head, n);
 	}
 
 	n->expires = time(0) + vtime;
