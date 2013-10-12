@@ -137,12 +137,9 @@ void sleep_s(int secs) {
 int main(int argc, char** argv) {
 	const char* this_ip;
 
-	node_init();
-
 #ifdef RIOT
 	cc110x_init(0);	// transceiver_pid ??
 	this_ip = "2001::1";
-	inet_pton(AF_INET6, this_ip, local_addr->_addr);
 #else
 	if (argc != 4) {
 		printf("usage:  %s <server IP address> <port> <node IP6 address>\n", argv[0]);
@@ -158,11 +155,6 @@ int main(int argc, char** argv) {
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 	setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
-	inet_pton(AF_INET6, this_ip, local_addr->_addr);
-
-	/* for ease of debugging, keep the nodes in order */
-	usleep(local_addr->_addr[15] * 10000);
 
 	DEBUG("probing for name…");
 	/* send HELLO */
@@ -187,9 +179,11 @@ int main(int argc, char** argv) {
 	enable_asynch(sockfd);
 #endif
 
+	node_init();
 
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 128;
+	inet_pton(AF_INET6, this_ip, local_addr->_addr);
 
 	reader_init();
 	writer_init(write_packet);

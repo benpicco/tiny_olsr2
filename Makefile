@@ -26,10 +26,16 @@ mpr_graph.pdf: graph.gv log/*.log
 
 clean:
 	find -name '*.o' -type f -delete
-	rm graph.pdf
-	rm mpr_graph.pdf
 	rm node/node
 	rm dispatcher
+	rm graph.pdf
+	rm mpr_graph.pdf
+
+stop:
+	kill -STOP $(shell pidof -s node)
+
+cont:
+	kill -CONT $(shell pidof -s node)
 
 kill:
 	-killall node
@@ -40,5 +46,6 @@ run:	dispatcher node kill graph.pdf
 
 	@mkdir -p $(LOG_DIR)
 	@for i in $(shell seq 1 ${NODES}) ; do \
+		sleep 0.1;	\
 		LD_LIBRARY_PATH=$(LIBDIR) stdbuf -oL -eL ./node/node 127.0.0.1 9000 2001::$$i > $(LOG_DIR)/$$i.log 2>&1 & \
 	done
