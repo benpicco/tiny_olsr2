@@ -29,9 +29,8 @@ struct netaddr* netaddr_free(struct netaddr* addr) {
 	if (addr)
 		DEBUG("netaddr_free(%s) - %d refs", netaddr_to_string(&nbuf[0], addr), addr_rc->_refs);
 
-	if (addr != NULL && --addr_rc->_refs == 0) {
+	if (addr != NULL && --addr_rc->_refs == 0)
 		free(addr_rc);
-		return 0;
-	}
-	return addr;
+
+	return NULL;
 }
