@@ -10,8 +10,6 @@
 
 struct free_node* free_nodes_head = 0;
 
-void _remove_olsr_node(struct olsr_node* node);
-
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
 }
@@ -46,26 +44,17 @@ void _routing_changed(struct netaddr* last_addr, struct netaddr* next_addr, int 
 }
 
 /*
- * we don't store alternative routes (yet) so remove all child nodes if a parent dies
+ * this should set alternative routes for children if availiable
  */
-void _remove_children(struct netaddr* last_addr) {
+void _update_children(struct netaddr* last_addr) {
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
-			DEBUG("\talso removing %s (%s)",
-				node->name, netaddr_to_string(&nbuf[0], node->addr));
-			_remove_olsr_node(node);
-		}
-	}
-}
-
-void _remove_expired() {
-	struct olsr_node *node, *safe;
-	avl_for_each_element_safe(&olsr_head, node, node, safe) {
-		if (node->expires < time(0)) {
-			DEBUG("%s (%s) expired, removing it",
-				node->name, netaddr_to_string(&nbuf[0], node->addr));
-			_remove_olsr_node(node);
+			node->distance = 255;
+			node->next_addr = NULL;
+			node->last_addr = NULL;
+			netaddr_free(node->last_addr);
+			netaddr_free(node->next_addr);
 		}
 	}
 }
@@ -78,14 +67,29 @@ void _remove_olsr_node(struct olsr_node* node) {
 		if (n1 != NULL)
 			h1_deriv(n1)->mpr_neigh--; // TODO: select new MPR
 	}
-	
+
 	if (node->distance > 1)
-		_remove_children(node->addr);
+		_update_children(node->addr);
 
 	netaddr_free(node->next_addr);
 	netaddr_free(node->last_addr);
 	netaddr_free(node->addr);
 	free(node);
+}
+
+/*
+ * iterate over all elements and remove expired entries
+ */
+void _remove_expired() {
+	struct olsr_node *node, *safe;
+	avl_for_each_element_safe(&olsr_head, node, node, safe) {
+		if (node->expires < time(0)) {
+			DEBUG("%s (%s) expired, removing it",
+				node->name, netaddr_to_string(&nbuf[0], node->addr));
+
+			_remove_olsr_node(node);
+		}
+	}
 }
 
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
