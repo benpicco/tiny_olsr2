@@ -41,8 +41,7 @@ start:
 			/* remove expired nodes */
 			if (fn->node->expires < time(0)) {
 				delete = true;
-				DEBUG("%s (%s) expired in free_node list", 
-					fn->node->name, netaddr_to_string(&nbuf[0], fn->node->addr));
+				DEBUG("%s expired in free_node list", fn->node->name);
 			} else
 			/* get next hop */
 			if ((node = get_node(fn->node->last_addr))) {
