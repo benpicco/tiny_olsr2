@@ -111,6 +111,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 	/* we found a better route */
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
+		/* discard alternative route that is not an improvement */
 		if (distance == n->distance)
 			return;
 		DEBUG("shorter route found (old: %d hops over %s new: %d hops over %s)",
@@ -121,6 +122,12 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 		netaddr_free(n->last_addr);
 		n->last_addr = netaddr_reuse(last_addr);
+		n->distance = distance;
+
+		add_free_node(&free_nodes_head, n);
+	} else if (distance < n->distance) {
+		/* we have the same last_addr, but a shorter route */
+		/* obtain new next_hop */
 		n->distance = distance;
 
 		add_free_node(&free_nodes_head, n);
