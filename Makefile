@@ -8,7 +8,7 @@ LDFLAGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
 
-NODES = $(shell grep -- -\> graph.gv | grep -o . | sort | grep [[:alnum:]] | uniq | wc -l)
+NODES = $(shell grep -- -\> graph.gv | grep -o . | sort | grep [A-Z] | uniq | wc -l)
 LOG_DIR := log
 
 objects = node/main.o node/routing.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o

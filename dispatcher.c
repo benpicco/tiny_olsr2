@@ -22,20 +22,22 @@ struct node {
 struct connection {
 	struct node* node;
 	struct connection* next;
+	float loss;
 };
 
 static struct node* node_head = 0;
 
-static void connect_node(struct node* node_a, struct node* node_b, bool bidirectional) {
+static void connect_node(struct node* node_a, struct node* node_b, float loss, bool bidirectional) {
 	if (bidirectional)
-		connect_node(node_b, node_a, false);
+		connect_node(node_b, node_a, loss, false);
 
-	printf("%s -> %s\n", node_a->name, node_b->name);
+	printf("%s -> %s (%f %%)\n", node_a->name, node_b->name, 100 * loss);
 
 	if (node_a->connections == 0) {
 		node_a->connections = malloc(sizeof (struct connection));
 		node_a->connections->node = node_b;
 		node_a->connections->next = 0;
+		node_a->connections->loss = loss;
 	} else {
 		struct connection* con = node_a->connections;
 		while (con->next)
@@ -43,6 +45,7 @@ static void connect_node(struct node* node_a, struct node* node_b, bool bidirect
 		con->next = malloc(sizeof (struct connection));
 		con->next->node = node_b;
 		con->next->next = 0;
+		node_a->connections->loss = loss;
 	}
 }
 
@@ -101,7 +104,7 @@ static void write_packet(struct node* n, int socket, void *buffer, size_t length
 
 	struct connection* con = n->connections;
 	while (con) {
-		if (con->node->addr.sin_port)
+		if (con->loss * 100 < random() % 100 && con->node->addr.sin_port)
 			sendto(socket, buffer, length, 0, (struct sockaddr*) &con->node->addr, con->node->addr_len);
 		con = con->next;
 	}
@@ -146,13 +149,16 @@ int main(int argc, char** argv) {
 
 	char a[64];
 	char b[64];
+	float loss;
 
 	int matches = 0;
 	bool bidirectional = false;
-	while(EOF != (matches = fscanf(fp, "%s -> %s\n", a, b))) {
-		if (matches == 2) {
-			connect_node(add_node(a), add_node(b), bidirectional);
-		} else {
+	while (EOF != (matches = fscanf(fp, "%s -> %s\t// %f\n", a, b, &loss))) {
+		if (matches == 2)
+			connect_node(add_node(a), add_node(b), 0, bidirectional);
+		else if (matches == 3)
+			connect_node(add_node(a), add_node(b), loss, bidirectional);
+		else {
 			if (!strncmp(a, "bidirectional", strlen("bidirectional")))
 				bidirectional = true;
 			if (!strncmp(a, "directional", strlen("directional")))
@@ -177,7 +183,7 @@ int main(int argc, char** argv) {
 		}
 
 		if (n == 0)
-			printf("ignoring unknown node");
+			printf("ignoring unknown node\n");
 		else
 			write_packet(n, socket, buffer, size);
 	}
