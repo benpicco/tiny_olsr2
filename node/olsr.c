@@ -61,7 +61,7 @@ void _remove_olsr_node(struct olsr_node* node) {
 /*
  * iterate over all elements and remove expired entries
  */
-void _remove_expired() {
+void remove_expired() {
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		if (node->expires < time(0)) {
@@ -157,12 +157,6 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 		return false;
 
 	return true;
-}
-
-void olsr_update() {
-	DEBUG("update routing table (%s pending nodes)", pending_nodes_exist() ? "some" : "no");
-	fill_routing_table();
-	_remove_expired();
 }
 
 #ifdef ENABLE_DEBUG

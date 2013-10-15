@@ -19,6 +19,7 @@
 #include "reader.h"
 #include "writer.h"
 #include "constants.h"
+#include "routing.h"
 
 struct rfc5444_reader reader;
 struct netaddr* current_src;
@@ -31,6 +32,7 @@ uint16_t _seq_no;
 
 static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
+static enum rfc5444_result _cb_nhdp_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
 
 static enum rfc5444_result _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
@@ -82,6 +84,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _olsr_address_tlvs[] = {
 static struct rfc5444_reader_tlvblock_consumer _nhdp_consumer = {
 	.msg_id = RFC5444_MSGTYPE_HELLO,
 	.block_callback = _cb_nhdp_blocktlv_packet_okay,
+	.end_callback = _cb_nhdp_end_callback,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
@@ -122,7 +125,7 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #endif
 
 	/* reset MPR selector state, will be set by _cb_nhdp_blocktlv_address_okay */
-	if (!h1_deriv(current_node)->mpr_selector)
+	if (h1_deriv(current_node)->mpr_selector == 0)
 		send_tc_messages = false;
 	else
 		h1_deriv(current_node)->mpr_selector = 0;
@@ -242,13 +245,33 @@ _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_
 }
 
 static enum rfc5444_result
+_cb_nhdp_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
+	if (dropped) {
+		DEBUG("\t(dropped)");
+		return RFC5444_DROP_PACKET;
+	}
+
+	if (pending_nodes_exist()) {
+		DEBUG("\tupdate routing table");
+		fill_routing_table();
+	}
+
+	return RFC5444_OKAY;
+}
+
+static enum rfc5444_result
 _cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
 	if (dropped) {
 		DEBUG("\t(dropped)");
 		return RFC5444_DROP_PACKET;
 	}
 
-	olsr_update();
+	remove_expired();
+
+	if (pending_nodes_exist()) {
+		DEBUG("\tupdate routing table");
+		fill_routing_table();
+	}
 
 	return RFC5444_OKAY;
 }

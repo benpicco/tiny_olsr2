@@ -51,7 +51,7 @@ void fill_routing_table(void) {
 		simple_list_for_each (__head, fn) {
 start:
 			DEBUG("simple_list_for_each iteration (%p) - %s", fn, fn->node->name);
-			DEBUG("addr: %s\tlast_addr: %s\thops: %d\t%d s",
+			DEBUG("addr: %s\tlast_addr: %s\thops: %d\t%ld s",
 				netaddr_to_string(&nbuf[0], fn->node->addr),
 				netaddr_to_string(&nbuf[1], fn->node->next_addr),
 				fn->node->distance,
