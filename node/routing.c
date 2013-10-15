@@ -19,7 +19,7 @@ struct free_node* _head = 0;
 bool _update_pending = false;
 
 void add_free_node(struct olsr_node* node) {
-	struct free_node* n = simple_list_find_cmp(_head, node, olsr_node_cmp);
+	struct free_node* n = simple_list_find_cmp(_head, node, (int (*)(void *, void *)) olsr_node_cmp);
 	if (n == NULL)
 		n = simple_list_add_before(&_head, node->distance);
 
@@ -29,7 +29,7 @@ void add_free_node(struct olsr_node* node) {
 }
 
 void remove_free_node(struct olsr_node* node) {
-	struct free_node* n = simple_list_find_cmp(_head, node, olsr_node_cmp);
+	struct free_node* n = simple_list_find_cmp(_head, node, (int (*)(void *, void *)) olsr_node_cmp);
 	if (n == NULL)
 		return;
 	simple_list_remove(&_head, n);
