@@ -5,17 +5,20 @@
 #include "util.h"
 #include "debug.h"
 #include "node.h"
+#include "routing.h"
 
 #include "common/avl.h"
 
 struct olsr_node* _node_replace(struct olsr_node* old_n, struct olsr_node* new_n) {
+	avl_remove(&olsr_head, &old_n->node);
+	remove_free_node(old_n);
+
 	new_n->addr = old_n->addr;
 	new_n->seq_no = old_n->seq_no;
 
 	netaddr_free(old_n->next_addr);
 	netaddr_free(old_n->last_addr);
 
-	avl_remove(&olsr_head, &old_n->node);
 	free(old_n);
 
 	return new_n;
@@ -54,6 +57,8 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 	struct nhdp_node* n1 = h1_deriv(get_node(next_addr));
 	struct olsr_node* n2 = get_node(addr);
 
+	assert (n1 != NULL);
+
 	if(n2 == NULL || n2->last_addr == NULL || n2->distance > 2) {
 		if (n2 == NULL) {
 			n2 = calloc(1, sizeof(struct nhdp_2_hop_node));
@@ -87,14 +92,16 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 	if (n2->distance == 2) {
 		n2->expires = time(0) + vtime;	/* found node, update vtim */
 		struct nhdp_node* n1_old = h1_deriv(get_node(n2->next_addr));
+
 		/* everything stays the same */
-		if (netaddr_cmp(n2->next_addr, next_addr) == 0 || 
-			n1_old->mpr_neigh > n1->mpr_neigh + 1) {
+		if (n1_old != NULL && 
+			(netaddr_cmp(n2->next_addr, next_addr) == 0 || n1_old->mpr_neigh > n1->mpr_neigh + 1)) {
 			return -ADD_2_HOP_OK;
 		}
 
 		DEBUG("\tswitching MPR");
-		n1_old->mpr_neigh--;
+		if (n1_old != NULL)
+			n1_old->mpr_neigh--;
 		n2->next_addr = netaddr_reuse(next_addr);
 		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
 		n1->mpr_neigh++;
