@@ -8,5 +8,7 @@ void node_init() {
 
 struct olsr_node* get_node(struct netaddr* addr) {
 	struct olsr_node *n; // for typeof
+	if (addr == NULL)
+		return NULL;
 	return avl_find_element(&olsr_head, addr, n, node);
 }
