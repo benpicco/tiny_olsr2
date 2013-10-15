@@ -41,6 +41,8 @@ void _update_children(struct netaddr* last_addr) {
 void _remove_olsr_node(struct olsr_node* node) {
 	avl_remove(&olsr_head, &node->node);
 
+	remove_free_node(&free_nodes_head, node);
+
 	if (node->distance == 2) {
 		struct olsr_node* n1 = get_node(node->last_addr);
 		if (n1 != NULL)

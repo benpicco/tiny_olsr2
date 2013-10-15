@@ -17,11 +17,18 @@ struct free_node {
 
 void add_free_node(struct free_node** head, struct olsr_node* node) {
 	struct free_node* n = simple_list_find_cmp(*head, node, olsr_node_cmp);
-	if (!n)
+	if (n == NULL)
 		n = simple_list_add_before(head, node->distance);
 
 	n->hops = node->distance;
 	n->node = node;
+}
+
+void remove_free_node(struct free_node** head, struct olsr_node* node) {
+	struct free_node* n = simple_list_find_cmp(*head, node, olsr_node_cmp);
+	if (n == NULL)
+		return;
+	simple_list_remove(head, n);
 }
 
 void fill_routing_table(struct free_node** head) {
