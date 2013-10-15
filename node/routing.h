@@ -3,10 +3,9 @@
 
 #include "node.h"
 
-struct free_node;
-
-void add_free_node(struct free_node** head, struct olsr_node* node);
-void remove_free_node(struct free_node** head, struct olsr_node* node);
-void fill_routing_table (struct free_node** head);
+void add_free_node(struct olsr_node* node);
+void remove_free_node(struct olsr_node* node);
+void fill_routing_table(void);
+bool pending_nodes_exist(void);
 
 #endif

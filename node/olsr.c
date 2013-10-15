@@ -8,8 +8,6 @@
 #include "debug.h"
 #include "routing.h"
 
-struct free_node* free_nodes_head = 0;
-
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
 }
@@ -26,6 +24,7 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
  * this should set alternative routes for children if availiable
  */
 void _update_children(struct netaddr* last_addr) {
+	DEBUG("update_children(%s)", netaddr_to_string(&nbuf[0], last_addr));
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
@@ -34,6 +33,7 @@ void _update_children(struct netaddr* last_addr) {
 			node->last_addr = NULL;
 			netaddr_free(node->last_addr);
 			netaddr_free(node->next_addr);
+			// remove node from free_nodes?
 		}
 	}
 }
@@ -41,12 +41,12 @@ void _update_children(struct netaddr* last_addr) {
 void _remove_olsr_node(struct olsr_node* node) {
 	avl_remove(&olsr_head, &node->node);
 
-	remove_free_node(&free_nodes_head, node);
+	remove_free_node(node);
 
 	if (node->distance == 2) {
-		struct olsr_node* n1 = get_node(node->last_addr);
+		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
 		if (n1 != NULL)
-			h1_deriv(n1)->mpr_neigh--; // TODO: select new MPR
+			n1->mpr_neigh--; // TODO: select new MPR
 	}
 
 	if (node->distance > 1)
@@ -94,7 +94,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		if (next_addr != NULL)
 			n->next_addr = netaddr_use(next_addr);
 		else
-			add_free_node(&free_nodes_head, n);
+			add_free_node(n);
 
 		return;
 	}
@@ -126,13 +126,13 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		n->last_addr = netaddr_reuse(last_addr);
 		n->distance = distance;
 
-		add_free_node(&free_nodes_head, n);
+		add_free_node(n);
 	} else if (distance < n->distance) {
 		/* we have the same last_addr, but a shorter route */
 		/* obtain new next_hop */
 		n->distance = distance;
 
-		add_free_node(&free_nodes_head, n);
+		add_free_node(n);
 	}
 
 	n->expires = time(0) + vtime;
@@ -144,6 +144,7 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 		node = _new_olsr_node(addr);
 		node->seq_no = seq_no;
 		node->expires = time(0) + vtime;
+		node->distance = 255;	// use real distance here?
 		return false;
 	}
 
@@ -159,8 +160,8 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 }
 
 void olsr_update() {
-	DEBUG("update routing table (%s pending nodes)", free_nodes_head ? "some" : "no");
-	fill_routing_table(&free_nodes_head);
+	DEBUG("update routing table (%s pending nodes)", pending_nodes_exist() ? "some" : "no");
+	fill_routing_table();
 	_remove_expired();
 }
 
