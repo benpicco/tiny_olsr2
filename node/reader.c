@@ -251,10 +251,7 @@ _cb_nhdp_end_callback(struct rfc5444_reader_tlvblock_context *context, bool drop
 		return RFC5444_DROP_PACKET;
 	}
 
-	if (pending_nodes_exist()) {
-		DEBUG("\tupdate routing table");
-		fill_routing_table();
-	}
+	fill_routing_table();
 
 	return RFC5444_OKAY;
 }
@@ -267,11 +264,7 @@ _cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool drop
 	}
 
 	remove_expired();
-
-	if (pending_nodes_exist()) {
-		DEBUG("\tupdate routing table");
-		fill_routing_table();
-	}
+	fill_routing_table();
 
 	return RFC5444_OKAY;
 }

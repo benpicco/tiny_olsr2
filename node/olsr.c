@@ -96,6 +96,8 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		else
 			add_free_node(n);
 
+		sched_routing_update();
+
 		return;
 	}
 

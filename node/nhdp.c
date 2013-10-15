@@ -44,6 +44,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);
+		sched_routing_update();
 	}
 
 	n->expires = time(0) + vtime;
@@ -83,6 +84,8 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 
 		assert(is_valid_neighbor(n2->addr, n2->last_addr));
 
+		sched_routing_update();
+
 		return ADD_2_HOP_OK;
 	}
 
@@ -105,6 +108,7 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 		n2->next_addr = netaddr_reuse(next_addr);
 		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
 		n1->mpr_neigh++;
+		sched_routing_update();
 	}
 
 	assert(is_valid_neighbor(n2->addr, n2->last_addr));

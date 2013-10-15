@@ -16,6 +16,7 @@ struct free_node {
 };
 
 struct free_node* _head = 0;
+bool _update_pending = false;
 
 void add_free_node(struct olsr_node* node) {
 	struct free_node* n = simple_list_find_cmp(_head, node, olsr_node_cmp);
@@ -24,6 +25,7 @@ void add_free_node(struct olsr_node* node) {
 
 	n->hops = node->distance;
 	n->node = node;
+	_update_pending = true;
 }
 
 void remove_free_node(struct olsr_node* node) {
@@ -33,12 +35,18 @@ void remove_free_node(struct olsr_node* node) {
 	simple_list_remove(&_head, n);
 }
 
-bool pending_nodes_exist(void) {
-	return _head != NULL;
+void sched_routing_update(void) {
+	_update_pending = true;
 }
 
 void fill_routing_table(void) {
 	struct free_node* __head = _head;
+
+	if (_head == NULL || !_update_pending)
+		return;
+
+	_update_pending = false;
+	DEBUG("update routing table");
 
 	struct olsr_node* node;
 	struct free_node* fn;
