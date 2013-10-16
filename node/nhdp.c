@@ -63,14 +63,14 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 	return n;
 }
 
-int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t vtime, char* name) {
+void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t vtime, char* name) {
 	struct nhdp_node* n1 = h1_deriv(get_node(next_addr));
 
 	assert (n1 != NULL);
 
 	if (n1->pending) {
 		DEBUG("%s is pending, ignoring 2-hop node %s", h1_super(n1)->name, name);
-		return 0;
+		return;
 	}
 
 	struct olsr_node* n2 = get_node(addr);
@@ -100,11 +100,11 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 
 		sched_routing_update();
 
-		return ADD_2_HOP_OK;
+		return;
 	}
 
 	if (n2->distance == 1)
-		return -ADD_2HOP_IS_NEIGHBOR;
+		return;
 
 	if (n2->distance == 2) {
 		n2->expires = time(0) + vtime;	/* found node, update vtim */
@@ -113,7 +113,7 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 		/* everything stays the same */
 		if (n1_old != NULL && 
 			(netaddr_cmp(n2->next_addr, next_addr) == 0 || n1_old->mpr_neigh > n1->mpr_neigh + 1)) {
-			return -ADD_2_HOP_OK;
+			return;
 		}
 
 		DEBUG("\tswitching MPR");
@@ -126,8 +126,6 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 	}
 
 	assert(is_valid_neighbor(n2->addr, n2->last_addr));
-
-	return ADD_2_HOP_OK;
 }
 
 #ifdef ENABLE_DEBUG
