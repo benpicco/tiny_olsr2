@@ -64,7 +64,7 @@ static struct rfc5444_writer_tlvtype _olsr_addrtlvs[] = {
  */
 static void
 _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
-	uint8_t time_encoded = rfc5444_timetlv_encode(HOLD_TIME);
+	uint8_t time_encoded = rfc5444_timetlv_encode(REFRESH_INTERVAL);
 	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0, &time_encoded, sizeof(time_encoded));
 
 #ifdef ENABLE_DEBUG
@@ -100,7 +100,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 
 static void
 _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr) {
-	uint8_t time_encoded = rfc5444_timetlv_encode(HOLD_TIME);
+	uint8_t time_encoded = rfc5444_timetlv_encode(REFRESH_INTERVAL);
 	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0, &time_encoded, sizeof(time_encoded));
 
 #ifdef ENABLE_DEBUG

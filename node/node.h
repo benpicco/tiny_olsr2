@@ -42,6 +42,7 @@ struct olsr_node {
 	uint16_t seq_no;			/* last seq_no from last_addr */
 
 	uint8_t distance;			/* hops between us and the node */
+	float link_quality;			/*	the quality of the link */
 	struct netaddr* next_addr;	/* neighbor addr to send packets to for this node*/
 	struct netaddr* last_addr;	/* node that announced this node */
 

@@ -7,6 +7,7 @@
 #include "util.h"
 #include "debug.h"
 #include "routing.h"
+#include "constants.h"
 
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
@@ -64,9 +65,18 @@ void _remove_olsr_node(struct olsr_node* node) {
  * iterate over all elements and remove expired entries
  */
 void remove_expired() {
+	time_t now = time(0);
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
-		if (node->expires < time(0)) {
+		/* only use HELLO for link quality calculation */
+		if (node->distance == 1) {
+			if (now > node->expires)
+				node->link_quality = node->link_quality * (1 - HYST_SCALING);
+			else
+				node->link_quality = node->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
+		}
+
+		if (now - node->expires > HOLD_TIME) {
 			DEBUG("%s (%s) expired, removing it",
 				node->name, netaddr_to_string(&nbuf[0], node->addr));
 
@@ -166,7 +176,7 @@ void print_topology_set() {
 
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d] %s valid",
+		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d] q: %f",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
@@ -174,7 +184,7 @@ void print_topology_set() {
 			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time(0),
 			node->seq_no,
-			is_valid_neighbor(node->addr, node->last_addr) ? "" : "not"
+			node->link_quality
 			);
 	}
 	DEBUG("---------------------");
