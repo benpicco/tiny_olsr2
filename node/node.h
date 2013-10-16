@@ -41,8 +41,9 @@ struct olsr_node {
 	time_t expires;				/* time when this tuple is invalid */
 	uint16_t seq_no;			/* last seq_no from last_addr */
 
+	uint8_t link_metric;		/* quality of the link between this node and last_hop */
+	uint16_t route_metric;		/* quality of the entire route */
 	uint8_t distance;			/* hops between us and the node */
-	float link_quality;			/*	the quality of the link */
 	struct netaddr* next_addr;	/* neighbor addr to send packets to for this node*/
 	struct netaddr* last_addr;	/* node that announced this node */
 
@@ -54,6 +55,7 @@ struct olsr_node {
 struct nhdp_node {
 	struct olsr_node super;
 
+	float link_quality;			/* the quality of the link */
 	uint8_t linkstatus;			/* wheather we have a symetric link */
 	uint8_t mpr_neigh;			/* number of nodes reached by this node if it's an MPR */
 	uint8_t mpr_selector;		/* wheather the node selected us as an MPR */

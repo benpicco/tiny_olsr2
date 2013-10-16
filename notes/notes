@@ -11,11 +11,10 @@ currently we assume assume flooding MPR == routoing MPR
 Why are nodes in the topology set not unique? Is it sufficient to just store the shortest route?
 	-> store alt routes in a seperate list
 
-Why is seq_no associated with last_addr?
-	probably misread this? it's irrelevant anyway
-
-routing.c only needed for the uncommon case?
-When would we actually have to traverse the entire olsr node list more than once without it?
-
 add sender_addr parameter to is_known_msg() so we can actually route the TC originator?
 	last_addr = null -> problem?
+
+Why does metric_encode use 32bit for link metrics?
+	8 bit for link metric
+	16 bit for route metric (max is 256 hops)
+	are enough

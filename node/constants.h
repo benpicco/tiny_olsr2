@@ -5,6 +5,8 @@
 #define HOLD_TIME		(3 * REFRESH_INTERVAL)
 #define KEEP_EXPIRED		HOLD_TIME
 
+#define LINK_METRIC_MAX	128
+
 #define HYST_SCALING	0.5
 #define HYST_LOW	0.3
 #define HYST_HIGH	0.8

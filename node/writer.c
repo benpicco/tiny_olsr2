@@ -53,6 +53,7 @@ static struct rfc5444_writer_content_provider _olsr_message_content_provider = {
 };
 
 static struct rfc5444_writer_tlvtype _olsr_addrtlvs[] = {
+	[IDX_ADDRTLV_LINKMETRIC] = { .type = RFC5444_ADDRTLV_LINK_METRIC },
 #ifdef ENABLE_DEBUG
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -86,6 +87,10 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], 
 			&h1_deriv(neighbor)->linkstatus, sizeof h1_deriv(neighbor)->linkstatus, false);
 
+		/* add link metric */
+		uint8_t metric = 1 + (1 - h1_deriv(neighbor)->link_quality) * LINK_METRIC_MAX;
+		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINKMETRIC], &metric, sizeof metric, false);
+
 		/* node is a mpr - TODO sensible value*/
 		if (h1_deriv(neighbor)->mpr_neigh > 0) 
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR],
@@ -117,6 +122,10 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 		if (node->distance == 1 && h1_deriv(node)->mpr_selector) {
 			struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr,
 				_olsr_message_content_provider.creator, node->addr, false);
+
+			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINKMETRIC], 
+				&node->link_metric, sizeof node->link_metric, false);
+
 #ifdef ENABLE_DEBUG
 			if (node->name)
 				rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_NODE_NAME],

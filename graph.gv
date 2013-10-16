@@ -1,14 +1,14 @@
 digraph {
 subgraph bidirectional {
 	edge [arrowhead = none]
-	A -> B	// 0.4
-	B -> C	// 0.5
-	C -> D	// 0.6
+	A -> B
+	B -> C
+	C -> D
 	D -> E
-	E -> F	// 0.8
+	E -> F
 	F -> G
-	G -> H	// 0.3
-	H -> A	// 0.2
+	G -> H
+	H -> A
 }
 
 subgraph directional {

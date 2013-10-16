@@ -71,9 +71,9 @@ void remove_expired() {
 		/* only use HELLO for link quality calculation */
 		if (node->distance == 1) {
 			if (now > node->expires)
-				node->link_quality = node->link_quality * (1 - HYST_SCALING);
+				h1_deriv(node)->link_quality = h1_deriv(node)->link_quality * (1 - HYST_SCALING);
 			else
-				node->link_quality = node->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
+				h1_deriv(node)->link_quality = h1_deriv(node)->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
 		}
 
 		if (now - node->expires > HOLD_TIME) {
@@ -85,7 +85,7 @@ void remove_expired() {
 	}
 }
 
-void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
+void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, uint8_t metric, char* name) {
 	struct olsr_node* n = get_node(addr);
 
 	if (n == NULL || n->last_addr == NULL) {
@@ -98,6 +98,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		n->last_addr = netaddr_reuse(last_addr);
 		n->distance = distance;
 		n->expires = time(0) + vtime;
+		n->link_metric = metric;
 #ifdef ENABLE_DEBUG
 		n->name = name;
 #endif
@@ -145,6 +146,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		add_free_node(n);
 	}
 
+	n->link_metric = metric;
 	n->expires = time(0) + vtime;
 }
 
@@ -176,7 +178,7 @@ void print_topology_set() {
 
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d] q: %f",
+		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d] q: %d (%f)",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
@@ -184,7 +186,8 @@ void print_topology_set() {
 			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time(0),
 			node->seq_no,
-			node->link_quality
+			node->link_metric,
+			node->distance == 1 ? h1_deriv(node)->link_quality : -1
 			);
 	}
 	DEBUG("---------------------");
