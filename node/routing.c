@@ -15,13 +15,13 @@ struct free_node {
 	int hops;
 };
 
-struct free_node* _head = 0;
+struct free_node* _pending_head = 0;
 bool _update_pending = false;
 
 void add_free_node(struct olsr_node* node) {
-	struct free_node* n = simple_list_find_cmp(_head, node, (int (*)(void *, void *)) olsr_node_cmp);
+	struct free_node* n = simple_list_find_cmp(_pending_head, node, (int (*)(void *, void *)) olsr_node_cmp);
 	if (n == NULL)
-		n = simple_list_add_before(&_head, node->distance);
+		n = simple_list_add_before(&_pending_head, node->distance);
 
 	n->hops = node->distance;
 	n->node = node;
@@ -29,10 +29,10 @@ void add_free_node(struct olsr_node* node) {
 }
 
 void remove_free_node(struct olsr_node* node) {
-	struct free_node* n = simple_list_find_cmp(_head, node, (int (*)(void *, void *)) olsr_node_cmp);
+	struct free_node* n = simple_list_find_cmp(_pending_head, node, (int (*)(void *, void *)) olsr_node_cmp);
 	if (n == NULL)
 		return;
-	simple_list_remove(&_head, n);
+	simple_list_remove(&_pending_head, n);
 }
 
 void sched_routing_update(void) {
@@ -40,9 +40,9 @@ void sched_routing_update(void) {
 }
 
 void fill_routing_table(void) {
-	struct free_node* __head = _head;
+	struct free_node* head = _pending_head;
 
-	if (_head == NULL || !_update_pending)
+	if (_pending_head == NULL || !_update_pending)
 		return;
 
 	_update_pending = false;
@@ -52,11 +52,11 @@ void fill_routing_table(void) {
 	struct free_node* fn;
 	bool noop = false;	/* when in an iteration there was nothing remove from free nodes */
 	bool delete = false;
-	while (__head && !noop) {
+	while (head && !noop) {
 		noop = true;	/* if no nodes could be removed in an iteration, abort */
 		struct free_node *tmp, *prev = 0;
 
-		simple_list_for_each (__head, fn) {
+		simple_list_for_each (head, fn) {
 start:
 			DEBUG("simple_list_for_each iteration (%p) - %s", fn, fn->node->name);
 			DEBUG("addr: %s\tlast_addr: %s\thops: %d\t%ld s",
@@ -80,6 +80,7 @@ start:
 					noop = false;
 
 					fn->node->next_addr = netaddr_use(node->next_addr);
+
 					DEBUG("%d = %d", fn->node->distance, node->distance + 1);
 					fn->node->distance = node->distance + 1;
 
@@ -95,7 +96,7 @@ start:
 				/* remove free node */
 				tmp = fn->next;
 				if (!prev)
-					__head = _head = __head->next;
+					_pending_head = head = head->next;
 				else
 					prev->next = fn->next;
 
@@ -111,12 +112,12 @@ start:
 	}
 
 #ifdef DEBUG
-	while(__head) {
+	while (head != NULL) {
 		DEBUG("Could not find next hop for %s (%s), should be %s (%d hops)",
-			netaddr_to_string(&nbuf[0], __head->node->addr), __head->node->name,
-			netaddr_to_string(&nbuf[1], __head->node->last_addr), __head->node->distance);
+			netaddr_to_string(&nbuf[0], head->node->addr), head->node->name,
+			netaddr_to_string(&nbuf[1], head->node->last_addr), head->node->distance);
 
-		__head = __head->next;
+		head = head->next;
 	}
 #endif
 }
