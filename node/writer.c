@@ -37,8 +37,6 @@ static struct rfc5444_writer_content_provider _nhdp_message_content_provider = {
 };
 
 static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
-	[IDX_ADDRTLV_LOCAL_IF] = { .type = RFC5444_ADDRTLV_LOCAL_IF },
-	[IDX_ADDRTLV_LINK_STATUS] =	{ .type = RFC5444_ADDRTLV_LINK_STATUS },
 	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR },
 	[IDX_ADDRTLV_LINKMETRIC] = { .type = RFC5444_ADDRTLV_LINK_METRIC },
 #ifdef ENABLE_DEBUG
