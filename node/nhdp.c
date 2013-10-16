@@ -24,7 +24,7 @@ struct olsr_node* _node_replace(struct olsr_node* old_n, struct olsr_node* new_n
 	return new_n;
 } 
 
-struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t vtime) {
+struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 	struct olsr_node* n = get_node(addr);
 
 	if (n == NULL || n->last_addr == NULL || n->distance > 1) {
@@ -40,7 +40,6 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 		n->last_addr = netaddr_use(local_addr);
 		n->next_addr = netaddr_use(n->addr);
 		n->distance = 1;
-		h1_deriv(n)->linkstatus = linkstatus;
 
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);
@@ -54,7 +53,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t linkstatus, uint8_t
 	return n;
 }
 
-int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t linkstatus, uint8_t vtime, char* name) {
+int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t vtime, char* name) {
 	struct nhdp_node* n1 = h1_deriv(get_node(next_addr));
 	struct olsr_node* n2 = get_node(addr);
 
@@ -73,7 +72,6 @@ int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t 
 		n2->next_addr = netaddr_reuse(next_addr);
 		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
 		n2->expires = time(0) + vtime;
-		h2_deriv(n2)->linkstatus = linkstatus;
 #ifdef ENABLE_DEBUG
 		n2->name = name;
 #endif

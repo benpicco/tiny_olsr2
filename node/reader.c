@@ -115,7 +115,7 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	/* VTIME is defined as mandatory */
 	vtime = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
 
-	current_node = add_neighbor(current_src, RFC5444_LINKSTATUS_HEARD, vtime);
+	current_node = add_neighbor(current_src, vtime);
 
 #ifdef ENABLE_DEBUG
 	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
@@ -137,7 +137,6 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 static enum rfc5444_result
 _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv;
-	uint8_t linkstatus = RFC5444_LINKSTATUS_HEARD;
 
 	char* name = 0;
 #ifdef ENABLE_DEBUG
@@ -147,12 +146,8 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	}
 #endif
 
-	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv))
-		linkstatus = *tlv->single_value;
-
 	/* node broadcasts us as it's neighbor */
 	if (netaddr_cmp(&cont->addr, local_addr) == 0) {
-		h1_deriv(current_node)->linkstatus = RFC5444_LINKSTATUS_SYMMETRIC;
 
 		/* the only metric with the right direction */
 		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINKMETRIC].tlv)) {
@@ -169,7 +164,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		}
 	} else {
 	 /* no need to try adding us as a 2-hop neighbor */
-		add_2_hop_neighbor(&cont->addr, current_src, linkstatus, vtime, name);
+		add_2_hop_neighbor(&cont->addr, current_src, vtime, name);
 	}
 
 	return RFC5444_OKAY;

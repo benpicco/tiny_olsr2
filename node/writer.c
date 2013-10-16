@@ -84,8 +84,6 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 
 		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, 
 			_nhdp_message_content_provider.creator, neighbor->addr, false);
-		rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS], 
-			&h1_deriv(neighbor)->linkstatus, sizeof h1_deriv(neighbor)->linkstatus, false);
 
 		/* add link metric */
 		uint8_t metric = 1 + (1 - h1_deriv(neighbor)->link_quality) * LINK_METRIC_MAX;

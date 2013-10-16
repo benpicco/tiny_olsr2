@@ -56,15 +56,12 @@ struct nhdp_node {
 	struct olsr_node super;
 
 	float link_quality;			/* the quality of the link */
-	uint8_t linkstatus;			/* wheather we have a symetric link */
 	uint8_t mpr_neigh;			/* number of nodes reached by this node if it's an MPR */
 	uint8_t mpr_selector;		/* wheather the node selected us as an MPR */
 };
 
 struct nhdp_2_hop_node {
 	struct olsr_node super;
-
-	uint8_t linkstatus;
 };
 
 static inline struct olsr_node* h1_super(struct nhdp_node* n)		{ return (struct olsr_node*) n; }
