@@ -21,6 +21,7 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
 }
 
 /*
+ * last_addr was removed, update all children
  * this should set alternative routes for children if availiable
  */
 void _update_children(struct netaddr* last_addr) {
@@ -34,6 +35,7 @@ void _update_children(struct netaddr* last_addr) {
 			netaddr_free(node->last_addr);
 			netaddr_free(node->next_addr);
 			// remove node from free_nodes?
+			// shouldn't this be recursive?
 		}
 	}
 }
@@ -90,13 +92,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		n->name = name;
 #endif
 
-		struct netaddr* next_addr = get_node(last_addr)->next_addr;
-		if (next_addr != NULL)
-			n->next_addr = netaddr_use(next_addr);
-		else
-			add_free_node(n);
-
-		sched_routing_update();
+		add_free_node(n);
 
 		return;
 	}
@@ -115,9 +111,11 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 	/* we found a better route */
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
+
 		/* discard alternative route that is not an improvement */
 		if (distance == n->distance)
 			return;
+
 		DEBUG("shorter route found (old: %d hops over %s new: %d hops over %s)",
 			n->distance, netaddr_to_string(&nbuf[0], n->last_addr),
 			distance, netaddr_to_string(&nbuf[1], last_addr));

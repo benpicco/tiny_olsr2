@@ -25,6 +25,7 @@ void add_free_node(struct olsr_node* node) {
 
 	n->hops = node->distance;
 	n->node = node;
+	node->next_addr = netaddr_free(node->next_addr);	/* empty next_addr marks route as pending */
 	_update_pending = true;
 }
 
