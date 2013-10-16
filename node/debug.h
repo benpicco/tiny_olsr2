@@ -25,6 +25,7 @@ char _t_buf[9];
 
 #define DTL	printf("%d, %s\n", __LINE__, __FUNCTION__)
 
+/* this only works for a circle */
 static inline bool is_valid_neighbor(struct netaddr* a, struct netaddr* b) {
 	if (a == NULL || b == NULL)
 		return true;

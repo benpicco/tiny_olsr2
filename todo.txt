@@ -1,5 +1,6 @@
+- [ ] collect metrics
+- [ ] some kind of hysteresis before using a node
+- [ ] implement metrics-based routing
+- [ ] keep alternative routes
 - [ ] port node to RIOT
-- [ ] validity time for neighbors -> remove expired nodes
-- [ ] metrics & hysteresis
-- [ ] vtime needs to be an absolute timestamp
-- [x] should h1_deriv etc return 0 when assertions fail?
+- [ ] get rid of is_valid_neighbor or make it a general purpose test?
