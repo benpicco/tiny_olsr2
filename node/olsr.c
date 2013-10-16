@@ -178,7 +178,7 @@ void print_topology_set() {
 
 	struct olsr_node* node;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d] q: %d (%f)",
+		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d] q: %d (%.2f) %s",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
@@ -187,7 +187,8 @@ void print_topology_set() {
 			node->expires - time(0),
 			node->seq_no,
 			node->link_metric,
-			node->distance == 1 ? h1_deriv(node)->link_quality : -1
+			node->distance != 1 ? 0 : h1_deriv(node)->link_quality,
+			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : ""
 			);
 	}
 	DEBUG("---------------------");

@@ -80,6 +80,9 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 		if (neighbor->distance != 1)
 			continue;
 
+		if (h1_deriv(neighbor)->pending)
+			continue;
+
 		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, 
 			_nhdp_message_content_provider.creator, neighbor->addr, false);
 
@@ -115,19 +118,26 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 
 	/* add all neighbors */
 	avl_for_each_element(&olsr_head, node, node) {
-		if (node->distance == 1 && h1_deriv(node)->mpr_selector) {
-			struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr,
-				_olsr_message_content_provider.creator, node->addr, false);
+		if (node->distance != 1)
+			continue;
 
-			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINKMETRIC], 
-				&node->link_metric, sizeof node->link_metric, false);
+		if (!h1_deriv(node)->mpr_selector)
+			continue;
+
+		if (h1_deriv(node)->pending)
+			continue;
+
+		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr,
+			_olsr_message_content_provider.creator, node->addr, false);
+
+		rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINKMETRIC], 
+			&node->link_metric, sizeof node->link_metric, false);
 
 #ifdef ENABLE_DEBUG
-			if (node->name)
-				rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_NODE_NAME],
-					node->name, strlen(node->name), false);
+		if (node->name)
+			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_NODE_NAME],
+				node->name, strlen(node->name), false);
 #endif
-		}
 	}
 }
 

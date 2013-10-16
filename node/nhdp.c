@@ -6,6 +6,7 @@
 #include "debug.h"
 #include "node.h"
 #include "routing.h"
+#include "constants.h"
 
 #include "common/avl.h"
 
@@ -43,10 +44,19 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);
-		sched_routing_update();
 	}
 
 	n->expires = time(0) + vtime;
+
+	if (h1_deriv(n)->link_quality < HYST_LOW) {
+		h1_deriv(n)->pending = 1;
+		// should we remove all children yet?
+	}
+
+	if (h1_deriv(n)->link_quality > HYST_HIGH) {
+		h1_deriv(n)->pending = 0;
+		sched_routing_update();
+	}
 
 	assert(is_valid_neighbor(n->addr, n->last_addr));
 
@@ -55,9 +65,15 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 
 int add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t vtime, char* name) {
 	struct nhdp_node* n1 = h1_deriv(get_node(next_addr));
-	struct olsr_node* n2 = get_node(addr);
 
 	assert (n1 != NULL);
+
+	if (n1->pending) {
+		DEBUG("%s is pending, ignoring 2-hop node %s", h1_super(n1)->name, name);
+		return 0;
+	}
+
+	struct olsr_node* n2 = get_node(addr);
 
 	if(n2 == NULL || n2->last_addr == NULL || n2->distance > 2) {
 		if (n2 == NULL) {

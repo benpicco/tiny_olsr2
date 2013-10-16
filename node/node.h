@@ -58,6 +58,7 @@ struct nhdp_node {
 	float link_quality;			/* the quality of the link */
 	uint8_t mpr_neigh;			/* number of nodes reached by this node if it's an MPR */
 	uint8_t mpr_selector;		/* wheather the node selected us as an MPR */
+	uint8_t pending;			/* wheather the link can already be used */
 };
 
 struct nhdp_2_hop_node {
