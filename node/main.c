@@ -193,6 +193,8 @@ int main(int argc, char** argv) {
 
 		disable_receive();
 
+		remove_expired();
+
 		// print_neighbors();
 		print_topology_set();
 

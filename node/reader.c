@@ -32,11 +32,11 @@ uint16_t _seq_no;
 
 static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
-static enum rfc5444_result _cb_nhdp_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
 
 static enum rfc5444_result _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
-static enum rfc5444_result _cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
+
+static enum rfc5444_result _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
 
 /* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
@@ -84,7 +84,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _olsr_address_tlvs[] = {
 static struct rfc5444_reader_tlvblock_consumer _nhdp_consumer = {
 	.msg_id = RFC5444_MSGTYPE_HELLO,
 	.block_callback = _cb_nhdp_blocktlv_packet_okay,
-	.end_callback = _cb_nhdp_end_callback,
+	.end_callback = _cb_msg_end_callback,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
@@ -96,7 +96,7 @@ static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
 static struct rfc5444_reader_tlvblock_consumer _olsr_consumer = {
 	.msg_id = RFC5444_MSGTYPE_TC,
 	.block_callback = _cb_olsr_blocktlv_packet_okay,
-	.end_callback = _cb_olsr_end_callback,
+	.end_callback = _cb_msg_end_callback,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
@@ -245,25 +245,12 @@ _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_
 }
 
 static enum rfc5444_result
-_cb_nhdp_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
+_cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
 	if (dropped) {
 		DEBUG("\t(dropped)");
 		return RFC5444_DROP_PACKET;
 	}
 
-	fill_routing_table();
-
-	return RFC5444_OKAY;
-}
-
-static enum rfc5444_result
-_cb_olsr_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
-	if (dropped) {
-		DEBUG("\t(dropped)");
-		return RFC5444_DROP_PACKET;
-	}
-
-	remove_expired();
 	fill_routing_table();
 
 	return RFC5444_OKAY;
