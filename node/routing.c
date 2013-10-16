@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "util.h"
 #include "routing.h"
+#include "constants.h"
 
 /* sorted list, only for faster access
  * Keeps yet unroutable nodes, so we don't have to traverse the entire list
@@ -66,7 +67,7 @@ start:
 				fn->node->distance,
 				fn->node->expires - time(0));
 			/* remove expired nodes */
-			if (fn->node->expires < time(0)) {
+			if (time(0) - fn->node->expires > HOLD_TIME) {
 				delete = true;
 				DEBUG("%s expired in free_node list", fn->node->name);
 			} else
