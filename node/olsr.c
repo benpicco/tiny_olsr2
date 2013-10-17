@@ -63,32 +63,34 @@ void _remove_olsr_node(struct olsr_node* node) {
 	free(node);
 }
 
+void _update_link_quality(struct nhdp_node* node) {
+	if (time(0) > h1_super(node)->expires)
+		node->link_quality = node->link_quality * (1 - HYST_SCALING);
+	else
+		node->link_quality = node->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
+
+	if (node->link_quality < HYST_LOW) {
+		node->pending = 1;
+		// should we remove all children yet?
+	}
+
+	if (node->link_quality > HYST_HIGH) {
+		node->pending = 0;
+		sched_routing_update();
+	}
+}
+
 /*
  * iterate over all elements and remove expired entries
  */
 void remove_expired() {
-	time_t now = time(0);
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		/* only use HELLO for link quality calculation */
-		if (node->distance == 1) {
-			if (now > node->expires)
-				h1_deriv(node)->link_quality = h1_deriv(node)->link_quality * (1 - HYST_SCALING);
-			else
-				h1_deriv(node)->link_quality = h1_deriv(node)->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
+		if (node->distance == 1)
+			_update_link_quality(h1_deriv(node));
 
-			if (h1_deriv(node)->link_quality < HYST_LOW) {
-				h1_deriv(node)->pending = 1;
-				// should we remove all children yet?
-			}
-
-			if (h1_deriv(node)->link_quality > HYST_HIGH) {
-				h1_deriv(node)->pending = 0;
-				sched_routing_update();
-			}
-		}
-
-		if (now - node->expires > HOLD_TIME) {
+		if (time(0) - node->expires > HOLD_TIME) {
 			DEBUG("%s (%s) expired, removing it",
 				node->name, netaddr_to_string(&nbuf[0], node->addr));
 
