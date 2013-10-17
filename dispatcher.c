@@ -42,7 +42,7 @@ static void connect_node(struct node* node_a, struct node* node_b, float loss, b
 		con->next = malloc(sizeof (struct connection));
 		con->next->node = node_b;
 		con->next->next = 0;
-		node_a->connections->loss = loss;
+		con->next->loss = loss;
 	}
 }
 
