@@ -37,7 +37,6 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 			DEBUG("\t%s became a neighbor", netaddr_to_string(&nbuf[0], addr));
 			n = _node_replace(n, calloc(1, sizeof(struct nhdp_node)));
 		}
-		n->type = NODE_TYPE_1_HOP;
 		n->last_addr = netaddr_use(local_addr);
 		n->next_addr = netaddr_use(n->addr);
 		n->distance = 1;
@@ -74,7 +73,6 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 			DEBUG("\t%s became a 2-hop neighbor", netaddr_to_string(&nbuf[0], addr));
 			n2 = _node_replace(n2, calloc(1, sizeof(struct nhdp_2_hop_node)));
 		}
-		n2->type = NODE_TYPE_2_HOP;
 		n2->distance = 2;
 		n2->next_addr = netaddr_reuse(next_addr);
 		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */

@@ -19,12 +19,6 @@ char* local_name;
 
 struct avl_tree olsr_head;
 
-enum {
-	NODE_TYPE_OLSR,
-	NODE_TYPE_1_HOP,
-	NODE_TYPE_2_HOP
-};
-
 /* simple list to store alternative routes */
 struct alt_route {
 	struct alt_route* next;
@@ -35,7 +29,6 @@ struct alt_route {
 
 struct olsr_node {
 	struct avl_node node;		/* for routing table Information Base */
-	uint8_t type;				/* node type from enum above */
 
 	struct netaddr* addr;		/* node address */
 	time_t expires;				/* time when this tuple is invalid */
