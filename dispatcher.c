@@ -104,7 +104,7 @@ static void write_packet(struct node* n, int socket, void *buffer, size_t length
 
 	struct connection* con = n->connections;
 	while (con) {
-		if (con->loss * 100 < random() % 100 && con->node->addr.sin_port)
+		if (con->loss * RAND_MAX < random() && con->node->addr.sin_port)
 			sendto(socket, buffer, length, 0, (struct sockaddr*) &con->node->addr, con->node->addr_len);
 		con = con->next;
 	}
