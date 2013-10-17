@@ -41,22 +41,13 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		n->last_addr = netaddr_use(local_addr);
 		n->next_addr = netaddr_use(n->addr);
 		n->distance = 1;
+		h1_deriv(n)->pending = 1;
 
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);
 	}
 
 	n->expires = time(0) + vtime;
-
-	if (h1_deriv(n)->link_quality < HYST_LOW) {
-		h1_deriv(n)->pending = 1;
-		// should we remove all children yet?
-	}
-
-	if (h1_deriv(n)->link_quality > HYST_HIGH) {
-		h1_deriv(n)->pending = 0;
-		sched_routing_update();
-	}
 
 	assert(is_valid_neighbor(n->addr, n->last_addr));
 

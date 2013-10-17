@@ -76,6 +76,16 @@ void remove_expired() {
 				h1_deriv(node)->link_quality = h1_deriv(node)->link_quality * (1 - HYST_SCALING);
 			else
 				h1_deriv(node)->link_quality = h1_deriv(node)->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
+
+			if (h1_deriv(node)->link_quality < HYST_LOW) {
+				h1_deriv(node)->pending = 1;
+				// should we remove all children yet?
+			}
+
+			if (h1_deriv(node)->link_quality > HYST_HIGH) {
+				h1_deriv(node)->pending = 0;
+				sched_routing_update();
+			}
 		}
 
 		if (now - node->expires > HOLD_TIME) {
