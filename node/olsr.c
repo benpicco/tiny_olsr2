@@ -30,13 +30,15 @@ void _update_children(struct netaddr* last_addr) {
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
-			node->distance = 255;
-			node->next_addr = NULL;
+			struct netaddr* tmp = node->last_addr;
 			node->last_addr = NULL;
-			netaddr_free(node->last_addr);
-			netaddr_free(node->next_addr);
-			// remove node from free_nodes?
-			// shouldn't this be recursive?
+			node->next_addr = netaddr_free(node->next_addr);
+			node->distance = 255;
+
+			remove_free_node(node);
+
+			_update_children(tmp);
+			netaddr_free(tmp);
 		}
 	}
 }
