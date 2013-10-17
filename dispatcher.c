@@ -1,14 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
-typedef int bool;
-#define true	1
-#define false	0
 
 struct node {
 	char* name;
@@ -31,7 +28,7 @@ static void connect_node(struct node* node_a, struct node* node_b, float loss, b
 	if (bidirectional)
 		connect_node(node_b, node_a, loss, false);
 
-	printf("%s -> %s (%f %%)\n", node_a->name, node_b->name, 100 * loss);
+	printf("%s -> %s (loss: %.2f)\n", node_a->name, node_b->name, loss);
 
 	if (node_a->connections == 0) {
 		node_a->connections = malloc(sizeof (struct connection));
@@ -100,14 +97,18 @@ static struct node* get_node(struct sockaddr_in addr) {
 }
 
 static void write_packet(struct node* n, int socket, void *buffer, size_t length) {
-	printf("%snode %s sending %zd byte\n", time(0) % 2 ? "\t" : "" , n->name, length);
+	printf("%snode %s sending %zd byte\t", time(0) % 2 ? "\t" : "" , n->name, length);
 
 	struct connection* con = n->connections;
 	while (con) {
-		if (con->loss * RAND_MAX < random() && con->node->addr.sin_port)
+		if (con->node->addr.sin_port && (con->loss * RAND_MAX < random())) {
 			sendto(socket, buffer, length, 0, (struct sockaddr*) &con->node->addr, con->node->addr_len);
+			printf(".");
+		} else
+			printf("!");
 		con = con->next;
 	}
+	printf("\n");
 }
 
 static int setup_socket(int port) {
