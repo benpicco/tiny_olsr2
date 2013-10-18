@@ -8,6 +8,7 @@
 #include "debug.h"
 #include "routing.h"
 #include "constants.h"
+#include "list.h"
 
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
@@ -122,13 +123,13 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		return;
 	}
 
-	/* diverging from the spec to save a little space (spec says keep all paths) */
-	// TODO: change this when handling timeouts
 	if (distance > n->distance) {
-		DEBUG("discarding longer (%d > %d) route for %s (%s) via %s",
+		DEBUG("found longer (%d > %d) route for %s (%s) via %s",
 			distance, n->distance,
 			n->name, netaddr_to_string(&nbuf[0], n->addr),
 			netaddr_to_string(&nbuf[1], last_addr));
+
+		add_other_route(n, distance, last_addr, vtime);
 		return;
 	}
 
@@ -137,9 +138,10 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 	/* we found a better route */
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
 
-		/* discard alternative route that is not an improvement */
-		if (distance == n->distance)
+		if (distance == n->distance) {
+			add_other_route(n, distance, last_addr, vtime);
 			return;
+		}
 
 		DEBUG("shorter route found (old: %d hops over %s new: %d hops over %s)",
 			n->distance, netaddr_to_string(&nbuf[0], n->last_addr),
@@ -191,8 +193,9 @@ void print_topology_set() {
 	DEBUG("---[ Topology Set ]--");
 
 	struct olsr_node* node;
+	struct alt_route* route;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s) => %s; %d hops, next: %s, %zd s [%d] q: %d (%.2f) %s",
+		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
@@ -200,10 +203,14 @@ void print_topology_set() {
 			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time(0),
 			node->seq_no,
-			node->link_metric,
-			node->distance != 1 ? 0 : h1_deriv(node)->link_quality,
 			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : ""
 			);
+		simple_list_for_each (node->other_routes, route) {
+			DEBUG("\t\t\t=> %s; %d hops, %zd s",
+				netaddr_to_string(&nbuf[0], route->last_addr),
+				route->hops,
+				route->expires - time(0));
+		}
 	}
 	DEBUG("---------------------");
 	DEBUG();

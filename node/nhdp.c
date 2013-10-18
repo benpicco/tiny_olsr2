@@ -97,16 +97,23 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 		return;
 
 	if (n2->distance == 2) {
-		n2->expires = time(0) + vtime;	/* found node, update vtim */
-		struct nhdp_node* n1_old = h1_deriv(get_node(n2->next_addr));
-
-		/* everything stays the same */
-		if (n1_old != NULL && 
-			(netaddr_cmp(n2->next_addr, next_addr) == 0 || n1_old->mpr_neigh > n1->mpr_neigh + 1)) {
+		if (netaddr_cmp(n2->next_addr, next_addr) == 0) {
+			n2->expires = time(0) + vtime;	/* found node, update vtim */
 			return;
 		}
 
-		DEBUG("\tswitching MPR");
+		struct nhdp_node* n1_old = h1_deriv(get_node(n2->next_addr));
+
+		if (n1_old == NULL) // || n1_old->pending ?
+			return;
+
+		/* different route to 2-hop neighbor found */
+		if (n1_old->mpr_neigh > n1->mpr_neigh + 1) {
+			add_other_route(n2, 2, next_addr, vtime);
+			return;
+		}
+
+		DEBUG("\tswitching MPR");	// TODO: update other_routes
 		if (n1_old != NULL)
 			n1_old->mpr_neigh--;
 		n2->next_addr = netaddr_reuse(next_addr);

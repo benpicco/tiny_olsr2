@@ -23,6 +23,7 @@ struct avl_tree olsr_head;
 struct alt_route {
 	struct alt_route* next;
 
+	uint8_t hops;
 	struct netaddr* last_addr;
 	time_t expires;
 };
@@ -39,6 +40,8 @@ struct olsr_node {
 	uint8_t distance;			/* hops between us and the node */
 	struct netaddr* next_addr;	/* neighbor addr to send packets to for this node*/
 	struct netaddr* last_addr;	/* node that announced this node */
+
+	struct alt_route* other_routes;
 
 #ifdef ENABLE_DEBUG
 	char* name;					/* node name from graph.gv */
@@ -81,5 +84,7 @@ static inline struct nhdp_2_hop_node* h2_deriv(struct olsr_node* n) {
 
 void node_init();
 struct olsr_node* get_node(struct netaddr* addr);
+void add_other_route(struct olsr_node* node, uint8_t hops, struct netaddr* last_addr, uint8_t vtime);
+void remove_other_route(struct olsr_node* node, struct netaddr* last_addr);
 
 #endif
