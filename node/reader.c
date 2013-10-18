@@ -141,7 +141,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 		/* the only metric with the right direction */
 		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINKMETRIC].tlv)) {
-			current_node->link_metric = (current_node->link_metric + *tlv->single_value) / 2;
+			current_node->link_metric = (METRIC_WEIGHT * current_node->link_metric + *tlv->single_value) / (METRIC_WEIGHT + 1);
 		}
 
 		/* node selected us as mpr */
@@ -248,6 +248,7 @@ _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropp
 		return RFC5444_DROP_PACKET;
 	}
 
+	// TODO: find any node where last_addr = this->orig and that was not updated. Remove it
 	fill_routing_table();
 
 	return RFC5444_OKAY;

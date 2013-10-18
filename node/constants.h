@@ -6,6 +6,7 @@
 #define KEEP_EXPIRED		HOLD_TIME
 
 #define LINK_METRIC_MAX	128
+#define METRIC_WEIGHT	5
 
 #define HYST_SCALING	0.5
 #define HYST_LOW	0.3

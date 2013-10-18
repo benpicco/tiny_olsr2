@@ -40,6 +40,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		n->last_addr = netaddr_use(local_addr);
 		n->next_addr = netaddr_use(n->addr);
 		n->distance = 1;
+		h1_deriv(n)->link_quality = HYST_SCALING;
 		h1_deriv(n)->pending = 1;
 
 		n->node.key = n->addr;
