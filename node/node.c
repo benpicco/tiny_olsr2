@@ -30,9 +30,11 @@ void add_other_route(struct olsr_node* node, uint8_t hops, struct netaddr* last_
 
 	if (route != NULL) {
 		DEBUG("updating alternative route");
+		if (hops > route->hops)
+			return;
+
 		route->expires = time(0) + vtime;
-		if (route->hops != hops)
-			DEBUG("WARN: %d != %d", route->hops, hops);
+		route->hops = hops;
 		return;
 	}
 
