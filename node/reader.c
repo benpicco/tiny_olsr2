@@ -210,7 +210,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	char* name = 0;
 
 	if (netaddr_cmp(local_addr, &cont->addr) == 0)
-		return RFC5444_OKAY;
+		return RFC5444_DROP_ADDRESS;	/* avoid loops */
 
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_LINKMETRIC].tlv))
 		metric = *tlv->single_value;
