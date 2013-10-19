@@ -23,7 +23,7 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 		netaddr_to_string(&nbuf[1], last_addr));
 
 	/* make sure the route is not already the default route */
-	if (netaddr_cmp(node->last_addr, last_addr) == 0)
+	if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0)
 		return;
 
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
@@ -40,7 +40,13 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 }
 
 void remove_other_route(struct olsr_node* node, struct netaddr* last_addr) {
-	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
-	if (route != NULL)
-		simple_list_remove(&node->other_routes, route);
+	struct alt_route *route, *prev;
+	simple_list_for_each_safe(node->other_routes, route, prev) {
+		if (netaddr_cmp(route->last_addr, last_addr))
+			continue;
+
+		netaddr_free(route->last_addr);
+		simple_list_for_each_remove(&node->other_routes, route, prev);
+		break;
+	}
 }

@@ -26,25 +26,55 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
  * last_addr was removed, update all children
  * this should set alternative routes for children if availiable
  */
-void _update_children(struct netaddr* last_addr) {
+void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr) {
 	DEBUG("update_children(%s)", netaddr_to_string(&nbuf[0], last_addr));
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
+
+		remove_other_route(node, lost_node_addr);
+
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
 			struct netaddr* tmp = node->last_addr;
 			node->last_addr = NULL;
 			node->next_addr = netaddr_free(node->next_addr);
-			node->distance = 255;
 
-			remove_free_node(node);
+			add_free_node(node);
 
-			_update_children(tmp);
+			_update_children(tmp, lost_node_addr);
 			netaddr_free(tmp);
 		}
 	}
 }
 
+void _reroute_children(struct netaddr* last_addr) {
+	struct olsr_node *node;
+	avl_for_each_element(&olsr_head, node, node) {
+		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
+			struct netaddr* tmp = node->last_addr;
+			node->next_addr = netaddr_free(node->next_addr);
+			node->last_addr = NULL;
+			add_other_route(node, tmp, node->expires - time(0));
+			add_free_node(node);
+			netaddr_free(tmp);	// add_other_route does netaddr_reuse
+
+			_reroute_children(tmp);
+		}
+	}
+}
+
+void _olsr_node_expired(struct olsr_node* node) {
+	DEBUG("_olsr_node_expired");
+	node->last_addr = netaddr_free(node->last_addr);
+	node->next_addr = netaddr_free(node->next_addr);
+	_reroute_children(node->addr);
+
+	sched_routing_update();
+
+	// 1-hop neighbors will become normal olsr_nodes here, should we care?
+}
+
 void _remove_olsr_node(struct olsr_node* node) {
+	DEBUG("_remove_olsr_node");
 	avl_remove(&olsr_head, &node->node);
 
 	remove_free_node(node);
@@ -55,8 +85,14 @@ void _remove_olsr_node(struct olsr_node* node) {
 			n1->mpr_neigh--; // TODO: select new MPR
 	}
 
-	if (node->distance > 1)
-		_update_children(node->addr);
+	_update_children(node->addr, node->addr);
+
+	/* remove other routes from node that is about to be deleted */
+	struct alt_route *route, *prev;
+	simple_list_for_each_safe(node->other_routes, route, prev) {
+		netaddr_free(route->last_addr);
+		simple_list_for_each_remove(&node->other_routes, route, prev);
+	}
 
 	netaddr_free(node->next_addr);
 	netaddr_free(node->last_addr);
@@ -102,12 +138,17 @@ void remove_expired() {
 		}
 
 		if (time(0) - node->expires > HOLD_TIME) {
-			DEBUG("%s (%s) expired, removing it",
+			DEBUG("%s (%s) expired",
 				node->name, netaddr_to_string(&nbuf[0], node->addr));
 
-			_remove_olsr_node(node);
+			if (node->other_routes == NULL)
+				_remove_olsr_node(node);
+			else
+				_olsr_node_expired(node);
 		}
 	}
+
+	fill_routing_table();
 }
 
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, uint8_t metric, char* name) {
