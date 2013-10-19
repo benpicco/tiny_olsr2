@@ -56,12 +56,7 @@ struct nhdp_node {
 	uint8_t pending;			/* wheather the link can already be used */
 };
 
-struct nhdp_2_hop_node {
-	struct olsr_node super;
-};
-
 static inline struct olsr_node* h1_super(struct nhdp_node* n)		{ return (struct olsr_node*) n; }
-static inline struct olsr_node* h2_super(struct nhdp_2_hop_node* n)	{ return (struct olsr_node*) n; }
 static inline struct nhdp_node* h1_deriv(struct olsr_node* n) {
 	if (n == NULL)
 		return 0;
@@ -70,15 +65,6 @@ static inline struct nhdp_node* h1_deriv(struct olsr_node* n) {
 		return 0;
 
 	return (struct nhdp_node*) n;
-}
-static inline struct nhdp_2_hop_node* h2_deriv(struct olsr_node* n) {
-	if (n == NULL)
-		return 0;
-
-	if (n->distance != 2)
-		return 0;
-
-	return (struct nhdp_2_hop_node*) n;
 }
 
 void node_init();

@@ -68,11 +68,13 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 
 	if(n2 == NULL || n2->last_addr == NULL || n2->distance > 2) {
 		if (n2 == NULL) {
-			n2 = calloc(1, sizeof(struct nhdp_2_hop_node));
+			n2 = calloc(1, sizeof(struct olsr_node));
 			n2->addr = netaddr_dup(addr);
 		} else {
 			DEBUG("\t%s became a 2-hop neighbor", netaddr_to_string(&nbuf[0], addr));
-			n2 = _node_replace(n2, calloc(1, sizeof(struct nhdp_2_hop_node)));
+			remove_other_route(n2, next_addr);
+			netaddr_free(n2->next_addr);
+			netaddr_free(n2->last_addr);
 		}
 		n2->distance = 2;
 		n2->next_addr = netaddr_reuse(next_addr);
