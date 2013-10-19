@@ -50,7 +50,6 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
 	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR,
 		.min_length = 1, .match_length = true },
-	[IDX_ADDRTLV_LINKMETRIC] = { .type = RFC5444_ADDRTLV_LINK_METRIC },
 #ifdef ENABLE_DEBUG
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -66,7 +65,6 @@ static struct rfc5444_reader_tlvblock_consumer_entry _olsr_message_tlvs[] = {
 };
 
 static struct rfc5444_reader_tlvblock_consumer_entry _olsr_address_tlvs[] = {
-	[IDX_ADDRTLV_LINKMETRIC] = { .type = RFC5444_ADDRTLV_LINK_METRIC },
 #ifdef ENABLE_DEBUG
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -139,11 +137,6 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	/* node broadcasts us as it's neighbor */
 	if (netaddr_cmp(&cont->addr, local_addr) == 0) {
 
-		/* the only metric with the right direction */
-		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINKMETRIC].tlv)) {
-			current_node->link_metric = (METRIC_WEIGHT * current_node->link_metric + *tlv->single_value) / (METRIC_WEIGHT + 1);
-		}
-
 		/* node selected us as mpr */
 		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv)) {
 			h1_deriv(current_node)->mpr_selector = ROUTING_MPR_SELECTOR; // arbitrary, todo
@@ -206,24 +199,20 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 static enum rfc5444_result
 _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv;
-	uint8_t metric = 0;
 	char* name = 0;
 
 	if (netaddr_cmp(local_addr, &cont->addr) == 0)
 		return RFC5444_DROP_ADDRESS;
 
-	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_LINKMETRIC].tlv))
-		metric = *tlv->single_value;
-
 #ifdef ENABLE_DEBUG
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		name = strndup((char*) tlv->single_value, tlv->length);
-		DEBUG("\tannounces: %s (%s), metric: %d", name, netaddr_to_string(&nbuf[0], &cont->addr), metric);
+		DEBUG("\tannounces: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
 	}
 #endif
 
 	/* hops is hopcount to orig_addr, addr is one more hop */
-	add_olsr_node(&cont->addr, &cont->orig_addr, vtime, hops + 1, metric, name);
+	add_olsr_node(&cont->addr, &cont->orig_addr, vtime, hops + 1, name);
 
 	return RFC5444_OKAY;
 }

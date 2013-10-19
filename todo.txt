@@ -2,4 +2,4 @@
 - [ ] select new MPR
 - [ ] port node to RIOT
 - [ ] get rid of is_valid_neighbor or make it a general purpose test?
-- [ ] remove metrics
+- [x] remove metrics

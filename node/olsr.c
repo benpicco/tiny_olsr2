@@ -154,7 +154,7 @@ void remove_expired() {
 	fill_routing_table();
 }
 
-void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, uint8_t metric, char* name) {
+void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
 	struct olsr_node* n = get_node(addr);
 
 	if (n == NULL || n->last_addr == NULL) {

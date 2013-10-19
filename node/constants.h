@@ -5,9 +5,6 @@
 #define HOLD_TIME		(3 * REFRESH_INTERVAL)
 #define KEEP_EXPIRED		HOLD_TIME
 
-#define LINK_METRIC_MAX	128
-#define METRIC_WEIGHT	5
-
 #define HYST_SCALING	0.5
 #define HYST_LOW	0.3
 #define HYST_HIGH	0.8
@@ -19,8 +16,8 @@
 
 /* NHDP message TLV array index */
 enum {
-	IDX_TLV_ITIME,		/* Interval time */
-	IDX_TLV_VTIME,		/* validity time */
+	IDX_TLV_ITIME,			/* Interval time */
+	IDX_TLV_VTIME,			/* validity time */
 	IDX_TLV_WILLINGNESS,		/* willingness - split out to FLOOD and ROUTING? */
 #ifdef ENABLE_DEBUG
 	IDX_TLV_NODE_NAME,		/* name of the node */
@@ -29,19 +26,12 @@ enum {
 
 /* NHDP address TLV array index */
 enum {
-	IDX_ADDRTLV_LOCAL_IF,		 /* is local if */
+	IDX_ADDRTLV_LOCAL_IF,		/* is local if */
 	IDX_ADDRTLV_LINK_STATUS,	/* link status TODO */
-	IDX_ADDRTLV_MPR,					/* neighbor selected as mpr */
-	IDX_ADDRTLV_LINKMETRIC,	 /* link metric TODO */
+	IDX_ADDRTLV_MPR,		/* neighbor selected as mpr */
 #ifdef ENABLE_DEBUG
 	IDX_ADDRTLV_NODE_NAME,		/* 'name' of a node from graph.gv */
 #endif
-};
-
-/* TC message TLV array index */
-enum {
-	IDX_ADDRTLV_NBR_ADDR_TYPE,
-	IDX_ADDRTLV_GATEWAY,
 };
 
 #endif /* CONSTANTS_H_ */

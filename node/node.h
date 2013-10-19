@@ -33,9 +33,6 @@ struct olsr_node {
 	struct netaddr* addr;		/* node address */
 	time_t expires;				/* time when this tuple is invalid */
 	uint16_t seq_no;			/* last seq_no from last_addr */
-
-	uint8_t link_metric;		/* quality of the link between this node and last_hop */
-	uint16_t route_metric;		/* quality of the entire route */
 	uint8_t distance;			/* hops between us and the node */
 	struct netaddr* next_addr;	/* neighbor addr to send packets to for this node*/
 	struct netaddr* last_addr;	/* node that announced this node */

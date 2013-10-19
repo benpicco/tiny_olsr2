@@ -7,14 +7,4 @@ UDP packages or raw frames?
 
 currently we assume assume flooding MPR == routoing MPR
 	-> How do we gather metrics?
-
-Why are nodes in the topology set not unique? Is it sufficient to just store the shortest route?
-	-> store alt routes in a seperate list
-
-add sender_addr parameter to is_known_msg() so we can actually route the TC originator?
-	last_addr = null -> problem?
-
-Why does metric_encode use 32bit for link metrics?
-	8 bit for link metric
-	16 bit for route metric (max is 256 hops)
-	are enough
+	-> skip the metrics problem, we don't have ways to measure link quality
