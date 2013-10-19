@@ -91,6 +91,16 @@ void remove_expired() {
 		if (node->distance == 1)
 			_update_link_quality(h1_deriv(node));
 
+		struct alt_route *route, *prev;
+		simple_list_for_each_safe(node->other_routes, route, prev) {
+			if (time(0) - route->expires > HOLD_TIME) {
+				DEBUG("alternative route to %s (%s) via %s expired, removing it",
+					node->name, netaddr_to_string(&nbuf[0], node->addr)
+					netaddr_to_string(&nbuf[1], route->last_addr));
+				simple_list_for_each_remove(&node->other_routes, route, prev);
+			}
+		}
+
 		if (time(0) - node->expires > HOLD_TIME) {
 			DEBUG("%s (%s) expired, removing it",
 				node->name, netaddr_to_string(&nbuf[0], node->addr));
