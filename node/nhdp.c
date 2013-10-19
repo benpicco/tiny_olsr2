@@ -70,6 +70,8 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 		if (n2 == NULL) {
 			n2 = calloc(1, sizeof(struct olsr_node));
 			n2->addr = netaddr_dup(addr);
+			n2->node.key = n2->addr;
+			avl_insert(&olsr_head, &n2->node);
 		} else {
 			DEBUG("\t%s became a 2-hop neighbor", netaddr_to_string(&nbuf[0], addr));
 			remove_other_route(n2, next_addr);
@@ -83,8 +85,6 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 #ifdef ENABLE_DEBUG
 		n2->name = name;
 #endif
-		n2->node.key = n2->addr;
-		avl_insert(&olsr_head, &n2->node);
 
 		n1->mpr_neigh++;
 
