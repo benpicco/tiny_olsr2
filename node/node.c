@@ -39,6 +39,23 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 	route->expires = time(0) + vtime;
 }
 
+/*
+ * moves the default route of node to other_routes
+ */
+void push_back_default_route(struct olsr_node* node) {
+	struct netaddr* last_addr = node->last_addr;
+	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
+	if (route != NULL) {
+		node->last_addr = netaddr_free(node->last_addr);
+		return;
+	}
+
+	route = simple_list_add_head(&node->other_routes);
+	route->expires = node->expires;
+	route->last_addr = node->last_addr;
+	route->last_addr = NULL;
+}
+
 void remove_other_route(struct olsr_node* node, struct netaddr* last_addr) {
 	struct alt_route *route, *prev;
 	simple_list_for_each_safe(node->other_routes, route, prev) {

@@ -51,11 +51,9 @@ void _reroute_children(struct netaddr* last_addr) {
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
 			struct netaddr* tmp = node->last_addr;
-			node->next_addr = netaddr_free(node->next_addr);
-			node->last_addr = NULL;
-			add_other_route(node, tmp, node->expires - time(0));
+
+			push_back_default_route(node);
 			add_free_node(node);
-			netaddr_free(tmp);	// add_other_route does netaddr_reuse
 
 			_reroute_children(tmp);
 		}
@@ -161,14 +159,17 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 			distance);
 		if (n == NULL)
 			n = _new_olsr_node(addr);
-		n->last_addr = netaddr_reuse(last_addr);
-		n->distance = distance;
+
+		if (n->distance == 0 || n->distance > distance)
+			n->distance = distance;
+
 		n->expires = time(0) + vtime;
-		n->link_metric = metric;
+
 #ifdef ENABLE_DEBUG
 		n->name = name;
 #endif
 
+		add_other_route(n, last_addr, vtime);
 		add_free_node(n);
 
 		return;
@@ -200,20 +201,21 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 		assert(is_valid_neighbor(n->addr, last_addr));
 
-		netaddr_free(n->last_addr);
-		n->last_addr = netaddr_reuse(last_addr);
 		n->distance = distance;
 
+		push_back_default_route(n);
+		add_other_route(n, last_addr, vtime);
+
 		add_free_node(n);
-	} else if (distance < n->distance) {
+	} else if (distance != n->distance) {
 		/* we have the same last_addr, but a shorter route */
 		/* obtain new next_hop */
 		n->distance = distance;
+		push_back_default_route(n);
 
 		add_free_node(n);
 	}
 
-	n->link_metric = metric;
 	n->expires = time(0) + vtime;
 }
 

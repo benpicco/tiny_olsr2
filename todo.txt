@@ -3,4 +3,4 @@
 - [ ] port node to RIOT
 - [ ] get rid of is_valid_neighbor or make it a general purpose test?
 - [ ] remove metrics
-- [ ] all new routes go to other_routes first
+- [x] all new routes go to other_routes first
