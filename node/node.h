@@ -23,7 +23,6 @@ struct avl_tree olsr_head;
 struct alt_route {
 	struct alt_route* next;
 
-	uint8_t hops;
 	struct netaddr* last_addr;
 	time_t expires;
 };
@@ -84,7 +83,7 @@ static inline struct nhdp_2_hop_node* h2_deriv(struct olsr_node* n) {
 
 void node_init();
 struct olsr_node* get_node(struct netaddr* addr);
-void add_other_route(struct olsr_node* node, uint8_t hops, struct netaddr* last_addr, uint8_t vtime);
+void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t vtime);
 void remove_other_route(struct olsr_node* node, struct netaddr* last_addr);
 
 #endif

@@ -210,7 +210,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	char* name = 0;
 
 	if (netaddr_cmp(local_addr, &cont->addr) == 0)
-		return RFC5444_DROP_ADDRESS;	/* avoid loops */
+		return RFC5444_DROP_ADDRESS;
 
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_LINKMETRIC].tlv))
 		metric = *tlv->single_value;
@@ -248,7 +248,7 @@ _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropp
 		return RFC5444_DROP_PACKET;
 	}
 
-	// TODO: find any node where last_addr = this->orig and that was not updated. Remove it
+	// TODO: find any node where last_addr = this msgs orig_addr and that was not updated. Remove it
 	fill_routing_table();
 
 	return RFC5444_OKAY;

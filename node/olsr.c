@@ -95,7 +95,7 @@ void remove_expired() {
 		simple_list_for_each_safe(node->other_routes, route, prev) {
 			if (time(0) - route->expires > HOLD_TIME) {
 				DEBUG("alternative route to %s (%s) via %s expired, removing it",
-					node->name, netaddr_to_string(&nbuf[0], node->addr)
+					node->name, netaddr_to_string(&nbuf[0], node->addr),
 					netaddr_to_string(&nbuf[1], route->last_addr));
 				simple_list_for_each_remove(&node->other_routes, route, prev);
 			}
@@ -139,7 +139,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 			n->name, netaddr_to_string(&nbuf[0], n->addr),
 			netaddr_to_string(&nbuf[1], last_addr));
 
-		add_other_route(n, distance, last_addr, vtime);
+		add_other_route(n, last_addr, vtime);
 		return;
 	}
 
@@ -149,7 +149,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
 
 		if (distance == n->distance) {
-			add_other_route(n, distance, last_addr, vtime);
+			add_other_route(n, last_addr, vtime);
 			return;
 		}
 
@@ -216,9 +216,8 @@ void print_topology_set() {
 			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : ""
 			);
 		simple_list_for_each (node->other_routes, route) {
-			DEBUG("\t\t\t=> %s; %d hops, %zd s",
+			DEBUG("\t\t\t=> %s; %zd s",
 				netaddr_to_string(&nbuf[0], route->last_addr),
-				route->hops,
 				route->expires - time(0));
 		}
 	}

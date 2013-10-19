@@ -109,7 +109,7 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 
 		/* different route to 2-hop neighbor found */
 		if (n1_old->mpr_neigh > n1->mpr_neigh + 1) {
-			add_other_route(n2, 2, next_addr, vtime);
+			add_other_route(n2, next_addr, vtime);
 			return;
 		}
 
