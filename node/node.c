@@ -32,8 +32,6 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 		return;
 	}
 
-	DEBUG("adding alternative route");
-
 	route = simple_list_add_head(&node->other_routes);
 	route->last_addr = netaddr_reuse(last_addr);
 	route->expires = time(0) + vtime;
@@ -53,12 +51,27 @@ void push_back_default_route(struct olsr_node* node) {
 	route = simple_list_add_head(&node->other_routes);
 	route->expires = node->expires;
 	route->last_addr = node->last_addr;
-	route->last_addr = NULL;
+	node->last_addr = NULL;
+}
+
+void pop_other_route(struct olsr_node* node, struct netaddr* last_addr) {
+	char skipped;
+	struct alt_route *route, *prev;
+	simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
+		if (netaddr_cmp(route->last_addr, last_addr))
+			continue;
+
+		node->last_addr = route->last_addr;
+		node->expires = route->expires;
+		simple_list_for_each_remove(&node->other_routes, route, prev);
+		break;
+	}
 }
 
 void remove_other_route(struct olsr_node* node, struct netaddr* last_addr) {
+	char skipped;
 	struct alt_route *route, *prev;
-	simple_list_for_each_safe(node->other_routes, route, prev) {
+	simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
 		if (netaddr_cmp(route->last_addr, last_addr))
 			continue;
 

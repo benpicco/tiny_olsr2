@@ -86,5 +86,6 @@ struct olsr_node* get_node(struct netaddr* addr);
 void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t vtime);
 void remove_other_route(struct olsr_node* node, struct netaddr* last_addr);
 void push_back_default_route(struct olsr_node* node);
+void pop_other_route(struct olsr_node* node, struct netaddr* last_addr);
 
 #endif

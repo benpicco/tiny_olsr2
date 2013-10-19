@@ -86,8 +86,9 @@ void _remove_olsr_node(struct olsr_node* node) {
 	_update_children(node->addr, node->addr);
 
 	/* remove other routes from node that is about to be deleted */
+	char skipped;
 	struct alt_route *route, *prev;
-	simple_list_for_each_safe(node->other_routes, route, prev) {
+	simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
 		netaddr_free(route->last_addr);
 		simple_list_for_each_remove(&node->other_routes, route, prev);
 	}
@@ -125,8 +126,9 @@ void remove_expired() {
 		if (node->distance == 1)
 			_update_link_quality(h1_deriv(node));
 
+		char skipped;
 		struct alt_route *route, *prev;
-		simple_list_for_each_safe(node->other_routes, route, prev) {
+		simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
 			if (time(0) - route->expires > HOLD_TIME) {
 				DEBUG("alternative route to %s (%s) via %s expired, removing it",
 					node->name, netaddr_to_string(&nbuf[0], node->addr),
@@ -248,7 +250,7 @@ void print_topology_set() {
 	struct olsr_node* node;
 	struct alt_route* route;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s",
+		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s %p",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
@@ -256,7 +258,8 @@ void print_topology_set() {
 			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time(0),
 			node->seq_no,
-			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : ""
+			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : "",
+			node->other_routes
 			);
 		simple_list_for_each (node->other_routes, route) {
 			DEBUG("\t\t\t=> %s; %zd s",
