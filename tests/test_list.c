@@ -80,7 +80,8 @@ void test_simple_list_find(struct test_list* _head) {
 
 	CHECK_TRUE(_is_equal(simple_list_find_memcmp(_head, buffer), 42, bar), "%s", _print_result(simple_list_find_memcmp(_head, buffer)));
 
-	CHECK_TRUE(_is_equal(simple_list_find_cmp(_head, buffer, strcmp), 42, bar), "%s", _print_result(simple_list_find_cmp(_head, buffer, strcmp)));
+	CHECK_TRUE(_is_equal(simple_list_find_cmp(_head, buffer, (int (*)(void *, void *)) strcmp), 42, bar), 
+		"%s", _print_result(simple_list_find_cmp(_head, buffer, (int (*)(void *, void *)) strcmp)));
 
 	END_TEST();
 }
@@ -125,8 +126,9 @@ void test_for_each_remove() {
 
 	START_TEST();
 
+	char skipped;
 	struct number_list *node, *prev;
-	simple_list_for_each_safe(head, node, prev) {
+	simple_list_for_each_safe(head, node, prev, skipped) {
 		if (node->value % 2) {
 			printf("removing %d\n", node->value);
 			simple_list_for_each_remove(&head, node, prev);
@@ -140,6 +142,11 @@ void test_for_each_remove() {
 		++i;
 	}
 	CHECK_TRUE(i == max / 2 - 1, "missed an entry");
+
+	simple_list_for_each_safe(head, node, prev, skipped)
+		simple_list_for_each_remove(&head, node, prev);
+
+	CHECK_TRUE(head == NULL, "list not cleared properly");
 
 	END_TEST();
 

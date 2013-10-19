@@ -18,10 +18,9 @@ struct simple_list_elem;
 	_simple_list_find_cmp((struct simple_list_elem*) head, value, (void*) &((head)->value) - (void*) head, comperator)
 #define simple_list_remove(head, node)	_simple_list_remove((struct simple_list_elem**) head, (struct simple_list_elem*) node)
 
-#define simple_list_for_each(head, node)	for(node = head; node; node = node->next)
-#define simple_list_for_each_safe(head, node, prev)	\
-		char skipped = 0;	\
-		for(prev = 0, node = head; node; prev = (skipped ? prev : node), node = (skipped ? node : node->next), skipped = 0)
+#define simple_list_for_each(head, node)	for (node = head; node; node = node->next)
+#define simple_list_for_each_safe(head, node, prev, skipped)	\
+		for (skipped = 0, prev = 0, node = head; node; prev = (skipped ? prev : node), node = (skipped ? node : node->next), skipped = 0)
 #define simple_list_for_each_remove(head, node, prev)	{	\
 	if (!prev) {					\
 		skipped = 1;				\
