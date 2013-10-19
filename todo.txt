@@ -1,5 +1,5 @@
 - [x] remove outdated alternative routes
-- [ ] chose alternative route when default route expires
+- [x] chose alternative route when default route expires
 - [ ] port node to RIOT
 - [ ] get rid of is_valid_neighbor or make it a general purpose test?
 - [ ] remove metrics

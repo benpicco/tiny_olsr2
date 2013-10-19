@@ -57,13 +57,6 @@ void fill_routing_table(void) {
 		simple_list_for_each_safe(head, fn, prev, skipped) {
 			DEBUG("simple_list_for_each iteration (%p) - %s", fn, fn->node->name);
 
-			/* remove expired nodes */
-			if (time(0) - fn->node->expires > HOLD_TIME) {
-				DEBUG("%s expired in free_node list", fn->node->name);
-				simple_list_for_each_remove(&head, fn, prev);
-				continue;
-			}
-
 			/* chose shortest route from the set of availiable routes */
 			uint8_t min_hops = 255;
 			struct olsr_node* node = NULL;

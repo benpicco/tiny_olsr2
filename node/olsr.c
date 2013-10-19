@@ -66,6 +66,8 @@ void _olsr_node_expired(struct olsr_node* node) {
 	node->next_addr = netaddr_free(node->next_addr);
 	_reroute_children(node->addr);
 
+	add_free_node(node);
+
 	sched_routing_update();
 
 	// 1-hop neighbors will become normal olsr_nodes here, should we care?
@@ -120,6 +122,7 @@ void _update_link_quality(struct nhdp_node* node) {
  * iterate over all elements and remove expired entries
  */
 void remove_expired() {
+	DEBUG("remove_expired");
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		/* only use HELLO for link quality calculation */
@@ -250,7 +253,7 @@ void print_topology_set() {
 	struct olsr_node* node;
 	struct alt_route* route;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s %p",
+		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
@@ -258,8 +261,7 @@ void print_topology_set() {
 			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time(0),
 			node->seq_no,
-			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : "",
-			node->other_routes
+			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : ""
 			);
 		simple_list_for_each (node->other_routes, route) {
 			DEBUG("\t\t\t=> %s; %zd s",
