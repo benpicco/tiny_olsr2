@@ -145,7 +145,7 @@ _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_messa
 	rfc5444_writer_set_msg_seqno(wr, message, seq_no++);
 	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(local_addr));
 
-	message->hoplimit = 16;
+	message->hoplimit = TC_HOP_LIMIT;
 }
 
 bool
@@ -182,8 +182,8 @@ writer_init(write_packet_func_ptr ptr) {
 	rfc5444_writer_register_msgcontentprovider(&writer, &_olsr_message_content_provider, _olsr_addrtlvs, ARRAYSIZE(_olsr_addrtlvs));
 
 	/* register message type 1 with 16 byte addresses */
-	_hello_msg = rfc5444_writer_register_message(&writer, RFC5444_MSGTYPE_HELLO, false, 16);
-	_tc_msg = rfc5444_writer_register_message(&writer, RFC5444_MSGTYPE_TC, false, 16);
+	_hello_msg = rfc5444_writer_register_message(&writer, RFC5444_MSGTYPE_HELLO, false, RFC5444_MAX_ADDRLEN);
+	_tc_msg = rfc5444_writer_register_message(&writer, RFC5444_MSGTYPE_TC, false, RFC5444_MAX_ADDRLEN);
 
 	_hello_msg->addMessageHeader = _cb_add_hello_message_header;
 	_tc_msg->addMessageHeader = _cb_add_tc_message_header;

@@ -4,6 +4,10 @@
 
 #include "common/netaddr.h"
 
+int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
+	return netaddr_cmp(a->addr, b->addr);
+}
+
 void node_init() {
 	_local_addr._refs = 1;
 	local_addr = (struct netaddr*) &_local_addr;
@@ -40,7 +44,7 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 /*
  * moves the default route of node to other_routes
  */
-void push_back_default_route(struct olsr_node* node) {
+void push_default_route(struct olsr_node* node) {
 	struct netaddr* last_addr = node->last_addr;
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
 	if (route != NULL) {

@@ -5,6 +5,8 @@
 #define HOLD_TIME		(3 * REFRESH_INTERVAL)
 #define KEEP_EXPIRED		HOLD_TIME
 
+#define TC_HOP_LIMIT	16
+
 #define HYST_SCALING	0.5
 #define HYST_LOW	0.3
 #define HYST_HIGH	0.8
@@ -18,7 +20,6 @@
 enum {
 	IDX_TLV_ITIME,			/* Interval time */
 	IDX_TLV_VTIME,			/* validity time */
-	IDX_TLV_WILLINGNESS,		/* willingness - split out to FLOOD and ROUTING? */
 #ifdef ENABLE_DEBUG
 	IDX_TLV_NODE_NAME,		/* name of the node */
 #endif

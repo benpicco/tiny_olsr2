@@ -10,10 +10,6 @@
 #include "constants.h"
 #include "list.h"
 
-int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
-	return netaddr_cmp(a->addr, b->addr);
-}
-
 struct olsr_node* _new_olsr_node(struct netaddr* addr) {
 	struct olsr_node* n = calloc(1, sizeof(struct olsr_node));
 	n->addr = netaddr_dup(addr);
@@ -52,7 +48,7 @@ void _reroute_children(struct netaddr* last_addr) {
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
 			struct netaddr* tmp = node->last_addr;
 
-			push_back_default_route(node);
+			push_default_route(node);
 			add_free_node(node);
 
 			_reroute_children(tmp);
@@ -208,7 +204,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 		n->distance = distance;
 
-		push_back_default_route(n);
+		push_default_route(n);
 		add_other_route(n, last_addr, vtime);
 
 		add_free_node(n);
@@ -216,7 +212,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		/* we have the same last_addr, but a shorter route */
 		/* obtain new next_hop */
 		n->distance = distance;
-		push_back_default_route(n);
+		push_default_route(n);
 
 		add_free_node(n);
 	}

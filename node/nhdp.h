@@ -12,10 +12,10 @@ void nhdp_init();
 
 struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime);
 
-/**
-* add a new neighbor of n
-* may fail if n is not known
-*/
+/*
+ * add a new neighbor of n
+ * may fail if n is not known
+ */
 void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t vtime, char* name);
 
 void print_neighbors(void);

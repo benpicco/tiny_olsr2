@@ -23,4 +23,4 @@ void fill_routing_table(void);
  */
 void sched_routing_update(void);
 
-#endif
+#endif /* ROUTING_H_ */

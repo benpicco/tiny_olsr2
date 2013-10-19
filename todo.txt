@@ -3,3 +3,5 @@
 - [ ] port node to RIOT
 - [ ] get rid of is_valid_neighbor or make it a general purpose test?
 - [x] remove metrics
+- [ ] use different refresh intervals for TC and HELLO
+- [ ] if nodes are not included in TC messages, remove them
