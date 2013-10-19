@@ -13,7 +13,6 @@
 struct free_node {
 	struct free_node* next;
 	struct olsr_node* node;
-	int hops;
 };
 
 struct free_node* _pending_head = 0;
@@ -24,7 +23,6 @@ void add_free_node(struct olsr_node* node) {
 	if (n == NULL)
 		n = simple_list_add_before(&_pending_head, node->distance);
 
-	n->hops = node->distance;
 	n->node = node;
 	node->next_addr = netaddr_free(node->next_addr);	/* empty next_addr marks route as pending */
 	_update_pending = true;
@@ -53,24 +51,24 @@ void fill_routing_table(void) {
 	struct olsr_node* node;
 	struct free_node* fn;
 	bool noop = false;	/* when in an iteration there was nothing remove from free nodes */
-	bool delete = false;
 	while (head && !noop) {
 		noop = true;	/* if no nodes could be removed in an iteration, abort */
-		struct free_node *tmp, *prev = 0;
-
-		simple_list_for_each (head, fn) {
-start:
+		struct free_node *prev;
+		simple_list_for_each_safe(head, fn, prev) {
 			DEBUG("simple_list_for_each iteration (%p) - %s", fn, fn->node->name);
 			DEBUG("addr: %s\tlast_addr: %s\thops: %d\t%ld s",
 				netaddr_to_string(&nbuf[0], fn->node->addr),
 				netaddr_to_string(&nbuf[1], fn->node->next_addr),
 				fn->node->distance,
 				fn->node->expires - time(0));
+
 			/* remove expired nodes */
 			if (time(0) - fn->node->expires > HOLD_TIME) {
-				delete = true;
 				DEBUG("%s expired in free_node list", fn->node->name);
-			} else
+				simple_list_for_each_remove(&head, fn, prev);
+				continue;
+			}
+
 			/* get next hop */
 			if ((node = get_node(fn->node->last_addr))) {
 				DEBUG("%s (%s) -> %s (%s) -> […] -> %s",
@@ -88,30 +86,14 @@ start:
 
 					assert(is_valid_neighbor(fn->node->addr, fn->node->last_addr));
 
-					delete = true;
+					simple_list_for_each_remove(&head, fn, prev);
 				} else
 					DEBUG("Don't know how to route this one yet.");
 			}
-
-			if (delete) {
-				delete = false;
-				/* remove free node */
-				tmp = fn->next;
-				if (!prev)
-					_pending_head = head = head->next;
-				else
-					prev->next = fn->next;
-
-				free(fn);
-				if ((fn = tmp))
-					goto start;
-				else
-					break;
-			}
-
-			prev = fn;
 		}
 	}
+
+	_pending_head = head;
 
 #ifdef DEBUG
 	while (head != NULL) {
