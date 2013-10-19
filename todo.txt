@@ -1,6 +1,5 @@
-- [x] remove outdated alternative routes
-- [x] chose alternative route when default route expires
+- [ ] what happens when 1-hop node goes pending?
+- [ ] select new MPR
 - [ ] port node to RIOT
 - [ ] get rid of is_valid_neighbor or make it a general purpose test?
 - [ ] remove metrics
-- [x] all new routes go to other_routes first
