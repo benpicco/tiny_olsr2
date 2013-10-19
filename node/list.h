@@ -2,6 +2,7 @@
 #define SIMPLE_LIST_H_
 #include <stddef.h>
 #include <string.h>
+#include <stdlib.h>
 
 struct simple_list_elem;
 
@@ -18,6 +19,18 @@ struct simple_list_elem;
 #define simple_list_remove(head, node)	_simple_list_remove((struct simple_list_elem**) head, (struct simple_list_elem*) node)
 
 #define simple_list_for_each(head, node)	for(node = head; node; node = node->next)
+#define simple_list_for_each_safe(head, node, prev)	\
+		char skipped = 0;	\
+		for(prev = 0, node = head; node; prev = (skipped ? prev : node), node = (skipped ? node : node->next), skipped = 0)
+#define simple_list_for_each_remove(head, node, prev)	{	\
+	if (!prev) {					\
+		skipped = 1;				\
+		*head = (*head)->next;		\
+	} else							\
+		prev->next = node->next;	\
+	free(node);						\
+	node = prev ? prev : *head;		\
+	}
 
 void* _simple_list_add_head(struct simple_list_elem** head, size_t size);
 void* _simple_list_add_tail(struct simple_list_elem** head, size_t size);

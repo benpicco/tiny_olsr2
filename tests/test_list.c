@@ -15,8 +15,8 @@ struct test_list {
 	int value;
 };
 
-struct sorted_list {
-	struct sorted_list* next;
+struct number_list {
+	struct number_list* next;
 	int value;
 };
 
@@ -85,30 +85,64 @@ void test_simple_list_find(struct test_list* _head) {
 	END_TEST();
 }
 
-void _add_sorted_list(struct sorted_list** head, int value) {
-	struct sorted_list* node = simple_list_add_before(head, value);
+void _add_number_list(struct number_list** head, int value) {
+	struct number_list* node = simple_list_add_before(head, value);
 	node->value = value;
 }
 
-void test_sorted_list() {
-	struct sorted_list* head = 0;
+void test_number_list() {
+	struct number_list* head = 0;
 
-	_add_sorted_list(&head, 23);
-	_add_sorted_list(&head, 42);
-	_add_sorted_list(&head, 17);
-	_add_sorted_list(&head, 32);
-	_add_sorted_list(&head, 1);
+	_add_number_list(&head, 23);
+	_add_number_list(&head, 42);
+	_add_number_list(&head, 17);
+	_add_number_list(&head, 32);
+	_add_number_list(&head, 1);
 
 	START_TEST();
 
 	int prev = 0;
-	struct sorted_list* node;
+	struct number_list* node;
 	simple_list_for_each (head, node) {
 		CHECK_TRUE(node->value >= prev, "%d < %d", node->value, prev);
 		prev = node->value;
 	}
 
 	END_TEST();
+}
+
+void test_for_each_remove() {
+	struct number_list* head = 0;
+
+	int i=0;
+	int max = 11;
+	for (i = 1; i < max; ++i) {
+		if (i == 2)
+			_add_number_list(&head, 3);
+		else
+			_add_number_list(&head, i);
+	}
+
+	START_TEST();
+
+	struct number_list *node, *prev;
+	simple_list_for_each_safe(head, node, prev) {
+		if (node->value % 2) {
+			printf("removing %d\n", node->value);
+			simple_list_for_each_remove(&head, node, prev);
+		} else
+			printf("keeping %d\n", node->value);
+	}
+
+	i = 0;
+	simple_list_for_each(head, node) {
+		CHECK_TRUE(node->value % 2 == 0, "%d", node->value);
+		++i;
+	}
+	CHECK_TRUE(i == max / 2 - 1, "missed an entry");
+
+	END_TEST();
+
 }
 
 int main(void) {
@@ -128,7 +162,8 @@ int main(void) {
 	test_simple_list_remove(&_head);
 	test_simple_list_find(_head);
 
-	test_sorted_list();
+	test_number_list();
+	test_for_each_remove();
 
 	return FINISH_TESTING();
 }
