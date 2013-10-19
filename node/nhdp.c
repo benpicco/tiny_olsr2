@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <time.h>
+#include <assert.h>
 
 #include "nhdp.h"
 #include "util.h"
@@ -49,8 +50,6 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 
 	n->expires = time(0) + vtime;
 
-	assert(is_valid_neighbor(n->addr, n->last_addr));
-
 	return n;
 }
 
@@ -88,8 +87,6 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 
 		n1->mpr_neigh++;
 
-		assert(is_valid_neighbor(n2->addr, n2->last_addr));
-
 		sched_routing_update();
 
 		return;
@@ -123,8 +120,6 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 		n1->mpr_neigh++;
 		sched_routing_update();
 	}
-
-	assert(is_valid_neighbor(n2->addr, n2->last_addr));
 }
 
 #ifdef ENABLE_DEBUG

@@ -86,9 +86,6 @@ void fill_routing_table(void) {
 				fn->node->distance = node->distance + 1;
 
 				pop_other_route(fn->node, node->addr);
-
-				assert(is_valid_neighbor(fn->node->addr, fn->node->last_addr));
-
 				simple_list_for_each_remove(&head, fn, prev);
 			} else
 				DEBUG("Don't know how to route this one yet");

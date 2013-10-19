@@ -200,8 +200,6 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 			n->distance, netaddr_to_string(&nbuf[0], n->last_addr),
 			distance, netaddr_to_string(&nbuf[1], last_addr));
 
-		assert(is_valid_neighbor(n->addr, last_addr));
-
 		n->distance = distance;
 
 		push_default_route(n);

@@ -1,8 +1,6 @@
 #ifndef NODE_H_
 #define NODE_H_
 
-#include <assert.h>
-
 #include "common/avl.h"
 #include "common/avl_comp.h"
 #include "common/netaddr.h"
