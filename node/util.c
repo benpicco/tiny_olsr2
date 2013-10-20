@@ -44,9 +44,9 @@ struct netaddr* netaddr_free(struct netaddr* addr) {
 
 time_t time_now(void) {
 #ifdef RIOT
-	time_t now;
+	timex_t now;
 	vtimer_now(&now);
-	return now;
+	return now.seconds;
 #else
 	return time(0);
 #endif
