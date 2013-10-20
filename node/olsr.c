@@ -267,6 +267,35 @@ void print_topology_set(void) {
 	DEBUG("---------------------");
 	DEBUG();
 }
+
+void print_routing_graph(void) {
+	puts("\n----BEGIN ROUTING GRAPH----\n");
+	puts("subgraph routing {");
+	puts("\tedge [ color = red ]");
+	struct olsr_node* node, *tmp;
+	avl_for_each_element(&olsr_head, node, node) {
+		if (node->addr != NULL && node->last_addr != NULL) {
+			tmp = get_node(node->last_addr);
+			printf("\t%s -> %s\n", tmp ? tmp->name : local_name, node->name);
+		}
+	}
+	puts("}");
+
+	puts("subgraph mpr {");
+	puts("\tedge [ color = blue ]");
+	puts("// BEGIN MPR");
+	avl_for_each_element(&olsr_head, node, node) {
+		if (node->distance == 1 && h1_deriv(node)->mpr_selector) {
+			printf("\t%s -> %s\n", node->name, local_name);
+		}
+	}
+	puts("// END MPR");
+	puts("}");
+
+	puts("\n----END ROUTING GRAPH----\n");
+
+}
 #else
 void print_topology_set(void) {}
+void print_routing_graph(void) {}
 #endif

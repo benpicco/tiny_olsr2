@@ -22,7 +22,16 @@ graph.pdf: graph.gv
 	-neato -Tpdf graph.gv > graph.pdf
 
 mpr_graph.pdf: graph.gv log/*.log
-	grep -h \"MPR\" log/* | sort | uniq | cat graph.gv - | neato -Tpdf > mpr_graph.pdf
+	@for i in $(shell seq 1 ${NODES}) ; do \
+		tac log/$$i.log | sed '1,/END MPR/d' | sed '/BEGIN MPR/,$$d' | tac >> /tmp/mprs.gv ; \
+		{ cat graph.gv ; echo "subgraph mpr {" ; echo "edge [ color = blue ]" ; cat /tmp/mprs.gv ; echo "}}" ;} | neato -Tpdf > mpr_graph.pdf ; \
+	done
+	@rm /tmp/mprs.gv
+
+routing_graphs: graph.gv log/*.log
+	@for i in $(shell seq 1 ${NODES}) ; do \
+		{ cat graph.gv; tac log/$$i.log | sed '1,/END ROUTING GRAPH/d' | sed '/BEGIN ROUTING GRAPH/,$$d' | tac; echo }; } | neato -Tpdf > log/routing_graph_$$i.pdf ; \
+	done
 
 clean:
 	find -name '*.o' -type f -delete

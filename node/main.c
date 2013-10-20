@@ -198,6 +198,7 @@ int main(int argc, char** argv) {
 
 		// print_neighbors();
 		print_topology_set();
+		print_routing_graph();
 
 		writer_send_hello();
 		writer_send_tc();

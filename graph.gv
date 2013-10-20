@@ -14,7 +14,3 @@ subgraph bidirectional {
 subgraph directional {
 }
 
-subgraph mpr {
-	edge [ color = blue ];
-
-// MPR selections will be pasted here
