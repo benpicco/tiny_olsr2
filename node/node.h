@@ -62,7 +62,7 @@ static inline struct nhdp_node* h1_deriv(struct olsr_node* n) {
 	return (struct nhdp_node*) n;
 }
 
-void node_init();
+void node_init(void);
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b);
 struct olsr_node* get_node(struct netaddr* addr);
 

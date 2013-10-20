@@ -117,7 +117,7 @@ void _update_link_quality(struct nhdp_node* node) {
 /*
  * iterate over all elements and remove expired entries
  */
-void remove_expired() {
+void remove_expired(void) {
 	DEBUG("remove_expired");
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
@@ -240,7 +240,7 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 }
 
 #ifdef ENABLE_DEBUG
-void print_topology_set() {
+void print_topology_set(void) {
 	DEBUG();
 	DEBUG("---[ Topology Set ]--");
 
@@ -269,5 +269,5 @@ void print_topology_set() {
 	DEBUG();
 }
 #else
-void print_topology_set() {}
+void print_topology_set(void) {}
 #endif

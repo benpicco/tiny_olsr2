@@ -8,7 +8,7 @@
 
 bool send_tc_messages;		/* only send TC messages when we are selected as MPR */
 
-void nhdp_init();
+void nhdp_init(void);
 
 struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime);
 

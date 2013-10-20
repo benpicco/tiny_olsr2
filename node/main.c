@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #ifdef RIOT
 #include <vtimer.h>
-#include <cc110x_ng.h>
 #include <destiny/socket.h>
 #include <net_help/inet_pton.h>
 #else
@@ -29,7 +28,21 @@
 #include "rfc5444/rfc5444_writer.h"
 
 #ifdef RIOT
-cc110x_packet_t packet;
+void enable_receive(void) {
+	// TODO
+}
+
+void disable_receive(void) {
+	// TODO
+}
+
+void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
+	struct rfc5444_writer_target *iface __attribute__((unused)),
+	void *buffer, size_t length) {
+
+	// TODO
+
+}
 #else
 int sockfd;
 struct sockaddr_in servaddr;
@@ -40,20 +53,12 @@ struct ip_lite {
 	struct netaddr src;
 	size_t length;
 };
-#endif
 
 void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
 	DEBUG("write_packet(%zd bytes)", length);
-
-#ifdef RIOT
-	// TODO: no memcpy, set address etc.
-	memcpy(packet.data, buffer, length);
-	packet.length = length;
-	cc110x_send(&packet);
-#else
 
 	struct ip_lite* new_buffer = malloc(sizeof(struct ip_lite) + length);
 	memcpy(new_buffer + 1, buffer, length);
@@ -62,18 +67,15 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
 	sendto(sockfd, new_buffer, sizeof(struct ip_lite) + new_buffer->length, 0,
 		(struct sockaddr*) &servaddr, sizeof(servaddr));
-#endif
 }
 
-void enable_receive() {
+void enable_receive(void) {
 	sigprocmask (SIG_UNBLOCK, &block_io, NULL);
 }
 
-void disable_receive() {
+void disable_receive(void) {
 	sigprocmask (SIG_BLOCK, &block_io, NULL);
 }
-
-#ifndef RIOT
 
 void sigio_handler(int sig) {
 	char buffer[1500];
@@ -138,7 +140,6 @@ int main(int argc, char** argv) {
 	const char* this_ip;
 
 #ifdef RIOT
-	cc110x_init(0);	// transceiver_pid ??
 	this_ip = "2001::1";
 #else
 	if (argc != 4) {
@@ -177,7 +178,7 @@ int main(int argc, char** argv) {
 	sigaddset (&block_io, SIGIO);
 
 	enable_asynch(sockfd);
-#endif
+#endif	/* not RIOT */
 
 	node_init();
 

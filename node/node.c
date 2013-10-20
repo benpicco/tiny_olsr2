@@ -8,7 +8,7 @@ int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
 }
 
-void node_init() {
+void node_init(void) {
 	_local_addr._refs = 1;
 	local_addr = (struct netaddr*) &_local_addr;
 	avl_init(&olsr_head, avl_comp_netaddr, false);

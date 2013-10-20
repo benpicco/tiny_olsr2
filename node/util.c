@@ -1,4 +1,9 @@
 #include <stdlib.h>
+
+#ifdef RIOT
+#include "vtimer.h"
+#endif
+
 #include "util.h"
 #include "node.h"
 #include "debug.h"
@@ -33,4 +38,14 @@ struct netaddr* netaddr_free(struct netaddr* addr) {
 		free(addr_rc);
 
 	return NULL;
+}
+
+time_t time_now(void) {
+#ifdef RIOT
+	time_t now;
+	vtimer_now(&now);
+	return now;
+#else
+	return time(0);
+#endif
 }

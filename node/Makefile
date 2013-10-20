@@ -29,18 +29,18 @@ export CFLAGS = -DRIOT
 
 USEMODULE += auto_init
 USEMODULE += vtimer
-USEMODULE += cc110x_ng
 USEMODULE += config
 USEMODULE += net_help
 USEMODULE += sixlowpan
 USEMODULE += destiny
 USEMODULE += uart0
+USEMODULE += gpioint
 USEMODULE += posix
 USEMODULE += ltc4150
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
 USEMODULE += compat_misc
 
-export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/sys/net -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/drivers/cc110x_ng/include -I$(OONFBASE)/src-api -I$(RIOTLIBS)
+export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/sys/net -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/net/sixlowpan/include -I$(OONFBASE)/src-api -I$(RIOTLIBS)
 
 include $(RIOTBASE)/Makefile.include
