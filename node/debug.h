@@ -16,7 +16,7 @@ char _t_buf[9];
 
 // #define DEBUG(fmt, ...) printf((fmt "\n"), ##__VA_ARGS__);
 #define DEBUG(fmt, ...) {	\
-	_t_tmr = time(0);			\
+	_t_tmr = time_now();			\
 	strftime(_t_buf, sizeof _t_buf, "%H:%M:%S", localtime(&_t_tmr));	\
 	printf(("[%d, %s] " fmt "\n"), debug_ticks, _t_buf, ##__VA_ARGS__);	\
 	}

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <time.h>
 #include <assert.h>
 
 #include "nhdp.h"
@@ -48,7 +47,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		avl_insert(&olsr_head, &n->node);
 	}
 
-	n->expires = time(0) + vtime;
+	n->expires = time_now() + vtime;
 
 	return n;
 }
@@ -80,7 +79,7 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 		n2->distance = 2;
 		n2->next_addr = netaddr_reuse(next_addr);
 		n2->last_addr = netaddr_use(n2->next_addr); /* next_addr == last_addr */
-		n2->expires = time(0) + vtime;
+		n2->expires = time_now() + vtime;
 #ifdef ENABLE_DEBUG
 		n2->name = name;
 #endif
@@ -97,7 +96,7 @@ void add_2_hop_neighbor(struct netaddr* addr, struct netaddr* next_addr, uint8_t
 
 	if (n2->distance == 2) {
 		if (netaddr_cmp(n2->next_addr, next_addr) == 0) {
-			n2->expires = time(0) + vtime;	/* found node, update vtim */
+			n2->expires = time_now() + vtime;	/* found node, update vtim */
 			return;
 		}
 

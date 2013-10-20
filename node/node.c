@@ -32,13 +32,13 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
 	if (route != NULL) {
-		route->expires = time(0) + vtime;
+		route->expires = time_now() + vtime;
 		return;
 	}
 
 	route = simple_list_add_head(&node->other_routes);
 	route->last_addr = netaddr_reuse(last_addr);
-	route->expires = time(0) + vtime;
+	route->expires = time_now() + vtime;
 }
 
 /*

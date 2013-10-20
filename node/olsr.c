@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <time.h>
 
 #include "common/netaddr.h"
 
@@ -98,7 +97,7 @@ void _remove_olsr_node(struct olsr_node* node) {
 }
 
 void _update_link_quality(struct nhdp_node* node) {
-	if (time(0) > h1_super(node)->expires)
+	if (time_now() > h1_super(node)->expires)
 		node->link_quality = node->link_quality * (1 - HYST_SCALING);
 	else
 		node->link_quality = node->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
@@ -128,7 +127,7 @@ void remove_expired(void) {
 		char skipped;
 		struct alt_route *route, *prev;
 		simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
-			if (time(0) - route->expires > HOLD_TIME) {
+			if (time_now() - route->expires > HOLD_TIME) {
 				DEBUG("alternative route to %s (%s) via %s expired, removing it",
 					node->name, netaddr_to_string(&nbuf[0], node->addr),
 					netaddr_to_string(&nbuf[1], route->last_addr));
@@ -136,7 +135,7 @@ void remove_expired(void) {
 			}
 		}
 
-		if (time(0) - node->expires > HOLD_TIME) {
+		if (time_now() - node->expires > HOLD_TIME) {
 			DEBUG("%s (%s) expired",
 				node->name, netaddr_to_string(&nbuf[0], node->addr));
 
@@ -164,7 +163,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		if (n->distance == 0 || n->distance > distance)
 			n->distance = distance;
 
-		n->expires = time(0) + vtime;
+		n->expires = time_now() + vtime;
 
 #ifdef ENABLE_DEBUG
 		n->name = name;
@@ -215,7 +214,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		add_free_node(n);
 	}
 
-	n->expires = time(0) + vtime;
+	n->expires = time_now() + vtime;
 }
 
 bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
@@ -223,7 +222,7 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 	if (!node) {
 		node = _new_olsr_node(addr);
 		node->seq_no = seq_no;
-		node->expires = time(0) + vtime;
+		node->expires = time_now() + vtime;
 		node->distance = 255;	// use real distance here?
 		return false;
 	}
@@ -253,7 +252,7 @@ void print_topology_set(void) {
 			netaddr_to_string(&nbuf[1], node->last_addr),
 			node->distance,
 			netaddr_to_string(&nbuf[2], node->next_addr),
-			node->expires - time(0),
+			node->expires - time_now(),
 			node->seq_no,
 			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : "",
 			node->distance != 1 ? "" : h1_deriv(node)->mpr_neigh ? "[M]" : "[ ]",
@@ -262,7 +261,7 @@ void print_topology_set(void) {
 		simple_list_for_each (node->other_routes, route) {
 			DEBUG("\t\t\t=> %s; %zd s",
 				netaddr_to_string(&nbuf[0], route->last_addr),
-				route->expires - time(0));
+				route->expires - time_now());
 		}
 	}
 	DEBUG("---------------------");

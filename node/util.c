@@ -2,6 +2,8 @@
 
 #ifdef RIOT
 #include "vtimer.h"
+#else
+#include <time.h>
 #endif
 
 #include "util.h"
