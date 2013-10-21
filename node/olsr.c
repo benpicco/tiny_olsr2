@@ -18,8 +18,7 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
 }
 
 /*
- * last_addr was removed, update all children
- * this should set alternative routes for children if availiable
+ * last_addr was removed, update all children and remove references to last_addr
  */
 void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr) {
 	DEBUG("update_children(%s)", netaddr_to_string(&nbuf[0], last_addr));
@@ -41,16 +40,18 @@ void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr)
 	}
 }
 
+/*
+ * find a new route for nodes that use last_addr as their default route
+ */
 void _reroute_children(struct netaddr* last_addr) {
+	DEBUG("reroute_children(%s)", netaddr_to_string(&nbuf[0], last_addr));
 	struct olsr_node *node;
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
-			struct netaddr* tmp = node->last_addr;
-
 			push_default_route(node);
 			add_free_node(node);
 
-			_reroute_children(tmp);
+			_reroute_children(node->addr);
 		}
 	}
 }
@@ -77,7 +78,7 @@ void _remove_olsr_node(struct olsr_node* node) {
 	if (node->distance == 2) {
 		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
 		if (n1 != NULL)
-			n1->mpr_neigh--; // TODO: select new MPR
+			n1->mpr_neigh--;
 	}
 
 	_update_children(node->addr, node->addr);
@@ -104,11 +105,12 @@ void _update_link_quality(struct nhdp_node* node) {
 
 	if (node->link_quality < HYST_LOW) {
 		node->pending = 1;
-		// should we remove all children yet?
+		_reroute_children(h1_super(node)->addr);
 	}
 
 	if (node->link_quality > HYST_HIGH) {
 		node->pending = 0;
+		// possibly reroute children
 		sched_routing_update();
 	}
 }
@@ -117,7 +119,6 @@ void _update_link_quality(struct nhdp_node* node) {
  * iterate over all elements and remove expired entries
  */
 void remove_expired(void) {
-	DEBUG("remove_expired");
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		/* only use HELLO for link quality calculation */

@@ -24,6 +24,14 @@ void add_free_node(struct olsr_node* node) {
 		n = simple_list_add_before(&_pending_head, node->distance);
 
 	n->node = node;
+
+	/* update MPR information */
+	if (node->distance == 2) {
+		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
+		if (n1 != NULL)
+			n1->mpr_neigh--;
+	}
+
 	node->next_addr = netaddr_free(node->next_addr);	/* empty next_addr marks route as pending */
 	_update_pending = true;
 }
@@ -66,6 +74,11 @@ void fill_routing_table(void) {
 				if (_tmp != NULL && _tmp->addr != NULL &&
 					_tmp->distance < min_hops && 
 					_tmp->next_addr != NULL) {
+
+					/* ignore pending nodes */
+					if (_tmp->distance == 1 && h1_deriv(_tmp)->pending)
+						continue;
+
 					node = _tmp;
 					min_hops = _tmp->distance + 1;
 				}
@@ -81,6 +94,11 @@ void fill_routing_table(void) {
 				noop = false;
 
 				fn->node->next_addr = netaddr_use(node->next_addr);
+
+				/* update MPR information */
+				if (node->distance == 1) {
+					h1_deriv(node)->mpr_neigh++;
+				}
 
 				DEBUG("%d = %d", fn->node->distance, node->distance + 1);
 				fn->node->distance = node->distance + 1;
