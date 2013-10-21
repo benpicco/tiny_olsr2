@@ -6,5 +6,5 @@
 - [ ] if nodes are not included in TC messages, remove them
 - [ ] jitter to avoid collisions
 - [ ] can there be multiple possible routes?
-- [ ] unify _reroute_children and _update_children
+- [x] unify _reroute_children and _update_children
 - [ ] can we unify mpr selection in nhdp

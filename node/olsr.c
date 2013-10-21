@@ -18,40 +18,30 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
 }
 
 /*
- * last_addr was removed, update all children and remove references to last_addr
+ * find a new route for nodes that use last_addr as their default route
+ * if lost_node_addr is not null, all reference to it will be removed (aka lost node)
  */
 void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr) {
-	DEBUG("update_children(%s)", netaddr_to_string(&nbuf[0], last_addr));
-	struct olsr_node *node, *safe;
-	avl_for_each_element_safe(&olsr_head, node, node, safe) {
+	DEBUG("update_children(%s, %s)", netaddr_to_string(&nbuf[0], last_addr),
+		netaddr_to_string(&nbuf[1], lost_node_addr));
 
-		remove_other_route(node, lost_node_addr);
-
-		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
-			struct netaddr* tmp = node->last_addr;
-			node->last_addr = NULL;
-			node->next_addr = netaddr_free(node->next_addr);
-
-			add_free_node(node);
-
-			_update_children(tmp, lost_node_addr);
-			netaddr_free(tmp);
-		}
-	}
-}
-
-/*
- * find a new route for nodes that use last_addr as their default route
- */
-void _reroute_children(struct netaddr* last_addr) {
-	DEBUG("reroute_children(%s)", netaddr_to_string(&nbuf[0], last_addr));
 	struct olsr_node *node;
 	avl_for_each_element(&olsr_head, node, node) {
+
+		if (lost_node_addr != NULL)
+			remove_other_route(node, lost_node_addr);
+
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
-			push_default_route(node);
+
+			if (lost_node_addr != NULL) {
+				node->last_addr = netaddr_free(node->last_addr);
+				node->next_addr = netaddr_free(node->next_addr);
+			} else
+				push_default_route(node);
+
 			add_free_node(node);
 
-			_reroute_children(node->addr);
+			_update_children(node->addr, lost_node_addr);
 		}
 	}
 }
@@ -60,7 +50,7 @@ void _olsr_node_expired(struct olsr_node* node) {
 	DEBUG("_olsr_node_expired");
 	node->last_addr = netaddr_free(node->last_addr);
 	node->next_addr = netaddr_free(node->next_addr);
-	_reroute_children(node->addr);
+	_update_children(node->addr, NULL);
 
 	add_free_node(node);
 
@@ -105,7 +95,7 @@ void _update_link_quality(struct nhdp_node* node) {
 
 	if (node->link_quality < HYST_LOW) {
 		node->pending = 1;
-		_reroute_children(h1_super(node)->addr);
+		_update_children(h1_super(node)->addr, NULL);
 	}
 
 	if (node->link_quality > HYST_HIGH) {
