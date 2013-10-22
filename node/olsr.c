@@ -140,7 +140,7 @@ void remove_expired(struct netaddr* force_addr) {
 		simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
 			if (force_addr == NULL && _now - route->expires < HOLD_TIME)
 				continue;
-			if (force_addr != NULL && _now < route->expires)
+			if (force_addr != NULL && _now <= route->expires)
 				continue;
 			if (force_addr != NULL && netaddr_cmp(force_addr, route->last_addr))
 				continue;
@@ -153,7 +153,7 @@ void remove_expired(struct netaddr* force_addr) {
 
 		if (force_addr == NULL && _now - node->expires < HOLD_TIME)
 			continue;
-		if (force_addr != NULL && _now < node->expires)
+		if (force_addr != NULL && _now <= node->expires)
 			continue;
 		if (force_addr != NULL && node->last_addr == NULL)
 			continue;
