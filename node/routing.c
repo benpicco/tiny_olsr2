@@ -36,11 +36,11 @@ void add_free_node(struct olsr_node* node) {
 	_update_pending = true;
 }
 
-void remove_free_node(struct olsr_node* node) {
+bool remove_free_node(struct olsr_node* node) {
 	struct free_node* n = simple_list_find_cmp(_pending_head, node, (int (*)(void *, void *)) olsr_node_cmp);
 	if (n == NULL)
-		return;
-	simple_list_remove(&_pending_head, n);
+		return false;
+	return simple_list_remove(&_pending_head, n);
 }
 
 void sched_routing_update(void) {

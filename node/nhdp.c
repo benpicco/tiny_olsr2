@@ -15,7 +15,7 @@ struct olsr_node* _node_replace(struct olsr_node* old_n) {
 
 	/* remove things that held a pointer to this */
 	avl_remove(&olsr_head, &old_n->node);
-	remove_free_node(old_n);
+	bool _free_node = remove_free_node(old_n);
 
 	memcpy(new_n, old_n, sizeof(struct olsr_node));
 	memset(&new_n->node, 0, sizeof(new_n->node));	// just to be sure
@@ -25,6 +25,9 @@ struct olsr_node* _node_replace(struct olsr_node* old_n) {
 	avl_insert(&olsr_head, &new_n->node);
 
 	free(old_n);
+
+	if (_free_node)
+		add_free_node(new_n);
 
 	return new_n;
 } 
@@ -48,8 +51,6 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		DEBUG("\tconverting olsr node %s to nhdp node",
 			netaddr_to_string(&nbuf[0], n->addr));
 		n = _node_replace(n);
-
-		add_free_node(n);
 	}
 
 	if (n->next_addr == NULL)

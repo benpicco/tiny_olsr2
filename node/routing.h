@@ -10,8 +10,9 @@ void add_free_node(struct olsr_node* node);
 
 /*
  * remove a node from the list of pending nodes
+ * returns true if node was found and removed
  */
-void remove_free_node(struct olsr_node* node);
+bool remove_free_node(struct olsr_node* node);
 
 /*
  * try to find a route for pending nodes

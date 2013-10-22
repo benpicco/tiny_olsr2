@@ -89,7 +89,7 @@ void* _simple_list_find_cmp(struct simple_list_elem* head, void* needle, int off
 	return 0;
 }
 
-void _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem* node) {
+bool _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem* node) {
 	struct simple_list_elem* _head = *head;
 	struct simple_list_elem* prev = 0;
 
@@ -99,7 +99,7 @@ void _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem
 	}
 
 	if (_head != node)
-		return; // not found
+		return false; // not found
 
 	if (!prev)	// remove head
 		*head = _head->next;
@@ -107,4 +107,5 @@ void _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem
 		prev->next = node->next;
 
 	free(node);
+	return true;
 }
