@@ -10,15 +10,19 @@
 
 #include "common/avl.h"
 
-struct olsr_node* _node_replace(struct olsr_node* old_n, struct olsr_node* new_n) {
+struct olsr_node* _node_replace(struct olsr_node* old_n) {
+	struct olsr_node* new_n = calloc(1, sizeof (struct nhdp_node));
+
+	/* remove things that held a pointer to this */
 	avl_remove(&olsr_head, &old_n->node);
 	remove_free_node(old_n);
 
-	new_n->addr = old_n->addr;
-	new_n->seq_no = old_n->seq_no;
+	memcpy(new_n, old_n, sizeof(struct olsr_node));
+	memset(&new_n->node, 0, sizeof(new_n->node));	// just to be sure
 
-	netaddr_free(old_n->next_addr);
-	netaddr_free(old_n->last_addr);
+	new_n->type = NODE_TYPE_NHDP;
+	new_n->node.key = new_n->addr;
+	avl_insert(&olsr_head, &new_n->node);
 
 	free(old_n);
 
@@ -28,15 +32,12 @@ struct olsr_node* _node_replace(struct olsr_node* old_n, struct olsr_node* new_n
 struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 	struct olsr_node* n = get_node(addr);
 
-	if (n == NULL || n->last_addr == NULL || n->distance > 1) {
-		if (n == NULL) {
-			DEBUG("\tadding new neighbor: %s", netaddr_to_string(&nbuf[0], addr));
-			n = calloc(1, sizeof(struct nhdp_node));
-			n->addr = netaddr_dup(addr);
-		} else {
-			DEBUG("\t%s became a neighbor", netaddr_to_string(&nbuf[0], addr));
-			n = _node_replace(n, calloc(1, sizeof(struct nhdp_node)));
-		}
+	if (n == NULL) {
+		DEBUG("\tadding new neighbor: %s", netaddr_to_string(&nbuf[0], addr));
+		n = calloc(1, sizeof(struct nhdp_node));
+		n->addr = netaddr_dup(addr);
+
+		n->type = n->type = NODE_TYPE_NHDP;
 		n->last_addr = netaddr_use(local_addr);
 		n->next_addr = netaddr_use(n->addr);
 		n->distance = 1;
@@ -45,9 +46,13 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);
+	} else if (n->type != NODE_TYPE_NHDP) {
+		DEBUG("\tconverting olsr node %s to nhdp node",
+			netaddr_to_string(&nbuf[0], n->addr));
+		n = _node_replace(n);
 	}
 
-	n->expires = time_now() + vtime;
+	add_other_route(n, local_addr, vtime);
 
 	return n;
 }

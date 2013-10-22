@@ -27,8 +27,10 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 		netaddr_to_string(&nbuf[1], last_addr));
 
 	/* make sure the route is not already the default route */
-	if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0)
+	if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
+		node->expires = time_now() + vtime;
 		return;
+	}
 
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
 	if (route != NULL) {

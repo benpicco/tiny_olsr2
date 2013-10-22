@@ -87,14 +87,29 @@ void _remove_olsr_node(struct olsr_node* node) {
 	free(node);
 }
 
+bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
+	if (netaddr_cmp(node->last_addr, last_addr) == 0)
+		return time_now() > node->expires;
+
+	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
+
+	if (route == NULL)
+		return true;
+
+	return time_now() > route->expires;
+}
+
 void _update_link_quality(struct nhdp_node* node) {
-	if (time_now() > h1_super(node)->expires)
+	if (_route_expired(h1_super(node), local_addr))
 		node->link_quality = node->link_quality * (1 - HYST_SCALING);
 	else
 		node->link_quality = node->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
 
 	if (node->link_quality < HYST_LOW) {
 		node->pending = 1;
+
+		add_free_node(h1_super(node));
+		push_default_route(h1_super(node));
 		_update_children(h1_super(node)->addr, NULL);
 	}
 
@@ -112,7 +127,7 @@ void remove_expired(void) {
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		/* only use HELLO for link quality calculation */
-		if (node->distance == 1)
+		if (node->type == NODE_TYPE_NHDP)
 			_update_link_quality(h1_deriv(node));
 
 		char skipped;
@@ -245,9 +260,9 @@ void print_topology_set(void) {
 			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time_now(),
 			node->seq_no,
-			node->distance != 1 ? "" : h1_deriv(node)->pending ? "pending" : "",
-			node->distance != 1 ? "" : h1_deriv(node)->mpr_neigh ? "[M]" : "[ ]",
-			node->distance != 1 ? "" : h1_deriv(node)->mpr_selector ? "[S]" : "[ ]"
+			node->type != NODE_TYPE_NHDP ? "" : h1_deriv(node)->pending ? "pending" : "",
+			node->type != NODE_TYPE_NHDP ? "" : h1_deriv(node)->mpr_neigh ? "[M]" : "[ ]",
+			node->type != NODE_TYPE_NHDP ? "" : h1_deriv(node)->mpr_selector ? "[S]" : "[ ]"
 			);
 		simple_list_for_each (node->other_routes, route) {
 			DEBUG("\t\t\t=> %s; %zd s",

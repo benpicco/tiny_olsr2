@@ -70,13 +70,23 @@ void fill_routing_table(void) {
 			struct olsr_node* node = NULL;
 			struct alt_route* route;
 			simple_list_for_each(fn->node->other_routes, route) {
+
+				/* the node is actually a neighbor of ours */
+				if (netaddr_cmp(route->last_addr, local_addr) == 0) {
+					/* TODO: What if this was originally a olsr node? */
+					if (h1_deriv(fn->node)->pending)
+						continue;
+					min_hops = 1;
+					break;
+				}
+
 				struct olsr_node* _tmp = get_node(route->last_addr);
 				if (_tmp != NULL && _tmp->addr != NULL &&
 					_tmp->distance < min_hops && 
 					_tmp->next_addr != NULL) {
 
 					/* ignore pending nodes */
-					if (_tmp->distance == 1 && h1_deriv(_tmp)->pending)
+					if (_tmp->type == NODE_TYPE_NHDP && h1_deriv(_tmp)->pending)
 						continue;
 
 					node = _tmp;
@@ -85,28 +95,37 @@ void fill_routing_table(void) {
 			}
 
 			/* We found a valid route */
-			if (node != NULL) {
+			if (min_hops == 1) {
+				DEBUG("%s (%s) is a 1-hop neighbor",
+					netaddr_to_string(&nbuf[0], fn->node->addr), fn->node->name);
+				noop = false;
+				fn->node->next_addr = netaddr_use(fn->node->addr);
+				fn->node->distance = 1;
+
+				pop_other_route(fn->node, local_addr);
+				simple_list_for_each_remove(&head, fn, prev);
+
+			} else if (node != NULL) {
 				DEBUG("%s (%s) -> %s (%s) -> […] -> %s",
 					netaddr_to_string(&nbuf[0], fn->node->addr), fn->node->name,
 					netaddr_to_string(&nbuf[1], node->addr), node->name,
 					netaddr_to_string(&nbuf[2], node->next_addr));
+				DEBUG("%d = %d", fn->node->distance, node->distance + 1);
 
 				noop = false;
-
-				fn->node->next_addr = netaddr_use(node->next_addr);
 
 				/* update MPR information */
 				if (node->distance == 1) {
 					h1_deriv(node)->mpr_neigh++;
 				}
 
-				DEBUG("%d = %d", fn->node->distance, node->distance + 1);
 				fn->node->distance = node->distance + 1;
+				fn->node->next_addr = netaddr_use(node->next_addr);
 
 				pop_other_route(fn->node, node->addr);
 				simple_list_for_each_remove(&head, fn, prev);
 			} else
-				DEBUG("Don't know how to route this one yet");
+				DEBUG("don't yet know how to route %s", netaddr_to_string(&nbuf[0], fn->node->addr));
 		}
 	}
 

@@ -15,6 +15,11 @@ struct netaddr* local_addr;
 char* local_name;
 #endif
 
+enum {
+	NODE_TYPE_OLSR,
+	NODE_TYPE_NHDP
+};
+
 struct avl_tree olsr_head;
 
 /* simple list to store alternative routes */
@@ -35,6 +40,7 @@ struct olsr_node {
 	struct netaddr* next_addr;	/* neighbor addr to send packets to for this node*/
 	struct netaddr* last_addr;	/* node that announced this node */
 
+	uint8_t type;				/*  */
 	struct alt_route* other_routes;
 
 #ifdef ENABLE_DEBUG
@@ -57,7 +63,7 @@ static inline struct nhdp_node* h1_deriv(struct olsr_node* n) {
 	if (n == NULL)
 		return 0;
 
-	if (n->distance != 1)
+	if (n->type != NODE_TYPE_NHDP)
 		return 0;
 
 	return (struct nhdp_node*) n;
