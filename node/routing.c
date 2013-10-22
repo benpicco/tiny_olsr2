@@ -84,12 +84,18 @@ void fill_routing_table(void) {
 
 				struct olsr_node* _tmp = get_node(route->last_addr);
 				if (_tmp != NULL && _tmp->addr != NULL &&
-					_tmp->distance < min_hops && 
+					_tmp->distance <= min_hops && 
 					_tmp->next_addr != NULL) {
 
 					/* ignore pending nodes */
 					if (_tmp->type == NODE_TYPE_NHDP && h1_deriv(_tmp)->pending)
 						continue;
+
+					/* try to minimize MPR count */
+					if (min_hops == 1) {
+						if (h1_deriv(node)->mpr_neigh > h1_deriv(_tmp)->mpr_neigh + 1)
+							continue;
+					}
 
 					node = _tmp;
 					min_hops = _tmp->distance + 1;
