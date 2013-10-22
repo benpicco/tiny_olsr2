@@ -25,13 +25,6 @@ void add_free_node(struct olsr_node* node) {
 
 	n->node = node;
 
-	/* update MPR information */
-	if (node->distance == 2) {
-		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
-		if (n1 != NULL && n1->mpr_neigh > 0)
-			n1->mpr_neigh--;
-	}
-
 	node->next_addr = netaddr_free(node->next_addr);	/* empty next_addr marks route as pending */
 	_update_pending = true;
 }
