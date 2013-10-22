@@ -144,7 +144,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		}
 	} else {
 	 /* no need to try adding us as a 2-hop neighbor */
-		add_2_hop_neighbor(&cont->addr, current_src, vtime, name);
+		add_olsr_node(&cont->addr, current_src, vtime, 2, name);
 	}
 
 	return RFC5444_OKAY;

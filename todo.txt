@@ -7,5 +7,5 @@
 - [ ] jitter to avoid collisions
 - [ ] can there be multiple possible routes?
 - [x] unify _reroute_children and _update_children
-- [ ] can we unify mpr selection in nhdp
-- [ ] no need to reallocate memory for 1-hop nodes
+- [x] can we unify mpr selection in nhdp
+- [x] no need to reallocate memory for 1-hop nodes

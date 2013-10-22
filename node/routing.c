@@ -71,8 +71,10 @@ void fill_routing_table(void) {
 			struct alt_route* route;
 			simple_list_for_each(fn->node->other_routes, route) {
 
+				DEBUG("\t=> %s", netaddr_to_string(&nbuf[0], route->last_addr));
 				/* the node is actually a neighbor of ours */
 				if (netaddr_cmp(route->last_addr, local_addr) == 0) {
+					DEBUG("%s1-hop route found", h1_deriv(fn->node)->pending ? "pending " : "");
 					/* TODO: What if this was originally a olsr node? */
 					if (h1_deriv(fn->node)->pending)
 						continue;

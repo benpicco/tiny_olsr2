@@ -22,7 +22,7 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr) {
  * if lost_node_addr is not null, all reference to it will be removed (aka lost node)
  */
 void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr) {
-	DEBUG("update_children(%s, %s)", netaddr_to_string(&nbuf[0], last_addr),
+	TRACE_FUN("%s, %s", netaddr_to_string(&nbuf[0], last_addr),
 		netaddr_to_string(&nbuf[1], lost_node_addr));
 
 	struct olsr_node *node;
@@ -47,7 +47,7 @@ void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr)
 }
 
 void _olsr_node_expired(struct olsr_node* node) {
-	DEBUG("_olsr_node_expired");
+	TRACE_FUN();
 	node->last_addr = netaddr_free(node->last_addr);
 	node->next_addr = netaddr_free(node->next_addr);
 	_update_children(node->addr, NULL);
@@ -60,7 +60,7 @@ void _olsr_node_expired(struct olsr_node* node) {
 }
 
 void _remove_olsr_node(struct olsr_node* node) {
-	DEBUG("_remove_olsr_node");
+	TRACE_FUN();
 	avl_remove(&olsr_head, &node->node);
 
 	remove_free_node(node);
@@ -88,7 +88,7 @@ void _remove_olsr_node(struct olsr_node* node) {
 }
 
 bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
-	if (netaddr_cmp(node->last_addr, last_addr) == 0)
+	if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0)
 		return time_now() > node->expires;
 
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
@@ -100,6 +100,7 @@ bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
 }
 
 void _update_link_quality(struct nhdp_node* node) {
+	TRACE_FUN("%s", netaddr_to_string(&nbuf[0], h1_super(node)->addr));
 	if (_route_expired(h1_super(node), local_addr))
 		node->link_quality = node->link_quality * (1 - HYST_SCALING);
 	else
@@ -124,6 +125,7 @@ void _update_link_quality(struct nhdp_node* node) {
  * iterate over all elements and remove expired entries
  */
 void remove_expired(void) {
+	TRACE_FUN();
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		/* only use HELLO for link quality calculation */
