@@ -43,11 +43,28 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 	route->expires = time_now() + vtime;
 }
 
+void _decrease_mpr_neigh(struct olsr_node* node) {
+	/* update MPR information */
+	if (node->distance == 2) {
+		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
+		if (n1 != NULL && n1->mpr_neigh > 0)
+			n1->mpr_neigh--;
+	}
+}
+
+void remove_default_node(struct olsr_node* node) {
+	_decrease_mpr_neigh(node);
+	node->last_addr = netaddr_free(node->last_addr);
+	node->next_addr = netaddr_free(node->next_addr);
+}
+
 /*
  * moves the default route of node to other_routes
  */
 void push_default_route(struct olsr_node* node) {
 	struct netaddr* last_addr = node->last_addr;
+
+	_decrease_mpr_neigh(node);
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
 	if (route != NULL) {
 		node->last_addr = netaddr_free(node->last_addr);

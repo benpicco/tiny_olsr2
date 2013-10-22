@@ -28,7 +28,7 @@ void add_free_node(struct olsr_node* node) {
 	/* update MPR information */
 	if (node->distance == 2) {
 		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
-		if (n1 != NULL)
+		if (n1 != NULL && n1->mpr_neigh > 0)
 			n1->mpr_neigh--;
 	}
 

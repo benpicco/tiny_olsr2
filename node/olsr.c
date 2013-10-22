@@ -33,10 +33,9 @@ void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr)
 
 		if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
 
-			if (lost_node_addr != NULL) {
-				node->last_addr = netaddr_free(node->last_addr);
-				node->next_addr = netaddr_free(node->next_addr);
-			} else
+			if (lost_node_addr != NULL)
+				remove_default_node(node);
+			else
 				push_default_route(node);
 
 			add_free_node(node);
@@ -48,8 +47,8 @@ void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr)
 
 void _olsr_node_expired(struct olsr_node* node) {
 	TRACE_FUN();
-	node->last_addr = netaddr_free(node->last_addr);
-	node->next_addr = netaddr_free(node->next_addr);
+
+	remove_default_node(node);
 	_update_children(node->addr, NULL);
 
 	add_free_node(node);
@@ -64,12 +63,6 @@ void _remove_olsr_node(struct olsr_node* node) {
 	avl_remove(&olsr_head, &node->node);
 
 	remove_free_node(node);
-
-	if (node->distance == 2) {
-		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
-		if (n1 != NULL)
-			n1->mpr_neigh--;
-	}
 
 	_update_children(node->addr, node->addr);
 
@@ -91,6 +84,9 @@ bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
 	if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0)
 		return time_now() > node->expires;
 
+	if (node->other_routes == NULL)
+		return true;
+
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
 
 	if (route == NULL)
@@ -106,15 +102,16 @@ void _update_link_quality(struct nhdp_node* node) {
 	else
 		node->link_quality = node->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
 
-	if (node->link_quality < HYST_LOW) {
+	if (!node->pending && node->link_quality < HYST_LOW) {
 		node->pending = 1;
+		node->mpr_neigh = 0;
 
 		add_free_node(h1_super(node));
 		push_default_route(h1_super(node));
 		_update_children(h1_super(node)->addr, NULL);
 	}
 
-	if (node->link_quality > HYST_HIGH) {
+	if (node->pending && node->link_quality > HYST_HIGH) {
 		node->pending = 0;
 		// possibly reroute children
 		sched_routing_update();
@@ -254,7 +251,7 @@ void print_topology_set(void) {
 	struct olsr_node* node;
 	struct alt_route* route;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s %s %s",
+		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s %.2f [%d] %s",
 			netaddr_to_string(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_string(&nbuf[1], node->last_addr),
@@ -263,7 +260,8 @@ void print_topology_set(void) {
 			node->expires - time_now(),
 			node->seq_no,
 			node->type != NODE_TYPE_NHDP ? "" : h1_deriv(node)->pending ? "pending" : "",
-			node->type != NODE_TYPE_NHDP ? "" : h1_deriv(node)->mpr_neigh ? "[M]" : "[ ]",
+			node->type != NODE_TYPE_NHDP ? 0 : h1_deriv(node)->link_quality,
+			node->type != NODE_TYPE_NHDP ? 0 : h1_deriv(node)->mpr_neigh,
 			node->type != NODE_TYPE_NHDP ? "" : h1_deriv(node)->mpr_selector ? "[S]" : "[ ]"
 			);
 		simple_list_for_each (node->other_routes, route) {
