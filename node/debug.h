@@ -30,7 +30,7 @@ char _t_buf[9];
 #define TRACE_FUN(fmt, ...)	{	\
 	_t_tmr = time_now();			\
 	strftime(_t_buf, sizeof _t_buf, "%H:%M:%S", localtime(&_t_tmr));	\
-	printf(("%s(" fmt ")\n"), __FUNCTION__, ##__VA_ARGS__);				\
+	printf(("[%d, %s] %s(" fmt ")\n"), debug_ticks, _t_buf, __FUNCTION__, ##__VA_ARGS__);				\
 	}
 
 static inline void print_trace(void) {
