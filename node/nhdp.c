@@ -44,8 +44,6 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);
-
-		add_free_node(n);
 	} else if (n->type != NODE_TYPE_NHDP) {
 		DEBUG("\tconverting olsr node %s to nhdp node",
 			netaddr_to_string(&nbuf[0], n->addr));
@@ -53,6 +51,9 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 
 		add_free_node(n);
 	}
+
+	if (n->next_addr == NULL)
+		n->expires = time_now() + vtime;
 
 	add_other_route(n, local_addr, vtime);
 

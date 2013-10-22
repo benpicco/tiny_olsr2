@@ -234,7 +234,8 @@ _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropp
 		return RFC5444_DROP_PACKET;
 	}
 
-	// TODO: find any node where last_addr = this msgs orig_addr and that was not updated. Remove it
+	if (context->has_hopcount)	// only TC messages have a hopcount
+		remove_expired(&context->orig_addr);
 	fill_routing_table();
 
 	return RFC5444_OKAY;

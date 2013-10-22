@@ -114,41 +114,59 @@ void _update_link_quality(struct nhdp_node* node) {
 	if (node->pending && node->link_quality > HYST_HIGH) {
 		node->pending = 0;
 		// possibly reroute children
-		sched_routing_update();
+		add_free_node(h1_super(node));
 	}
 }
 
 /*
  * iterate over all elements and remove expired entries
+ * if force_addr is set, we just received a TC message from this address
+ * all entries, that use force_addr but were *not* updated thus were not
+ * included in the last TC message, which means they should be removed
  */
-void remove_expired(void) {
-	TRACE_FUN();
+void remove_expired(struct netaddr* force_addr) {
+	TRACE_FUN("%s", netaddr_to_string(&nbuf[0], force_addr));
+
+	time_t _now = time_now();
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(&olsr_head, node, node, safe) {
 		/* only use HELLO for link quality calculation */
-		if (node->type == NODE_TYPE_NHDP)
+		/* only do so in the periodic checks */
+		if (node->type == NODE_TYPE_NHDP && force_addr == NULL)
 			_update_link_quality(h1_deriv(node));
 
 		char skipped;
 		struct alt_route *route, *prev;
 		simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
-			if (time_now() - route->expires > HOLD_TIME) {
-				DEBUG("alternative route to %s (%s) via %s expired, removing it",
-					node->name, netaddr_to_string(&nbuf[0], node->addr),
-					netaddr_to_string(&nbuf[1], route->last_addr));
-				simple_list_for_each_remove(&node->other_routes, route, prev);
-			}
+			if (force_addr == NULL && _now - route->expires < HOLD_TIME)
+				continue;
+			if (force_addr != NULL && _now < route->expires)
+				continue;
+			if (force_addr != NULL && netaddr_cmp(force_addr, route->last_addr))
+				continue;
+
+			DEBUG("alternative route to %s (%s) via %s expired, removing it",
+				node->name, netaddr_to_string(&nbuf[0], node->addr),
+				netaddr_to_string(&nbuf[1], route->last_addr));
+			simple_list_for_each_remove(&node->other_routes, route, prev);
 		}
 
-		if (time_now() - node->expires > HOLD_TIME) {
-			DEBUG("%s (%s) expired",
-				node->name, netaddr_to_string(&nbuf[0], node->addr));
+		if (force_addr == NULL && _now - node->expires < HOLD_TIME)
+			continue;
+		if (force_addr != NULL && _now < node->expires)
+			continue;
+		if (force_addr != NULL && node->last_addr == NULL)
+			continue;
+		if (force_addr != NULL && netaddr_cmp(force_addr, node->last_addr))
+			continue;
 
-			if (node->other_routes == NULL)
-				_remove_olsr_node(node);
-			else
-				_olsr_node_expired(node);
-		}
+		DEBUG("%s (%s) expired",
+			node->name, netaddr_to_string(&nbuf[0], node->addr));
+
+		if (node->other_routes == NULL)
+			_remove_olsr_node(node);
+		else
+			_olsr_node_expired(node);
 	}
 
 	fill_routing_table();

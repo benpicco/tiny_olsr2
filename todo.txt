@@ -3,7 +3,7 @@
 - [ ] port node to RIOT
 - [x] remove metrics
 - [ ] use different refresh intervals for TC and HELLO
-- [ ] if nodes are not included in TC messages, remove them
+- [x] if nodes are not included in TC messages, remove them
 - [ ] jitter to avoid collisions
 - [ ] can there be multiple possible routes?
 - [x] unify _reroute_children and _update_children
