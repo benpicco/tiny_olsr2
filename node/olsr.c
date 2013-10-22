@@ -74,8 +74,7 @@ void _remove_olsr_node(struct olsr_node* node) {
 		simple_list_for_each_remove(&node->other_routes, route, prev);
 	}
 
-	netaddr_free(node->next_addr);
-	netaddr_free(node->last_addr);
+	remove_default_node(node);
 	netaddr_free(node->addr);
 	free(node);
 }
@@ -113,7 +112,11 @@ void _update_link_quality(struct nhdp_node* node) {
 
 	if (node->pending && node->link_quality > HYST_HIGH) {
 		node->pending = 0;
-		// possibly reroute children
+
+		/* node may just have become a 1-hop node */
+		if (h1_super(node)->last_addr != NULL)
+			push_default_route(h1_super(node));
+
 		add_free_node(h1_super(node));
 	}
 }
