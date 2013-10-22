@@ -234,9 +234,7 @@ _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropp
 		return RFC5444_DROP_PACKET;
 	}
 
-	if (context->has_hopcount)	// only TC messages have a hopcount
-		remove_expired(&context->orig_addr);
-	fill_routing_table();
+	remove_expired(&context->orig_addr);
 
 	return RFC5444_OKAY;
 }
