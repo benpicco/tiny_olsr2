@@ -13,6 +13,7 @@
 struct free_node {
 	struct free_node* next;
 	struct olsr_node* node;
+	uint8_t hops; // for sorting only
 };
 
 struct free_node* _pending_head = 0;
@@ -20,8 +21,10 @@ bool _update_pending = false;
 
 void add_free_node(struct olsr_node* node) {
 	struct free_node* n = simple_list_find_cmp(_pending_head, node, (int (*)(void *, void *)) olsr_node_cmp);
-	if (n == NULL)
-		n = simple_list_add_before(&_pending_head, node->distance);
+	if (n == NULL) {
+		uint8_t hops = node->distance;
+		n = simple_list_add_before(&_pending_head, hops);
+	}
 
 	n->node = node;
 
