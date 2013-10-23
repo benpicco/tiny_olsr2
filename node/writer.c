@@ -3,7 +3,7 @@
 #endif
 
 #ifdef RIOT
-#include "net_help/net_help.h"
+#include "net_help.h"
 #endif
 
 #include "common/avl.h"

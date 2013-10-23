@@ -11,7 +11,9 @@
 export PROJECT =olsr_node
 
 # for easy switching of boards
-export BOARD = msba2
+ifeq ($(strip $(BOARD)),)
+	export BOARD = native
+endif
 
 # this has to be the absolute path of the RIOT-base dir
 export RIOTBASE = $(CURDIR)/../../riot/RIOT
@@ -34,13 +36,19 @@ USEMODULE += net_help
 USEMODULE += sixlowpan
 USEMODULE += destiny
 USEMODULE += uart0
-USEMODULE += gpioint
 USEMODULE += posix
 USEMODULE += ltc4150
+USEMODULE += transceiver
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
 USEMODULE += compat_misc
+ifeq ($(BOARD),native)
+	USEMODULE += nativenet
+else ifeq($(BOARD),msba2)
+	USEMODULE += gpioint
+	USEMODULE += cc110x_ng
+endif
 
-export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/sys/net -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/net/sixlowpan/include -I$(OONFBASE)/src-api -I$(RIOTLIBS)
-
+export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/net/destiny \
+		-I$(RIOTBASE)/sys/net/sixlowpan/include -I$(RIOTBASE)/sys/net/net_help/ -I$(OONFBASE)/src-api -I$(RIOTLIBS)
 include $(RIOTBASE)/Makefile.include

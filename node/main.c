@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #ifdef RIOT
 #include <vtimer.h>
-#include <destiny/socket.h>
-#include <net_help/inet_pton.h>
+#include <socket.h>
+#include <inet_pton.h>
 #else
 #include <unistd.h>
 #include <signal.h>

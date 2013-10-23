@@ -10,7 +10,7 @@
 #include "rfc5444/rfc5444_reader.h"
 
 #ifdef RIOT
-#include "net_help/net_help.h"
+#include "net_help.h"
 #endif
 
 #include "debug.h"

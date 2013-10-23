@@ -16,7 +16,9 @@ int debug_ticks;
 #define DEBUG_TICK		debug_ticks++
 
 #ifdef RIOT
-#define DEBUG(fmt, ...) printf((fmt "\n"), ##__VA_ARGS__);
+#define DEBUG(fmt, ...) printf((fmt "\n"), ##__VA_ARGS__)
+#define TRACE_FUN(fmt, ...) printf(("%s(" fmt ")\n"), __FUNCTION__, ##__VA_ARGS__)
+
 #else
 
 time_t _t_tmr;
