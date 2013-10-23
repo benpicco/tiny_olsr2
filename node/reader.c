@@ -21,14 +21,14 @@
 #include "constants.h"
 #include "routing.h"
 
-struct rfc5444_reader reader;
-struct netaddr* current_src;
-struct olsr_node* current_node;
+static struct rfc5444_reader reader;
+static struct netaddr* current_src;
+static struct olsr_node* current_node;
 
 /* ughh… these variables are needed in the addr callback, but read in the packet callback */
-uint8_t vtime;
-uint8_t hops;
-uint16_t _seq_no;
+static uint8_t vtime;
+static uint8_t hops;
+static uint16_t _seq_no;
 
 static enum rfc5444_result _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);

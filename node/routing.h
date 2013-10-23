@@ -19,9 +19,4 @@ bool remove_free_node(struct olsr_node* node);
  */
 void fill_routing_table(void);
 
-/*
- * Schedule a routing update
- */
-void sched_routing_update(void);
-
 #endif /* ROUTING_H_ */

@@ -10,7 +10,7 @@
 
 #include "common/avl.h"
 
-struct olsr_node* _node_replace(struct olsr_node* old_n) {
+static struct olsr_node* _node_replace(struct olsr_node* old_n) {
 	struct olsr_node* new_n = calloc(1, sizeof (struct nhdp_node));
 
 	/* remove things that held a pointer to this */

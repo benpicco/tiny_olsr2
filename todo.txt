@@ -10,4 +10,4 @@
 - [x] can we unify mpr selection in nhdp
 - [x] no need to reallocate memory for 1-hop nodes
 - [ ] use bitfields
-- [ ] make functions static
+- [x] make functions static

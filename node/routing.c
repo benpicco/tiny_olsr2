@@ -16,8 +16,8 @@ struct free_node {
 	uint8_t hops; // for sorting only
 };
 
-struct free_node* _pending_head = 0;
-bool _update_pending = false;
+static struct free_node* _pending_head = 0;
+static bool _update_pending = false;
 
 void add_free_node(struct olsr_node* node) {
 	struct free_node* n = simple_list_find_cmp(_pending_head, node, (int (*)(void *, void *)) olsr_node_cmp);
@@ -37,10 +37,6 @@ bool remove_free_node(struct olsr_node* node) {
 	if (n == NULL)
 		return false;
 	return simple_list_remove(&_pending_head, n);
-}
-
-void sched_routing_update(void) {
-	_update_pending = true;
 }
 
 void fill_routing_table(void) {

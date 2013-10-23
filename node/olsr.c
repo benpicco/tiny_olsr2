@@ -9,7 +9,9 @@
 #include "constants.h"
 #include "list.h"
 
-struct olsr_node* _new_olsr_node(struct netaddr* addr, uint8_t distance, uint8_t vtime, char* name __attribute__((unused))) {
+static struct olsr_node* _new_olsr_node(struct netaddr* addr, 
+	uint8_t distance, uint8_t vtime, char* name __attribute__((unused))) {
+
 	struct olsr_node* n = calloc(1, sizeof(struct olsr_node));
 	n->addr = netaddr_dup(addr);
 	n->node.key = n->addr;
@@ -28,7 +30,7 @@ struct olsr_node* _new_olsr_node(struct netaddr* addr, uint8_t distance, uint8_t
  * find a new route for nodes that use last_addr as their default route
  * if lost_node_addr is not null, all reference to it will be removed (aka lost node)
  */
-void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr) {
+static void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr) {
 	TRACE_FUN("%s, %s", netaddr_to_string(&nbuf[0], last_addr),
 		netaddr_to_string(&nbuf[1], lost_node_addr));
 
@@ -52,7 +54,7 @@ void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr)
 	}
 }
 
-void _olsr_node_expired(struct olsr_node* node) {
+static void _olsr_node_expired(struct olsr_node* node) {
 	TRACE_FUN();
 
 	remove_default_node(node);
@@ -60,18 +62,14 @@ void _olsr_node_expired(struct olsr_node* node) {
 
 	add_free_node(node);
 
-	sched_routing_update();
-
-	// 1-hop neighbors will become normal olsr_nodes here, should we care?
+	// 1-hop neighbors will become normal olsr_nodes here, should we care? (possible waste of memory)
 }
 
-void _remove_olsr_node(struct olsr_node* node) {
+static void _remove_olsr_node(struct olsr_node* node) {
 	TRACE_FUN();
+
 	avl_remove(&olsr_head, &node->node);
-
 	remove_free_node(node);
-
-	_update_children(node->addr, node->addr);
 
 	/* remove other routes from node that is about to be deleted */
 	char skipped;
@@ -82,11 +80,13 @@ void _remove_olsr_node(struct olsr_node* node) {
 	}
 
 	remove_default_node(node);
+	_update_children(node->addr, node->addr);
+
 	netaddr_free(node->addr);
 	free(node);
 }
 
-bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
+static bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
 	if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0)
 		return time_now() > node->expires;
 
@@ -101,7 +101,7 @@ bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
 	return time_now() > route->expires;
 }
 
-void _update_link_quality(struct nhdp_node* node) {
+static void _update_link_quality(struct nhdp_node* node) {
 	TRACE_FUN("%s", netaddr_to_string(&nbuf[0], h1_super(node)->addr));
 	if (_route_expired(h1_super(node), local_addr))
 		node->link_quality = node->link_quality * (1 - HYST_SCALING);

@@ -4,6 +4,15 @@
 
 #include "common/netaddr.h"
 
+static void _decrease_mpr_neigh(struct olsr_node* node) {
+	/* update MPR information */
+	if (node->distance == 2) {
+		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
+		if (n1 != NULL && n1->mpr_neigh > 0)
+			n1->mpr_neigh--;
+	}
+}
+
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
 }
@@ -41,15 +50,6 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 	route = simple_list_add_head(&node->other_routes);
 	route->last_addr = netaddr_reuse(last_addr);
 	route->expires = time_now() + vtime;
-}
-
-void _decrease_mpr_neigh(struct olsr_node* node) {
-	/* update MPR information */
-	if (node->distance == 2) {
-		struct nhdp_node* n1 = h1_deriv(get_node(node->last_addr));
-		if (n1 != NULL && n1->mpr_neigh > 0)
-			n1->mpr_neigh--;
-	}
 }
 
 void remove_default_node(struct olsr_node* node) {
