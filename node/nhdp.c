@@ -36,7 +36,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 	struct olsr_node* n = get_node(addr);
 
 	if (n == NULL) {
-		DEBUG("\tadding new neighbor: %s", netaddr_to_string(&nbuf[0], addr));
+		DEBUG("\tadding new neighbor: %s", netaddr_to_str_s(&nbuf[0], addr));
 		n = calloc(1, sizeof(struct nhdp_node));
 		n->addr = netaddr_dup(addr);
 
@@ -49,7 +49,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		avl_insert(&olsr_head, &n->node);
 	} else if (n->type != NODE_TYPE_NHDP) {
 		DEBUG("\tconverting olsr node %s to nhdp node",
-			netaddr_to_string(&nbuf[0], n->addr));
+			netaddr_to_str_s(&nbuf[0], n->addr));
 		n = _node_replace(n);
 	}
 
@@ -71,7 +71,7 @@ void print_neighbors(void) {
 		if (node->distance == 1)
 			DEBUG("\tneighbor: %s (%s) (mpr for %d nodes)",
 				node->name,
-				netaddr_to_string(&nbuf[0], node->addr),
+				netaddr_to_str_s(&nbuf[0], node->addr),
 				h1_deriv(node)->mpr_neigh);
 	}
 
@@ -79,10 +79,10 @@ void print_neighbors(void) {
 	avl_for_each_element(&olsr_head, node, node) {
 		if (node->distance == 2)
 			DEBUG("\t%s (%s) -> %s -> %s (%s)",
-				node->name, netaddr_to_string(&nbuf[0], node->addr),
-				netaddr_to_string(&nbuf[1], node->next_addr),
+				node->name, netaddr_to_str_s(&nbuf[0], node->addr),
+				netaddr_to_str_s(&nbuf[1], node->next_addr),
 				local_name,
-				netaddr_to_string(&nbuf[2], local_addr));
+				netaddr_to_str_s(&nbuf[2], local_addr));
 	}
 }
 #else

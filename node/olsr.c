@@ -31,8 +31,8 @@ static struct olsr_node* _new_olsr_node(struct netaddr* addr,
  * if lost_node_addr is not null, all reference to it will be removed (aka lost node)
  */
 static void _update_children(struct netaddr* last_addr, struct netaddr* lost_node_addr) {
-	TRACE_FUN("%s, %s", netaddr_to_string(&nbuf[0], last_addr),
-		netaddr_to_string(&nbuf[1], lost_node_addr));
+	TRACE_FUN("%s, %s", netaddr_to_str_s(&nbuf[0], last_addr),
+		netaddr_to_str_s(&nbuf[1], lost_node_addr));
 
 	struct olsr_node *node;
 	avl_for_each_element(&olsr_head, node, node) {
@@ -102,7 +102,7 @@ static bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
 }
 
 static void _update_link_quality(struct nhdp_node* node) {
-	TRACE_FUN("%s", netaddr_to_string(&nbuf[0], h1_super(node)->addr));
+	TRACE_FUN("%s", netaddr_to_str_s(&nbuf[0], h1_super(node)->addr));
 	if (_route_expired(h1_super(node), local_addr))
 		node->link_quality = node->link_quality * (1 - HYST_SCALING);
 	else
@@ -135,7 +135,7 @@ static void _update_link_quality(struct nhdp_node* node) {
  * included in the last TC message, which means they should be removed
  */
 void remove_expired(struct netaddr* force_addr) {
-	TRACE_FUN("%s", netaddr_to_string(&nbuf[0], force_addr));
+	TRACE_FUN("%s", netaddr_to_str_s(&nbuf[0], force_addr));
 
 	time_t _now = time_now();
 	struct olsr_node *node, *safe;
@@ -156,8 +156,8 @@ void remove_expired(struct netaddr* force_addr) {
 				continue;
 
 			DEBUG("alternative route to %s (%s) via %s expired, removing it",
-				node->name, netaddr_to_string(&nbuf[0], node->addr),
-				netaddr_to_string(&nbuf[1], route->last_addr));
+				node->name, netaddr_to_str_s(&nbuf[0], node->addr),
+				netaddr_to_str_s(&nbuf[1], route->last_addr));
 			simple_list_for_each_remove(&node->other_routes, route, prev);
 		}
 
@@ -171,7 +171,7 @@ void remove_expired(struct netaddr* force_addr) {
 			continue;
 
 		DEBUG("%s (%s) expired",
-			node->name, netaddr_to_string(&nbuf[0], node->addr));
+			node->name, netaddr_to_str_s(&nbuf[0], node->addr));
 
 		if (node->other_routes == NULL)
 			_remove_olsr_node(node);
@@ -213,8 +213,8 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 	}
 
 	DEBUG("shorter route found (old: %d hops over %s new: %d hops over %s)",
-		n->distance, netaddr_to_string(&nbuf[0], n->last_addr),
-		distance, netaddr_to_string(&nbuf[1], last_addr));
+		n->distance, netaddr_to_str_s(&nbuf[0], n->last_addr),
+		distance, netaddr_to_str_s(&nbuf[1], last_addr));
 
 	n->distance = distance;
 	_update_children(n->addr, 0);
@@ -251,11 +251,11 @@ void print_topology_set(void) {
 	struct alt_route* route;
 	avl_for_each_element(&olsr_head, node, node) {
 		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s %.2f [%d] %s",
-			netaddr_to_string(&nbuf[0], node->addr),
+			netaddr_to_str_s(&nbuf[0], node->addr),
 			node->name,
-			netaddr_to_string(&nbuf[1], node->last_addr),
+			netaddr_to_str_s(&nbuf[1], node->last_addr),
 			node->distance,
-			netaddr_to_string(&nbuf[2], node->next_addr),
+			netaddr_to_str_s(&nbuf[2], node->next_addr),
 			node->expires - time_now(),
 			node->seq_no,
 			node->type != NODE_TYPE_NHDP ? "" : node->pending ? "pending" : "",
@@ -265,7 +265,7 @@ void print_topology_set(void) {
 			);
 		simple_list_for_each (node->other_routes, route) {
 			DEBUG("\t\t\t=> %s; %zd s",
-				netaddr_to_string(&nbuf[0], route->last_addr),
+				netaddr_to_str_s(&nbuf[0], route->last_addr),
 				route->expires - time_now());
 		}
 	}

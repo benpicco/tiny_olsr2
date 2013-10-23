@@ -8,6 +8,8 @@ struct netaddr_rc {
 	uint8_t _refs;
 };
 
+const char* netaddr_to_str_s(struct netaddr_str* dst, const struct netaddr* src);
+
 struct netaddr* netaddr_dup(struct netaddr* addr);
 struct netaddr* netaddr_use(struct netaddr* addr);
 struct netaddr* netaddr_reuse(struct netaddr* addr);

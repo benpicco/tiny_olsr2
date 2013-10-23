@@ -109,7 +109,7 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __att
 	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
 		if (!current_node->name)
 			current_node->name = strndup((char*) _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
-		DEBUG("\tfrom: %s (%s)", current_node->name, netaddr_to_string(&nbuf[0], current_src));
+		DEBUG("\tfrom: %s (%s)", current_node->name, netaddr_to_str_s(&nbuf[0], current_src));
 	}
 #endif
 
@@ -130,7 +130,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #ifdef ENABLE_DEBUG
 	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		name = strndup((char*) tlv->single_value, tlv->length); // memory leak
-		DEBUG("\t2-hop neighbor: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
+		DEBUG("\t2-hop neighbor: %s (%s)", name, netaddr_to_str_s(&nbuf[0], &cont->addr));
 	}
 #endif
 
@@ -176,12 +176,12 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #ifdef ENABLE_DEBUG
 	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
 		char* _name = strndup((char*) _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
-		DEBUG("\tfrom: %s (%s)", _name, netaddr_to_string(&nbuf[0], &cont->orig_addr));
+		DEBUG("\tfrom: %s (%s)", _name, netaddr_to_str_s(&nbuf[0], &cont->orig_addr));
 		free(_name);
 	}
 #endif
 
-	DEBUG("\tsender: %s", netaddr_to_string(&nbuf[0], current_src));
+	DEBUG("\tsender: %s", netaddr_to_str_s(&nbuf[0], current_src));
 	DEBUG("\tseqno: %d", cont->seqno);
 	DEBUG("\thops: %d", cont->hopcount);
 
@@ -202,7 +202,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #ifdef ENABLE_DEBUG
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		name = strndup((char*) tlv->single_value, tlv->length);
-		DEBUG("\tannounces: %s (%s)", name, netaddr_to_string(&nbuf[0], &cont->addr));
+		DEBUG("\tannounces: %s (%s)", name, netaddr_to_str_s(&nbuf[0], &cont->addr));
 	}
 #endif
 

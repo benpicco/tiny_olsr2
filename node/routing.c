@@ -63,7 +63,7 @@ void fill_routing_table(void) {
 			struct alt_route* route;
 			simple_list_for_each(fn->node->other_routes, route) {
 
-				DEBUG("\t=> %s", netaddr_to_string(&nbuf[0], route->last_addr));
+				DEBUG("\t=> %s", netaddr_to_str_s(&nbuf[0], route->last_addr));
 				/* the node is actually a neighbor of ours */
 				if (netaddr_cmp(route->last_addr, local_addr) == 0) {
 					DEBUG("%s1-hop route found", fn->node->pending ? "pending " : "");
@@ -96,7 +96,7 @@ void fill_routing_table(void) {
 			/* We found a valid route */
 			if (min_hops == 1) {
 				DEBUG("%s (%s) is a 1-hop neighbor",
-					netaddr_to_string(&nbuf[0], fn->node->addr), fn->node->name);
+					netaddr_to_str_s(&nbuf[0], fn->node->addr), fn->node->name);
 				noop = false;
 				fn->node->next_addr = netaddr_use(fn->node->addr);
 				fn->node->distance = 1;
@@ -106,9 +106,9 @@ void fill_routing_table(void) {
 
 			} else if (node != NULL) {
 				DEBUG("%s (%s) -> %s (%s) -> […] -> %s",
-					netaddr_to_string(&nbuf[0], fn->node->addr), fn->node->name,
-					netaddr_to_string(&nbuf[1], node->addr), node->name,
-					netaddr_to_string(&nbuf[2], node->next_addr));
+					netaddr_to_str_s(&nbuf[0], fn->node->addr), fn->node->name,
+					netaddr_to_str_s(&nbuf[1], node->addr), node->name,
+					netaddr_to_str_s(&nbuf[2], node->next_addr));
 				DEBUG("%d = %d", fn->node->distance, node->distance + 1);
 
 				noop = false;
@@ -124,7 +124,7 @@ void fill_routing_table(void) {
 				pop_other_route(fn->node, node->addr);
 				simple_list_for_each_remove(&head, fn, prev);
 			} else
-				DEBUG("don't yet know how to route %s", netaddr_to_string(&nbuf[0], fn->node->addr));
+				DEBUG("don't yet know how to route %s", netaddr_to_str_s(&nbuf[0], fn->node->addr));
 		}
 	}
 
@@ -133,8 +133,8 @@ void fill_routing_table(void) {
 #ifdef DEBUG
 	while (head != NULL) {
 		DEBUG("Could not find next hop for %s (%s), should be %s (%d hops)",
-			netaddr_to_string(&nbuf[0], head->node->addr), head->node->name,
-			netaddr_to_string(&nbuf[1], head->node->last_addr), head->node->distance);
+			netaddr_to_str_s(&nbuf[0], head->node->addr), head->node->name,
+			netaddr_to_str_s(&nbuf[1], head->node->last_addr), head->node->distance);
 
 		head = head->next;
 	}

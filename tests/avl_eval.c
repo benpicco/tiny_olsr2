@@ -39,7 +39,7 @@ int main() {
 	struct olsr_node *node;
 	struct netaddr_str nbuf;
 	avl_for_each_element(&olsr_head, node, node) {
-		printf("%s - %s\n", node->name, netaddr_to_string(&nbuf, &node->addr));
+		printf("%s - %s\n", node->name, netaddr_to_str_s(&nbuf, &node->addr));
 	}
 
 	netaddr_from_string(&addr, "2001::1");
