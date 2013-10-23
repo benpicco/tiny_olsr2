@@ -53,6 +53,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		n = _node_replace(n);
 	}
 
+	/* add_other_route would otherwise not update expires */
 	if (n->next_addr == NULL)
 		n->expires = time_now() + vtime;
 

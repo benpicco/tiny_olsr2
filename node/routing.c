@@ -67,7 +67,6 @@ void fill_routing_table(void) {
 				/* the node is actually a neighbor of ours */
 				if (netaddr_cmp(route->last_addr, local_addr) == 0) {
 					DEBUG("%s1-hop route found", fn->node->pending ? "pending " : "");
-					/* TODO: What if this was originally a olsr node? */
 					if (fn->node->pending)
 						continue;
 					min_hops = 1;

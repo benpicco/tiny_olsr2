@@ -188,8 +188,6 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	hops = cont->hopcount + 1; /* hopcount starts with 0 for A -> B */
 	_seq_no = cont->seqno;
 
-	// what if address block is empty?
-
 	return RFC5444_OKAY;
 }
 
@@ -235,6 +233,13 @@ _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropp
 		return RFC5444_DROP_PACKET;
 	}
 
+	/*
+	 * removes all routes that were previously announced by orig_addr
+	 * but were not updates (aka left out) with this message.
+	 * Omitting addresses is specified as the way to signal their removal
+	 * 
+	 * remove_expired() will also call fill_routing_table() if necessary 
+	 */
 	remove_expired(&context->orig_addr);
 
 	return RFC5444_OKAY;
