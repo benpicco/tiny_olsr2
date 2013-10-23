@@ -40,7 +40,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		n = calloc(1, sizeof(struct nhdp_node));
 		n->addr = netaddr_dup(addr);
 
-		n->type = n->type = NODE_TYPE_NHDP;
+		n->type = NODE_TYPE_NHDP;
 		n->distance = 1;
 		h1_deriv(n)->link_quality = HYST_SCALING;
 		n->pending = 1;
