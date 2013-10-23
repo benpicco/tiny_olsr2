@@ -9,5 +9,5 @@
 - [x] unify _reroute_children and _update_children
 - [x] can we unify mpr selection in nhdp
 - [x] no need to reallocate memory for 1-hop nodes
-- [ ] use bitfields
+- [x] use bitfields
 - [x] make functions static

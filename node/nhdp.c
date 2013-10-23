@@ -43,7 +43,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		n->type = n->type = NODE_TYPE_NHDP;
 		n->distance = 1;
 		h1_deriv(n)->link_quality = HYST_SCALING;
-		h1_deriv(n)->pending = 1;
+		n->pending = 1;
 
 		n->node.key = n->addr;
 		avl_insert(&olsr_head, &n->node);

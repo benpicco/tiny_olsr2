@@ -66,9 +66,9 @@ void fill_routing_table(void) {
 				DEBUG("\t=> %s", netaddr_to_string(&nbuf[0], route->last_addr));
 				/* the node is actually a neighbor of ours */
 				if (netaddr_cmp(route->last_addr, local_addr) == 0) {
-					DEBUG("%s1-hop route found", h1_deriv(fn->node)->pending ? "pending " : "");
+					DEBUG("%s1-hop route found", fn->node->pending ? "pending " : "");
 					/* TODO: What if this was originally a olsr node? */
-					if (h1_deriv(fn->node)->pending)
+					if (fn->node->pending)
 						continue;
 					min_hops = 1;
 					break;
@@ -80,7 +80,7 @@ void fill_routing_table(void) {
 					_tmp->next_addr != NULL) {
 
 					/* ignore pending nodes */
-					if (_tmp->type == NODE_TYPE_NHDP && h1_deriv(_tmp)->pending)
+					if (_tmp->type == NODE_TYPE_NHDP && _tmp->pending)
 						continue;
 
 					/* try to minimize MPR count */

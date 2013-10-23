@@ -114,10 +114,10 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __att
 #endif
 
 	/* reset MPR selector state, will be set by _cb_nhdp_blocktlv_address_okay */
-	if (h1_deriv(current_node)->mpr_selector == 0)
+	if (current_node->mpr_selector == 0)
 		send_tc_messages = false;
 	else
-		h1_deriv(current_node)->mpr_selector = 0;
+		current_node->mpr_selector = 0;
 
 	return RFC5444_OKAY;
 }
@@ -139,11 +139,11 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 		/* node selected us as mpr */
 		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv)) {
-			h1_deriv(current_node)->mpr_selector = ROUTING_MPR_SELECTOR; // arbitrary, todo
+			current_node->mpr_selector = 1;
 			send_tc_messages = true;
 		}
 	} else {
-		if (!h1_deriv(current_node)->pending)
+		if (!current_node->pending)
 			add_olsr_node(&cont->addr, current_src, vtime, 2, name);
 	}
 
@@ -217,7 +217,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 static void
 _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context __attribute__((unused)),
 	uint8_t *buffer, size_t length) {
-	struct nhdp_node* node = h1_deriv(get_node(current_src));
+	struct olsr_node* node = get_node(current_src);
 
 	if (node == NULL || node->mpr_selector == 0)
 		return;

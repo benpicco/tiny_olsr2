@@ -78,7 +78,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 		if (neighbor->distance != 1)
 			continue;
 
-		if (h1_deriv(neighbor)->pending)
+		if (neighbor->pending)
 			continue;
 
 		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, 
@@ -115,10 +115,10 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 		if (node->distance != 1)
 			continue;
 
-		if (!h1_deriv(node)->mpr_selector)
+		if (!node->mpr_selector)
 			continue;
 
-		if (h1_deriv(node)->pending)
+		if (node->pending)
 			continue;
 
 		struct rfc5444_writer_address *address __attribute__((unused));

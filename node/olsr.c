@@ -10,7 +10,7 @@
 #include "list.h"
 
 static struct olsr_node* _new_olsr_node(struct netaddr* addr, 
-	uint8_t distance, uint8_t vtime, char* name __attribute__((unused))) {
+	uint8_t distance, uint8_t vtime, char* name) {
 
 	struct olsr_node* n = calloc(1, sizeof(struct olsr_node));
 	n->addr = netaddr_dup(addr);
@@ -108,8 +108,8 @@ static void _update_link_quality(struct nhdp_node* node) {
 	else
 		node->link_quality = node->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
 
-	if (!node->pending && node->link_quality < HYST_LOW) {
-		node->pending = 1;
+	if (!h1_super(node)->pending && node->link_quality < HYST_LOW) {
+		h1_super(node)->pending = 1;
 		node->mpr_neigh = 0;
 
 		add_free_node(h1_super(node));
@@ -117,8 +117,8 @@ static void _update_link_quality(struct nhdp_node* node) {
 		_update_children(h1_super(node)->addr, NULL);
 	}
 
-	if (node->pending && node->link_quality > HYST_HIGH) {
-		node->pending = 0;
+	if (h1_super(node)->pending && node->link_quality > HYST_HIGH) {
+		h1_super(node)->pending = 0;
 
 		/* node may just have become a 1-hop node */
 		if (h1_super(node)->last_addr != NULL)
@@ -258,10 +258,10 @@ void print_topology_set(void) {
 			netaddr_to_string(&nbuf[2], node->next_addr),
 			node->expires - time_now(),
 			node->seq_no,
-			node->type != NODE_TYPE_NHDP ? "" : h1_deriv(node)->pending ? "pending" : "",
+			node->type != NODE_TYPE_NHDP ? "" : node->pending ? "pending" : "",
 			node->type != NODE_TYPE_NHDP ? 0 : h1_deriv(node)->link_quality,
 			node->type != NODE_TYPE_NHDP ? 0 : h1_deriv(node)->mpr_neigh,
-			node->type != NODE_TYPE_NHDP ? "" : h1_deriv(node)->mpr_selector ? "[S]" : "[ ]"
+			node->type != NODE_TYPE_NHDP ? "" : node->mpr_selector ? "[S]" : "[ ]"
 			);
 		simple_list_for_each (node->other_routes, route) {
 			DEBUG("\t\t\t=> %s; %zd s",
@@ -290,7 +290,7 @@ void print_routing_graph(void) {
 	puts("\tedge [ color = blue ]");
 	puts("// BEGIN MPR");
 	avl_for_each_element(&olsr_head, node, node) {
-		if (node->distance == 1 && h1_deriv(node)->mpr_selector) {
+		if (node->distance == 1 && node->mpr_selector) {
 			printf("\t%s -> %s\n", node->name, local_name);
 		}
 	}

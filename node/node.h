@@ -42,7 +42,9 @@ struct olsr_node {
 	uint16_t seq_no;			/* last seq_no from last_addr */
 	uint8_t distance;			/* hops between us and the node */
 
-	uint8_t type;				/* node type */
+	uint8_t type		: 1;	/* node type */
+	uint8_t mpr_selector: 2;	/* whether the node selected us as a MPR - only 1-hop */
+	uint8_t pending		: 3;	/* whether the link can already be used - only 1-hop */
 
 #ifdef ENABLE_DEBUG
 	char* name;					/* node name from graph.gv */
@@ -54,8 +56,6 @@ struct nhdp_node {
 
 	uint8_t mpr_neigh;			/* number of 2-hop neighbors reached through this node 
 								   aka if this value is > 0, it's a MPR */
-	uint8_t mpr_selector;		/* whether the node selected us as a MPR */
-	uint8_t pending;			/* whether the link can already be used */
 	float link_quality;			/* average packet loss, decides if it should be used as 1-hop neigh */
 };
 
