@@ -59,6 +59,28 @@ void remove_default_node(struct olsr_node* node) {
 }
 
 /*
+ * extends validity of the route over last_addr
+ * returns false if no such route was found
+ */
+bool extend_route_validity(struct olsr_node* node, struct netaddr* last_addr, uint8_t vtime) {
+	if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
+		node->expires = time_now() + vtime;
+		return true;
+	}
+
+	if (node->other_routes == NULL)
+		return false;
+
+	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
+	if (route == NULL)
+		return false;
+
+	route->expires = time_now() + vtime;
+
+	return true;
+}
+
+/*
  * moves the default route of node to other_routes
  */
 void push_default_route(struct olsr_node* node) {

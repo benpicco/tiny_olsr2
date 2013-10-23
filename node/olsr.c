@@ -214,7 +214,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 	DEBUG("updating TC entry for %s (%s)", n->name, netaddr_to_string(&nbuf[0], n->addr));
 
 	/* we found a better route */
-	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
+	if (!extend_route_validity(n, last_addr, vtime)) {
 
 		if (distance == n->distance) {
 			/* minimize MPR count */
@@ -250,8 +250,6 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 		add_free_node(n);
 	}
-
-	n->expires = time_now() + vtime;
 }
 
 bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
