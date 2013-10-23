@@ -217,6 +217,17 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 	if (netaddr_cmp(last_addr, n->last_addr) != 0) {
 
 		if (distance == n->distance) {
+			/* minimize MPR count */
+			if (distance ==  2) {
+				struct nhdp_node* cur_mpr = h1_deriv(get_node(n->last_addr));
+				struct nhdp_node* new_mpr = h1_deriv(get_node(last_addr));
+				if (!new_mpr->pending && new_mpr->mpr_neigh + 1 > cur_mpr->mpr_neigh) {
+					_update_children(n->addr, NULL);
+					push_default_route(n);
+					add_free_node(n);
+				}
+			}
+
 			add_other_route(n, last_addr, vtime);
 			return;
 		}
