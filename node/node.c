@@ -53,8 +53,10 @@ void _decrease_mpr_neigh(struct olsr_node* node) {
 }
 
 void remove_default_node(struct olsr_node* node) {
-	_decrease_mpr_neigh(node);
-	node->last_addr = netaddr_free(node->last_addr);
+	if (node->last_addr) {
+		_decrease_mpr_neigh(node);
+		node->last_addr = netaddr_free(node->last_addr);
+	}
 	node->next_addr = netaddr_free(node->next_addr);
 }
 
@@ -85,6 +87,9 @@ bool extend_route_validity(struct olsr_node* node, struct netaddr* last_addr, ui
  */
 void push_default_route(struct olsr_node* node) {
 	struct netaddr* last_addr = node->last_addr;
+
+	if (node->last_addr == NULL)
+		return;
 
 	_decrease_mpr_neigh(node);
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
