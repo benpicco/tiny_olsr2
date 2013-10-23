@@ -8,7 +8,19 @@ subgraph bidirectional {
 	E -> F
 	F -> G
 	G -> H
-	H -> A	// 0.5
+	H -> A
+
+	A -> X
+	B -> X
+	C -> X
+	D -> X
+	E -> X
+	F -> X
+	G -> X
+	H -> X
+
+	Y -> X
+	Y -> D
 }
 
 subgraph directional {

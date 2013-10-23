@@ -9,10 +9,17 @@
 #include "constants.h"
 #include "list.h"
 
-struct olsr_node* _new_olsr_node(struct netaddr* addr) {
+struct olsr_node* _new_olsr_node(struct netaddr* addr, uint8_t distance, uint8_t vtime, char* name) {
 	struct olsr_node* n = calloc(1, sizeof(struct olsr_node));
 	n->addr = netaddr_dup(addr);
 	n->node.key = n->addr;
+	n->type = NODE_TYPE_OLSR;
+	n->distance = distance;
+	n->expires = time_now() + vtime;
+#ifdef ENABLE_DEBUG
+	n->name = name;
+#endif
+
 	avl_insert(&olsr_head, &n->node);
 	return n;
 }
@@ -178,87 +185,49 @@ void remove_expired(struct netaddr* force_addr) {
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
 	struct olsr_node* n = get_node(addr);
 
-	if (n == NULL || n->last_addr == NULL) {
-		DEBUG("new olsr node: %s, last hop: %s - distance: %d", 
-			netaddr_to_string(&nbuf[0], addr),
-			netaddr_to_string(&nbuf[1], last_addr),
-			distance);
-		if (n == NULL)
-			n = _new_olsr_node(addr);
+	if (n == NULL)
+		n = _new_olsr_node(addr, distance, vtime, name);
 
-		if (n->distance == 0 || n->distance > distance)
-			n->distance = distance;
-
-		n->expires = time_now() + vtime;
-
-#ifdef ENABLE_DEBUG
-		n->name = name;
-#endif
-
+	if (n->last_addr == NULL) {
 		add_other_route(n, last_addr, vtime);
 		add_free_node(n);
 
 		return;
 	}
 
-	if (distance > n->distance) {
-		DEBUG("found longer (%d > %d) route for %s (%s) via %s",
-			distance, n->distance,
-			n->name, netaddr_to_string(&nbuf[0], n->addr),
-			netaddr_to_string(&nbuf[1], last_addr));
-
-		add_other_route(n, last_addr, vtime);
-		return;
-	}
-
-	DEBUG("updating TC entry for %s (%s)", n->name, netaddr_to_string(&nbuf[0], n->addr));
-
-	/* we found a better route */
-	if (!extend_route_validity(n, last_addr, vtime)) {
-
-		if (distance == n->distance) {
-			/* minimize MPR count */
-			if (distance ==  2) {
-				struct nhdp_node* cur_mpr = h1_deriv(get_node(n->last_addr));
-				struct nhdp_node* new_mpr = h1_deriv(get_node(last_addr));
-				if (!new_mpr->pending && new_mpr->mpr_neigh + 1 > cur_mpr->mpr_neigh) {
-					_update_children(n->addr, NULL);
-					push_default_route(n);
-					add_free_node(n);
-				}
-			}
-
-			add_other_route(n, last_addr, vtime);
-			return;
+	/* minimize MPR count */
+	if (distance == 2 && distance == n->distance && netaddr_cmp(last_addr, n->last_addr) != 0) {
+		struct nhdp_node* cur_mpr = h1_deriv(get_node(n->last_addr));
+		struct nhdp_node* new_mpr = h1_deriv(get_node(last_addr));
+		if (new_mpr->mpr_neigh + 1 > cur_mpr->mpr_neigh) {
+			DEBUG("switching MPR");
+			_update_children(n->addr, NULL);
+			push_default_route(n);
+			add_free_node(n);
 		}
-
-		DEBUG("shorter route found (old: %d hops over %s new: %d hops over %s)",
-			n->distance, netaddr_to_string(&nbuf[0], n->last_addr),
-			distance, netaddr_to_string(&nbuf[1], last_addr));
-
-		n->distance = distance;
-
-		push_default_route(n);
-		add_other_route(n, last_addr, vtime);
-
-		add_free_node(n);
-	} else if (distance != n->distance) {
-		/* we have the same last_addr, but a shorter route */
-		/* obtain new next_hop */
-		n->distance = distance;
-		push_default_route(n);
-
-		add_free_node(n);
 	}
+
+	if (distance >= n->distance) {
+		add_other_route(n, last_addr, vtime);
+		return;
+	}
+
+	DEBUG("shorter route found (old: %d hops over %s new: %d hops over %s)",
+		n->distance, netaddr_to_string(&nbuf[0], n->last_addr),
+		distance, netaddr_to_string(&nbuf[1], last_addr));
+
+	n->distance = distance;
+	_update_children(n->addr, 0);
+	push_default_route(n);
+	add_other_route(n, last_addr, vtime);
+	add_free_node(n);
 }
 
 bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 	struct olsr_node* node = get_node(addr);
 	if (!node) {
-		node = _new_olsr_node(addr);
+		node = _new_olsr_node(addr, 255, vtime, NULL);
 		node->seq_no = seq_no;
-		node->expires = time_now() + vtime;
-		node->distance = 255;	// use real distance here?
 		return false;
 	}
 
