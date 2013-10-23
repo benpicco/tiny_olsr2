@@ -31,10 +31,6 @@ struct olsr_node* get_node(struct netaddr* addr) {
 }
 
 void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t vtime) {
-	DEBUG("add_other_route(%s, %s)", 
-		netaddr_to_str_s(&nbuf[0], node->addr),
-		netaddr_to_str_s(&nbuf[1], last_addr));
-
 	/* make sure the route is not already the default route */
 	if (node->last_addr != NULL && netaddr_cmp(node->last_addr, last_addr) == 0) {
 		node->expires = time_now() + vtime;

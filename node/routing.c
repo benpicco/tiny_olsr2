@@ -55,20 +55,18 @@ void fill_routing_table(void) {
 		struct free_node *prev;
 		char skipped;
 		simple_list_for_each_safe(head, fn, prev, skipped) {
-			DEBUG("simple_list_for_each iteration (%p) - %s", fn, fn->node->name);
-
 			/* chose shortest route from the set of availiable routes */
 			uint8_t min_hops = 255;
 			struct olsr_node* node = NULL;
 			struct alt_route* route;
 			simple_list_for_each(fn->node->other_routes, route) {
 
-				DEBUG("\t=> %s", netaddr_to_str_s(&nbuf[0], route->last_addr));
 				/* the node is actually a neighbor of ours */
 				if (netaddr_cmp(route->last_addr, local_addr) == 0) {
-					DEBUG("%s1-hop route found", fn->node->pending ? "pending " : "");
+					/* don't use pending nodes */
 					if (fn->node->pending)
 						continue;
+
 					min_hops = 1;
 					break;
 				}
