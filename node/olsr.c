@@ -9,7 +9,7 @@
 #include "constants.h"
 #include "list.h"
 
-struct olsr_node* _new_olsr_node(struct netaddr* addr, uint8_t distance, uint8_t vtime, char* name) {
+struct olsr_node* _new_olsr_node(struct netaddr* addr, uint8_t distance, uint8_t vtime, char* name __attribute__((unused))) {
 	struct olsr_node* n = calloc(1, sizeof(struct olsr_node));
 	n->addr = netaddr_dup(addr);
 	n->node.key = n->addr;

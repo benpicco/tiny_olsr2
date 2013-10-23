@@ -121,8 +121,8 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 		if (h1_deriv(node)->pending)
 			continue;
 
-		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr,
-			_olsr_message_content_provider.creator, node->addr, false);
+		struct rfc5444_writer_address *address __attribute__((unused));
+		address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
 
 #ifdef ENABLE_DEBUG
 		if (node->name)
@@ -149,7 +149,7 @@ _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_messa
 }
 
 bool
-olsr_message_forwarding_selector(struct rfc5444_writer_target *rfc5444_target) {
+olsr_message_forwarding_selector(struct rfc5444_writer_target *rfc5444_target __attribute__((unused))) {
 	return true;
 }
 

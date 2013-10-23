@@ -97,7 +97,7 @@ static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
 /* HELLO message */
 
 static enum rfc5444_result
-_cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
+_cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __attribute__((unused))) {
 	DEBUG("received HELLO message:");
 
 	/* VTIME is defined as mandatory */
@@ -195,8 +195,8 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 static enum rfc5444_result
 _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
-	struct rfc5444_reader_tlvblock_entry* tlv;
-	char* name = 0;
+	struct rfc5444_reader_tlvblock_entry* tlv __attribute__((unused));
+	char* name = NULL;
 
 	if (netaddr_cmp(local_addr, &cont->addr) == 0)
 		return RFC5444_DROP_ADDRESS;
@@ -215,7 +215,8 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 }
 
 static void
-_cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context, uint8_t *buffer, size_t length) {
+_cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context __attribute__((unused)),
+	uint8_t *buffer, size_t length) {
 	struct nhdp_node* node = h1_deriv(get_node(current_src));
 
 	if (node == NULL || node->mpr_selector == 0)

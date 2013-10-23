@@ -77,7 +77,7 @@ void disable_receive(void) {
 	sigprocmask (SIG_BLOCK, &block_io, NULL);
 }
 
-void sigio_handler(int sig) {
+void sigio_handler(int sig __attribute__((unused))) {
 	char buffer[1500];
 	struct sockaddr_storage sender;
 	socklen_t sendsize = sizeof(sender);
