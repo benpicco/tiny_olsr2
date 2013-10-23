@@ -34,14 +34,15 @@ struct olsr_node {
 	struct avl_node node;		/* for routing table Information Base */
 
 	struct netaddr* addr;		/* node address */
+	struct netaddr* next_addr;	/* neighbor addr to send packets to for this node*/
+	struct netaddr* last_addr;	/* node that announced this node */
+	struct alt_route* other_routes; /* other possible last_addrs */
+
 	time_t expires;				/* time when this tuple is invalid */
 	uint16_t seq_no;			/* last seq_no from last_addr */
 	uint8_t distance;			/* hops between us and the node */
-	struct netaddr* next_addr;	/* neighbor addr to send packets to for this node*/
-	struct netaddr* last_addr;	/* node that announced this node */
 
-	uint8_t type;				/*  */
-	struct alt_route* other_routes;
+	uint8_t type;				/* node type */
 
 #ifdef ENABLE_DEBUG
 	char* name;					/* node name from graph.gv */
@@ -51,11 +52,11 @@ struct olsr_node {
 struct nhdp_node {
 	struct olsr_node super;
 
-	float link_quality;			/* average packet loss, decides if it should be used as 1-hop neigh */
 	uint8_t mpr_neigh;			/* number of 2-hop neighbors reached through this node 
 								   aka if this value is > 0, it's a MPR */
 	uint8_t mpr_selector;		/* whether the node selected us as a MPR */
 	uint8_t pending;			/* whether the link can already be used */
+	float link_quality;			/* average packet loss, decides if it should be used as 1-hop neigh */
 };
 
 static inline struct olsr_node* h1_super(struct nhdp_node* n)		{ return (struct olsr_node*) n; }
