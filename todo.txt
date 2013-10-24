@@ -1,13 +1,3 @@
-- [x] what happens when 1-hop node goes pending?
-- [x] select new MPR
-- [ ] port node to RIOT
-- [x] remove metrics
 - [ ] use different refresh intervals for TC and HELLO
-- [x] if nodes are not included in TC messages, remove them
 - [ ] jitter to avoid collisions
-- [ ] can there be multiple possible routes?
-- [x] unify _reroute_children and _update_children
-- [x] can we unify mpr selection in nhdp
-- [x] no need to reallocate memory for 1-hop nodes
-- [x] use bitfields
-- [x] make functions static
+- [ ] add routing to RIOT

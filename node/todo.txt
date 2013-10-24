@@ -1,4 +1,0 @@
-- [x] sleep
-- [x] send
-- [ ] receive
-- [ ] use new cc110x implementation
