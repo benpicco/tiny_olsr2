@@ -96,6 +96,9 @@ static enum rfc5444_result
 _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __attribute__((unused))) {
 	DEBUG("received HELLO message:");
 
+	if (netaddr_cmp(local_addr, current_src) == 0)
+		return RFC5444_DROP_PACKET;
+
 	/* VTIME is defined as mandatory */
 	vtime = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
 
