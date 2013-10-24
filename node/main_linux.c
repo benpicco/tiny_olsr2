@@ -169,6 +169,8 @@ int main(int argc, char** argv) {
 
 	reader_cleanup();
 	writer_cleanup();
+
+	return 0;
 }
 
 #endif /* no RIOT */
