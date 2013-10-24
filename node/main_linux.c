@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
 	local_addr->_prefix_len = 128;
 	inet_pton(AF_INET6, this_ip, local_addr->_addr);
 
-	DEBUG("starting node %s with IP %s",
+	DEBUG("This is node %s with IP %s",
 		local_name, netaddr_to_str_s(&nbuf[0], local_addr));
 
 	reader_init();

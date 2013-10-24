@@ -27,6 +27,7 @@ char receive_thread_stack[KERNEL_CONF_STACKSIZE_MAIN];
 
 static int sock;
 static sockaddr6_t sa_bcast;
+static char name[4];
 
 void enable_receive(void) {
 	// TODO
@@ -40,11 +41,9 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
-	DEBUG("write_packet(%d bytes)", length);
-
 	int bytes_send = sendto(sock, buffer, length, 0, &sa_bcast, sizeof sa_bcast);
 
-	DEBUG("%d bytes sent", bytes_send);
+	DEBUG("write_packet(%d bytes), %d bytes send", length, bytes_send);
 }
 
 void receive_packet(void) {
@@ -73,15 +72,28 @@ void receive_packet(void) {
 
 	while (1) {
 		recsize = recvfrom(sock, &buffer, sizeof buffer, 0, &sa, &fromlen);
-		DEBUG("Received %d bytes from %s\n", recsize, ipv6_addr_to_str(addr_str, &sa.sin6_addr));
 
 		memcpy(&_src._addr, &sa.sin6_addr, sizeof _src._addr);
 		reader_handle_packet(&buffer, recsize, &_src);
 	}
 }
 
+void init_random(void) {
+	timex_t now;
+    vtimer_now(&now);
+    genrand_init(now.microseconds);
+    DEBUG("starting at %d", now.microseconds);
+}
+
+char* gen_name(char* dest, size_t len) {
+	int i;
+	for (i = 0; i < len; ++i)
+		dest[i] = 'A' +  genrand_uint32() % ('Z' - 'A');
+	return dest;
+}
+
 void ip_init(void) {
-	uint8_t hw_addr = genrand_uint32() % 128;
+	uint8_t hw_addr = genrand_uint32() % 256;
 
 	sixlowpan_lowpan_init(_trans_type, hw_addr, 0);
 
@@ -94,27 +106,24 @@ void ip_init(void) {
 
 	thread_create(receive_thread_stack, sizeof receive_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, receive_packet, "receive");
 
-	ipv6_iface_print_addrs();
-}
-
-int main(void) {
-#ifdef ENABLE_DEBUG
-	local_name = strdup("A");
-#endif
-	genrand_init(time_now());
-
-	node_init();
-	ip_init();
-
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 64;
 	ipv6_iface_get_best_src_addr(&local_addr->_addr, &sa_bcast.sin6_addr);
+}
+
+int main(void) {
+
+	init_random();
+#ifdef ENABLE_DEBUG
+	local_name = gen_name(&name, sizeof name);
+#endif
+	node_init();
+	reader_init();
+	writer_init(write_packet);
+	ip_init();
 
 	DEBUG("This is node %s with IP %s",
 		local_name, netaddr_to_str_s(&nbuf[0], local_addr));
-
-	reader_init();
-	writer_init(write_packet);
 
 	while (1) {
 		sleep_s(REFRESH_INTERVAL);
