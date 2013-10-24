@@ -63,13 +63,17 @@ void receive_packet(void) {
 		close(sock);
 	}
 
+	set_udp_packet_handler_pid(thread_getpid());
 	DEBUG("listening for incomming packets");
 
 	int32_t recsize;
 	uint32_t fromlen = sizeof sa;
+
+	char addr_str[IPV6_MAX_ADDR_STR_LEN];
+
 	while (1) {
 		recsize = recvfrom(sock, &buffer, sizeof buffer, 0, &sa, &fromlen);
-		DEBUG("Received %d bytes", recsize);
+		DEBUG("Received %d bytes from %s\n", recsize, ipv6_addr_to_str(addr_str, &sa.sin6_addr));
 	}
 }
 
@@ -89,6 +93,7 @@ int main(void) {
 #ifdef ENABLE_DEBUG
 	local_name = strdup("A");
 #endif
+	genrand_init(time_now());
 
 	node_init();
 	ip_init();
