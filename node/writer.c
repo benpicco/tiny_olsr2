@@ -30,6 +30,7 @@ static void _cb_add_nhdp_addresses(struct rfc5444_writer *wr);
 static void _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr);
 static void _cb_add_olsr_addresses(struct rfc5444_writer *wr);
 
+/* HELLO message */
 static struct rfc5444_writer_content_provider _nhdp_message_content_provider = {
 	.msg_type = RFC5444_MSGTYPE_HELLO,
 	.addMessageTLVs = _cb_add_nhdp_message_TLVs,
@@ -43,6 +44,7 @@ static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
 #endif
 };
 
+/* TC message */
 static struct rfc5444_writer_content_provider _olsr_message_content_provider = {
 	.msg_type = RFC5444_MSGTYPE_TC,
 	.addMessageTLVs = _cb_add_olsr_message_TLVs,
@@ -55,10 +57,7 @@ static struct rfc5444_writer_tlvtype _olsr_addrtlvs[] = {
 #endif
 };
 
-/**
- * Callback to add message TLVs to a RFC5444 message
- * @param wr
- */
+/* add TLVs to HELLO message */
 static void
 _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 	uint8_t time_encoded = rfc5444_timetlv_encode(REFRESH_INTERVAL);
@@ -69,6 +68,7 @@ _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 #endif
 }
 
+/* add addresses to HELLO message */
 static void
 _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 	struct olsr_node* neighbor;
@@ -96,6 +96,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 	}
 }
 
+/* add TLVs to TC message */
 static void
 _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr) {
 	uint8_t time_encoded = rfc5444_timetlv_encode(REFRESH_INTERVAL);
@@ -106,6 +107,7 @@ _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr) {
 #endif
 }
 
+/* add addresses to TC message */
 static void
 _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 	struct olsr_node* node;
@@ -132,12 +134,14 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 	}
 }
 
+/* header for HELLO messages */
 static void
 _cb_add_hello_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
 	/* no originator, no hopcount, no hoplimit, no sequence number */
 	rfc5444_writer_set_msg_header(wr, message, false, false, false, false);
 }
 
+/* header for TC messages */
 static void
 _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_message *message) {
 	/* originator, hopcount, hoplimit, sequence number */
@@ -148,6 +152,7 @@ _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_messa
 	message->hoplimit = TC_HOP_LIMIT;
 }
 
+/* reader has already decided whether to forward or not, just say ok to that */
 bool
 olsr_message_forwarding_selector(struct rfc5444_writer_target *rfc5444_target __attribute__((unused))) {
 	return true;

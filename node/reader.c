@@ -33,6 +33,7 @@ static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_
 static enum rfc5444_result _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
 
+/* will be used both for HELLO and TC messages */
 static enum rfc5444_result _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
 
 /* HELLO message */
@@ -64,6 +65,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _olsr_address_tlvs[] = {
 #endif
 };
 
+/* define callbacks for HELLO message */
 static struct rfc5444_reader_tlvblock_consumer _nhdp_consumer = {
 	.msg_id = RFC5444_MSGTYPE_HELLO,
 	.block_callback = _cb_nhdp_blocktlv_packet_okay,
@@ -76,6 +78,7 @@ static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
 	.block_callback = _cb_nhdp_blocktlv_address_okay,
 };
 
+/* define callbacks for TC message */
 static struct rfc5444_reader_tlvblock_consumer _olsr_consumer = {
 	.msg_id = RFC5444_MSGTYPE_TC,
 	.block_callback = _cb_olsr_blocktlv_packet_okay,
@@ -89,7 +92,6 @@ static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
 };
 
 /* HELLO message */
-
 static enum rfc5444_result
 _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __attribute__((unused))) {
 	DEBUG("received HELLO message:");
@@ -116,6 +118,7 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __att
 	return RFC5444_OKAY;
 }
 
+/* HELLO announced addresses */
 static enum rfc5444_result
 _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv;
@@ -145,7 +148,6 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 }
 
 /* TC message */
-
 static enum rfc5444_result
 _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	DEBUG("received TC message:");
@@ -185,6 +187,7 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	return RFC5444_OKAY;
 }
 
+/* TC announced addresses */
 static enum rfc5444_result
 _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv __attribute__((unused));
@@ -206,6 +209,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	return RFC5444_OKAY;
 }
 
+/* this is only called for messages with hopcount/hoplimit, that is only TC messages */
 static void
 _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context __attribute__((unused)),
 	uint8_t *buffer, size_t length) {
@@ -220,6 +224,7 @@ _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context __attri
 		DEBUG("\tfailed forwarding package");
 }
 
+/* we finished processing a HELLO or TC message, both require the same treatment */
 static enum rfc5444_result
 _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
 	if (dropped) {
