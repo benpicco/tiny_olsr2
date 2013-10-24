@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <assert.h>
 
 #include "nhdp.h"
 #include "util.h"
@@ -30,7 +29,7 @@ static struct olsr_node* _node_replace(struct olsr_node* old_n) {
 		add_free_node(new_n);
 
 	return new_n;
-} 
+}
 
 struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 	struct olsr_node* n = get_node(addr);

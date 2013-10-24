@@ -9,7 +9,7 @@
 #include "constants.h"
 #include "list.h"
 
-static struct olsr_node* _new_olsr_node(struct netaddr* addr, 
+static struct olsr_node* _new_olsr_node(struct netaddr* addr,
 	uint8_t distance, uint8_t vtime, char* name) {
 
 	struct olsr_node* n = calloc(1, sizeof(struct olsr_node));

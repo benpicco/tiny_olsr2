@@ -60,10 +60,12 @@ void ip_init(void) {
 
 	int pid = thread_create(receive_thread_stack, sizeof receive_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, receive_packet, "receive");
 	ipv6_register_packet_handler(pid);
+
+	ipv6_iface_print_addrs();
 }
 
 int main(void) {
-#ifdef ENABLE_DEBUG	
+#ifdef ENABLE_DEBUG
 	local_name = strdup("A");
 #endif
 

@@ -73,7 +73,7 @@ void fill_routing_table(void) {
 
 				struct olsr_node* _tmp = get_node(route->last_addr);
 				if (_tmp != NULL && _tmp->addr != NULL &&
-					_tmp->distance <= min_hops && 
+					_tmp->distance <= min_hops &&
 					_tmp->next_addr != NULL) {
 
 					/* ignore pending nodes */
