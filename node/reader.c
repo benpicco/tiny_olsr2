@@ -242,7 +242,10 @@ _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropp
 	 * 
 	 * remove_expired() will also call fill_routing_table() if necessary 
 	 */
-	remove_expired(&context->orig_addr);
+	 if (context->has_origaddr)
+		remove_expired(&context->orig_addr);
+	 else
+		remove_expired(current_src);
 
 	return RFC5444_OKAY;
 }
