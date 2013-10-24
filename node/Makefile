@@ -31,13 +31,11 @@ export CFLAGS = -DRIOT -DENABLE_DEBUG
 
 USEMODULE += auto_init
 USEMODULE += vtimer
-USEMODULE += config
 USEMODULE += net_help
 USEMODULE += sixlowpan
 USEMODULE += destiny
 USEMODULE += uart0
 USEMODULE += posix
-USEMODULE += ltc4150
 USEMODULE += transceiver
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
@@ -51,4 +49,5 @@ endif
 
 export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/net/destiny -I$(RIOTBASE)/drivers/cc110x_ng/include \
 		-I$(RIOTBASE)/sys/net/sixlowpan/include -I$(RIOTBASE)/sys/net/net_help/ -I$(OONFBASE)/src-api -I$(RIOTLIBS)
+
 include $(RIOTBASE)/Makefile.include
