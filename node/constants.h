@@ -1,6 +1,8 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
+#define MANET_PORT	269
+
 #define REFRESH_INTERVAL	3
 #define HOLD_TIME		(3 * REFRESH_INTERVAL)
 #define KEEP_EXPIRED		HOLD_TIME
