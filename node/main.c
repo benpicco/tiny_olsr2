@@ -40,6 +40,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
+	DEBUG("write_packet(%d bytes)", length);
 	// TODO
 
 }
@@ -141,6 +142,9 @@ int main(int argc, char** argv) {
 
 #ifdef RIOT
 	this_ip = "2001::1";
+#ifdef ENABLE_DEBUG
+	local_name = strdup("A");
+#endif
 #else
 	if (argc != 4) {
 		printf("usage:  %s <server IP address> <port> <node IP6 address>\n", argv[0]);
@@ -168,7 +172,6 @@ int main(int argc, char** argv) {
 	} else
 		this_name[size] = 0;
 
-	DEBUG("This is node %s", this_name);
 #ifdef ENABLE_DEBUG
 	local_name = strdup(this_name);
 #endif
@@ -185,6 +188,9 @@ int main(int argc, char** argv) {
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 128;
 	inet_pton(AF_INET6, this_ip, local_addr->_addr);
+
+	DEBUG("starting node %s with IP %s",
+		local_name, netaddr_to_str_s(&nbuf[0], local_addr));
 
 	reader_init();
 	writer_init(write_packet);
