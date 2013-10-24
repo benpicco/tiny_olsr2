@@ -6,6 +6,7 @@
 #include <sixlowpan/ip.h>
 #include <msg.h>
 #include <net_help.h>
+#include <random.h>
 
 #include "rfc5444/rfc5444_writer.h"
 
@@ -73,8 +74,9 @@ void receive_packet(void) {
 }
 
 void ip_init(void) {
-	DEBUG("sixlowpan_lowpan_init");
-	sixlowpan_lowpan_init(_trans_type, 23, 0);
+	uint8_t hw_addr = genrand_uint32() % 128;
+	DEBUG("sixlowpan_lowpan_init(%d)", hw_addr);
+	sixlowpan_lowpan_init(_trans_type, hw_addr, 0);
 
 	sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -91,6 +93,7 @@ int main(void) {
 	node_init();
 	ip_init();
 
+	// TOOD: get IP from RIOT
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 128;
 	inet_pton(AF_INET6, "2001::1", local_addr->_addr);

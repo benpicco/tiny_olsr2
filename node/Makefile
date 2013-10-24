@@ -37,6 +37,7 @@ USEMODULE += destiny
 USEMODULE += uart0
 USEMODULE += posix
 USEMODULE += transceiver
+USEMODULE += random
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
 USEMODULE += compat_misc
