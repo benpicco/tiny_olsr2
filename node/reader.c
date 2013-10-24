@@ -1,7 +1,4 @@
 #include <stdlib.h>
-#ifdef ENABLE_DEBUG
-#include <string.h>
-#endif
 
 #include "common/common_types.h"
 #include "common/netaddr.h"
@@ -40,16 +37,14 @@ static enum rfc5444_result _cb_msg_end_callback(struct rfc5444_reader_tlvblock_c
 
 /* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
-	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .type_ext = 0, .match_type_ext = true,
-		.mandatory = true, .min_length = 1, .match_length = true },
+	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .mandatory = true },
 #ifdef ENABLE_DEBUG
 	[IDX_TLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
 
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
-	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR,
-		.min_length = 1, .match_length = true },
+	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR },
 #ifdef ENABLE_DEBUG
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -57,8 +52,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
 
 /* TC message */
 static struct rfc5444_reader_tlvblock_consumer_entry _olsr_message_tlvs[] = {
-	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .type_ext = 0, .match_type_ext = true,
-		.mandatory = true, .min_length = 1, .match_length = true },
+	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .mandatory = true },
 #ifdef ENABLE_DEBUG
 	[IDX_TLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
