@@ -1,50 +1,23 @@
+#ifndef RIOT
 #define _GNU_SOURCE
 
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#ifdef RIOT
-#include <vtimer.h>
-#include <socket.h>
-#include <inet_pton.h>
-#else
+#include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#endif
 
-#include "node.h"
-#include "nhdp.h"
-#include "olsr.h"
-#include "writer.h"
-#include "reader.h"
-#include "debug.h"
-#include "constants.h"
-
-#include "rfc5444/rfc5444_print.h"
-#include "rfc5444/rfc5444_reader.h"
 #include "rfc5444/rfc5444_writer.h"
 
-#ifdef RIOT
-void enable_receive(void) {
-	// TODO
-}
+#include "constants.h"
+#include "debug.h"
+#include "node.h"
+#include "olsr.h"
+#include "reader.h"
+#include "writer.h"
 
-void disable_receive(void) {
-	// TODO
-}
-
-void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
-	struct rfc5444_writer_target *iface __attribute__((unused)),
-	void *buffer, size_t length) {
-
-	DEBUG("write_packet(%d bytes)", length);
-	// TODO
-
-}
-#else
 int sockfd;
 struct sockaddr_in servaddr;
 
@@ -124,28 +97,10 @@ int enable_asynch(int sock) {
 
 	return 0;
 }
-#endif
-
-void sleep_s(int secs) {
-#ifdef RIOT
-	vtimer_usleep(secs * 1000000);
-#else
-	// process wakes up when a package arrives
-	// go back to sleep to prevent flooding
-	int remaining_sleep = secs;
-	while ((remaining_sleep = sleep(remaining_sleep)));
-#endif
-}
 
 int main(int argc, char** argv) {
 	const char* this_ip;
 
-#ifdef RIOT
-	this_ip = "2001::1";
-#ifdef ENABLE_DEBUG
-	local_name = strdup("A");
-#endif
-#else
 	if (argc != 4) {
 		printf("usage:  %s <server IP address> <port> <node IP6 address>\n", argv[0]);
 		return -1;
@@ -181,7 +136,6 @@ int main(int argc, char** argv) {
 	sigaddset (&block_io, SIGIO);
 
 	enable_asynch(sockfd);
-#endif	/* not RIOT */
 
 	node_init();
 
@@ -216,3 +170,5 @@ int main(int argc, char** argv) {
 	reader_cleanup();
 	writer_cleanup();
 }
+
+#endif /* no RIOT */

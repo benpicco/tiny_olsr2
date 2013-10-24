@@ -4,6 +4,7 @@
 #include "vtimer.h"
 #else
 #include <time.h>
+#include <unistd.h>
 #endif
 
 #include "util.h"
@@ -56,5 +57,16 @@ time_t time_now(void) {
 	return now.seconds;
 #else
 	return time(0);
+#endif
+}
+
+void sleep_s(int secs) {
+#ifdef RIOT
+	vtimer_usleep(secs * 1000000);
+#else
+	// process wakes up when a package arrives
+	// go back to sleep to prevent flooding
+	int remaining_sleep = secs;
+	while ((remaining_sleep = sleep(remaining_sleep)));
 #endif
 }

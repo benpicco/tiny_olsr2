@@ -16,5 +16,6 @@ struct netaddr* netaddr_reuse(struct netaddr* addr);
 struct netaddr* netaddr_free(struct netaddr* addr);
 
 time_t time_now(void);
+void sleep_s(int secs);
 
 #endif

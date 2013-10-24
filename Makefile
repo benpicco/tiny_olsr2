@@ -11,7 +11,7 @@ LDFLAGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 NODES = $(shell grep -- -\> graph.gv | grep -o . | sort | grep [A-Z] | uniq | wc -l)
 LOG_DIR := log
 
-objects = node/main.o node/routing.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o
+objects = node/main_linux.o node/routing.o node/list.o node/node.o node/reader.o node/writer.o node/nhdp.o node/olsr.o node/util.o
 
 node:	$(objects)
 	cc $(objects) -o node/node $(LDFLAGS)
