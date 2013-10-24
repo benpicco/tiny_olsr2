@@ -199,6 +199,8 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 	if (distance == 2 && distance == n->distance && netaddr_cmp(last_addr, n->last_addr) != 0) {
 		struct nhdp_node* cur_mpr = h1_deriv(get_node(n->last_addr));
 		struct nhdp_node* new_mpr = h1_deriv(get_node(last_addr));
+		/* see if the new route is better, that means uses a neighbor that is alreay
+		   used for reaching (more) 2-hop neighbors. */
 		if (new_mpr->mpr_neigh + 1 > cur_mpr->mpr_neigh) {
 			DEBUG("switching MPR");
 			_update_children(n->addr, NULL);

@@ -82,6 +82,7 @@ void fill_routing_table(void) {
 
 					/* try to minimize MPR count */
 					if (min_hops == 1) {
+						/* use the neighbor with the most 2-hop neighbors */
 						if (h1_deriv(node)->mpr_neigh > h1_deriv(_tmp)->mpr_neigh + 1)
 							continue;
 					}
