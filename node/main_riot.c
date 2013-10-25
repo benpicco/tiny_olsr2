@@ -67,9 +67,6 @@ static void olsr_receiver_thread(void) {
 		destiny_socket_close(sock);
 	}
 
-	/* wake this thread when a new UDP packet arrives */
-	ipv6_register_next_header_handler(IPV6_PROTO_NUM_UDP, thread_getpid());
-
 	int32_t recsize;
 	uint32_t fromlen = sizeof sa;
 
@@ -124,6 +121,8 @@ static char* gen_name(char* dest, const size_t len) {
 
 static void ip_init(void) {
 	uint8_t hw_addr = genrand_uint32() % 256;
+
+	destiny_init_transport_layer();
 
 	sixlowpan_lowpan_init(_trans_type, hw_addr, 0);
 
