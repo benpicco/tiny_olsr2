@@ -104,11 +104,22 @@ static void olsr_sender_thread() {
 }
 
 static void init_random(void) {
+#define ALLOC_SIZE 512
 	timex_t now;
-    vtimer_now(&now);
-    genrand_init(now.microseconds);
-    // TODO: how do we obtain entropy on msba?
-    DEBUG("starting at %u", now.microseconds + time_now());
+	vtimer_now(&now);
+	int i, entropy = 0;
+	uint32_t* ptr = malloc(sizeof(uint32_t) * ALLOC_SIZE);
+	for (i = 0; i < ALLOC_SIZE; ++i) {
+		if (ptr[i])
+			DEBUG("ptr[%d] = %d", i, ptr[i]);
+		entropy += ptr[i];
+	}
+
+	// TODO: do we reliably obtain entropy on msba?
+	genrand_init(entropy + now.microseconds + time_now());
+	free(ptr);
+
+	DEBUG("starting at %u, entropy=%d", genrand_uint32(), entropy);
 }
 
 static char* gen_name(char* dest, const size_t len) {
@@ -120,11 +131,9 @@ static char* gen_name(char* dest, const size_t len) {
 }
 
 static void ip_init(void) {
-	uint8_t hw_addr = genrand_uint32() % 256;
-
 	destiny_init_transport_layer();
 
-	sixlowpan_lowpan_init(_trans_type, hw_addr, 0);
+	sixlowpan_lowpan_init(_trans_type, genrand_uint32(), 0);
 
 	/* we always send to the same broadcast address, prepare it once */
 	sa_bcast.sin6_family = AF_INET6;
