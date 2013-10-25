@@ -36,6 +36,8 @@ static struct timer_msg {
 static struct timer_msg msg_hello = { .timer = {{0}}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_hello };
 static struct timer_msg msg_tc = { .timer = {{0}}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_tc };
 
+static struct timer_msg msg_print = { .timer = {{0}}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = print_topology_set };
+
 static int sock;
 static sockaddr6_t sa_bcast;
 static char name[5];
@@ -147,6 +149,11 @@ static void init_sender() {
 	sleep_s(1);
 	DEBUG("setting up TC timer");
 	m.content.ptr = (char*) &msg_tc;
+	msg_send(&m, pid, false);
+
+	sleep_s(1);
+	DEBUG("setting up print TS timer");
+	m.content.ptr = (char*) &msg_print;
 	msg_send(&m, pid, false);
 }
 
