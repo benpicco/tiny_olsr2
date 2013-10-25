@@ -110,7 +110,8 @@ static void init_random(void) {
 	timex_t now;
     vtimer_now(&now);
     genrand_init(now.microseconds);
-    DEBUG("starting at %u", now.microseconds);
+    // TODO: how do we obtain entropy on msba?
+    DEBUG("starting at %u", now.microseconds + time_now());
 }
 
 static char* gen_name(char* dest, const size_t len) {
