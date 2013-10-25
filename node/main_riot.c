@@ -8,6 +8,7 @@
 #include <net_help.h>
 #include <random.h>
 #include <mutex.h>
+#include <rtc.h>
 
 #include "rfc5444/rfc5444_writer.h"
 
@@ -159,6 +160,7 @@ static void init_sender() {
 
 int main(void) {
 
+	rtc_enable();
 	init_random();
 #ifdef ENABLE_DEBUG
 	local_name = gen_name(&name, sizeof name);

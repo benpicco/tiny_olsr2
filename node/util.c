@@ -2,6 +2,7 @@
 
 #ifdef RIOT
 #include "vtimer.h"
+#include "rtc.h"
 #else
 #include <time.h>
 #include <unistd.h>
@@ -52,9 +53,11 @@ struct netaddr* netaddr_free(struct netaddr* addr) {
 
 time_t time_now(void) {
 #ifdef RIOT
-	timex_t now;
-	vtimer_now(&now);
-	return now.microseconds / 1000;
+	struct tm _now;
+	rtc_get_localtime(&_now);
+	return _now.tm_sec + _now.tm_min * 60 + _now.tm_hour * 3600 +
+		_now.tm_mday * (24 * 3600) + _now.tm_mon * (30 * 24 * 3600) +
+		_now.tm_year * (365 * 30 * 24 * 3600);
 #else
 	return time(0);
 #endif

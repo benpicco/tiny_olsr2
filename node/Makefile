@@ -31,6 +31,7 @@ export CFLAGS = -DRIOT -DENABLE_DEBUG
 
 USEMODULE += auto_init
 USEMODULE += vtimer
+USEMODULE += rtc
 USEMODULE += net_help
 USEMODULE += sixlowpan
 USEMODULE += destiny
