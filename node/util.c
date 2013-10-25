@@ -54,7 +54,7 @@ time_t time_now(void) {
 #ifdef RIOT
 	timex_t now;
 	vtimer_now(&now);
-	return now.seconds;
+	return now.microseconds / 1000;
 #else
 	return time(0);
 #endif

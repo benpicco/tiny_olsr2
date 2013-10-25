@@ -16,6 +16,7 @@
 #include "constants.h"
 #include "writer.h"
 #include "nhdp.h"
+#include "olsr.h"
 #include "debug.h"
 
 uint8_t msg_buffer[128];
@@ -201,6 +202,8 @@ void writer_send_hello(void) {
 	/* send message */
 	rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_HELLO);
 	rfc5444_writer_flush(&writer, &interface, false);
+
+	remove_expired(0);
 }
 
 void writer_send_tc(void) {

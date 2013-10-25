@@ -24,7 +24,17 @@ static uint8_t _trans_type = TRANSCEIVER_NATIVE;
 static uint8_t _trans_type = TRANSCEIVER_CC1100;
 #endif
 
-char receive_thread_stack[KERNEL_CONF_STACKSIZE_MAIN];
+static char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
+static char sender_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
+
+static struct timer_msg {
+	vtimer_t timer;
+	timex_t interval;
+	void (*func) (void);
+};
+
+static struct timer_msg msg_hello = { .timer = {{0}}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_hello };
+static struct timer_msg msg_tc = { .timer = {{0}}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_tc };
 
 static int sock;
 static sockaddr6_t sa_bcast;
@@ -41,7 +51,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	DEBUG("write_packet(%d bytes), %d bytes sent", length, bytes_send);
 }
 
-void receive_packet(void) {
+static void olsr_receiver_thread(void) {
 	char buffer[256];
 
 	sockaddr6_t sa = {0};
@@ -75,6 +85,23 @@ void receive_packet(void) {
 	}
 }
 
+static void olsr_sender_thread() {
+	DEBUG("olsr_sender_thread, pid %d\n", thread_getpid());
+
+	while (1) {
+		msg_t m;
+		msg_receive(&m);
+		struct timer_msg* tmsg = (struct timer_msg*) m.content.ptr;
+
+		mutex_lock(&olsr_data);
+		tmsg->func();
+		mutex_unlock(&olsr_data);
+
+		if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), tmsg) != 0)
+			DEBUG("something went wrong");
+	}
+}
+
 static void init_random(void) {
 	timex_t now;
     vtimer_now(&now);
@@ -102,11 +129,25 @@ static void ip_init(void) {
 
 	sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
-	thread_create(receive_thread_stack, sizeof receive_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, receive_packet, "receive");
+	thread_create(receive_thread_stack, sizeof receive_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, olsr_receiver_thread, "olsr_rec");
 
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 64;
 	ipv6_iface_get_best_src_addr(&local_addr->_addr, &sa_bcast.sin6_addr);
+}
+
+static void init_sender() {
+	int pid = thread_create(sender_thread_stack, sizeof sender_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, olsr_sender_thread, "olsr_snd");
+
+	msg_t m;
+	DEBUG("setting up HELLO timer");
+	m.content.ptr = (char*) &msg_hello;
+	msg_send(&m, pid, false);
+
+	sleep_s(1);
+	DEBUG("setting up TC timer");
+	m.content.ptr = (char*) &msg_tc;
+	msg_send(&m, pid, false);
 }
 
 int main(void) {
@@ -120,33 +161,10 @@ int main(void) {
 	reader_init();
 	writer_init(write_packet);
 	ip_init();
+	init_sender();
 
 	DEBUG("This is node %s with IP %s",
 		local_name, netaddr_to_str_s(&nbuf[0], local_addr));
-
-	while (1) {
-		sleep_s(REFRESH_INTERVAL);
-
-		mutex_lock(&olsr_data);
-
-		remove_expired(0);
-
-//		print_neighbors();
-		print_topology_set();
-//		print_routing_graph();
-
-		writer_send_hello();
-		writer_send_tc();
-
-		DEBUG_TICK;
-		mutex_unlock(&olsr_data);
-	}
-
-	reader_cleanup();
-	writer_cleanup();
-	close(sock);
-
-	return 0;
 }
 
 #endif /* RIOT */
