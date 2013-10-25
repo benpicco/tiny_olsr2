@@ -1,7 +1,7 @@
 #ifdef RIOT
 #include <thread.h>
 #include <vtimer.h>
-#include <socket.h>
+#include <destiny/socket.h>
 #include <inet_pton.h>
 #include <sixlowpan/ip.h>
 #include <msg.h>
@@ -9,6 +9,7 @@
 #include <random.h>
 #include <mutex.h>
 #include <rtc.h>
+#include <destiny.h>
 
 #include "rfc5444/rfc5444_writer.h"
 
@@ -28,16 +29,16 @@ static uint8_t _trans_type = TRANSCEIVER_CC1100;
 static char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
 static char sender_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
 
-static struct timer_msg {
+struct timer_msg {
 	vtimer_t timer;
 	timex_t interval;
 	void (*func) (void);
 };
 
-static struct timer_msg msg_hello = { .timer = {{0}}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_hello };
-static struct timer_msg msg_tc = { .timer = {{0}}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_tc };
+static struct timer_msg msg_hello = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_hello };
+static struct timer_msg msg_tc = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_tc };
 
-static struct timer_msg msg_print = { .timer = {{0}}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = print_topology_set };
+static struct timer_msg msg_print = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = print_topology_set };
 
 static int sock;
 static sockaddr6_t sa_bcast;
@@ -49,7 +50,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
-	int bytes_send = sendto(sock, buffer, length, 0, &sa_bcast, sizeof sa_bcast);
+	int bytes_send = destiny_socket_sendto(sock, buffer, length, 0, &sa_bcast, sizeof sa_bcast);
 
 	DEBUG("write_packet(%d bytes), %d bytes sent", length, bytes_send);
 }
@@ -61,9 +62,9 @@ static void olsr_receiver_thread(void) {
 	sa.sin6_family = AF_INET6;
 	sa.sin6_port = HTONS(MANET_PORT);
 
-	if (bind(sock, &sa, sizeof sa) < 0) {
+	if (destiny_socket_bind(sock, &sa, sizeof sa) < 0) {
 		printf("Error bind failed!\n");
-		close(sock);
+		destiny_socket_close(sock);
 	}
 
 	/* wake this thread when a new UDP packet arrives */
@@ -77,7 +78,7 @@ static void olsr_receiver_thread(void) {
 	_src._prefix_len = 64;
 
 	while (1) {
-		recsize = recvfrom(sock, &buffer, sizeof buffer, 0, &sa, &fromlen);
+		recsize = destiny_socket_recvfrom(sock, &buffer, sizeof buffer, 0, &sa, &fromlen);
 
 		memcpy(&_src._addr, &sa.sin6_addr, sizeof _src._addr);
 		DEBUG("received %d bytes from %s", recsize, netaddr_to_str_s(&nbuf[0], &_src));
@@ -130,13 +131,13 @@ static void ip_init(void) {
 	sa_bcast.sin6_port = HTONS(MANET_PORT);
 	ipv6_addr_set_all_nodes_addr(&sa_bcast.sin6_addr);
 
-	sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+	sock = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 
 	thread_create(receive_thread_stack, sizeof receive_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, olsr_receiver_thread, "olsr_rec");
 
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 64;
-	ipv6_iface_get_best_src_addr(&local_addr->_addr, &sa_bcast.sin6_addr);
+	ipv6_iface_get_best_src_addr((ipv6_addr_t*) &local_addr->_addr, &sa_bcast.sin6_addr);
 }
 
 static void init_sender() {
@@ -163,7 +164,7 @@ int main(void) {
 	rtc_enable();
 	init_random();
 #ifdef ENABLE_DEBUG
-	local_name = gen_name(&name, sizeof name);
+	local_name = gen_name(name, sizeof name);
 #endif
 	node_init();
 	mutex_init(&olsr_data);

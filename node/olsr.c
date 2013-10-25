@@ -252,7 +252,7 @@ void print_topology_set(void) {
 	struct olsr_node* node;
 	struct alt_route* route;
 	avl_for_each_element(&olsr_head, node, node) {
-		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %zd s [%d] %s %.2f [%d] %s",
+		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %ld s [%d] %s %.2f [%d] %s",
 			netaddr_to_str_s(&nbuf[0], node->addr),
 			node->name,
 			netaddr_to_str_s(&nbuf[1], node->last_addr),
@@ -266,7 +266,7 @@ void print_topology_set(void) {
 			node->type != NODE_TYPE_NHDP ? "" : node->mpr_selector ? "[S]" : "[ ]"
 			);
 		simple_list_for_each (node->other_routes, route) {
-			DEBUG("\t\t\t=> %s; %zd s",
+			DEBUG("\t\t\t=> %s; %ld s",
 				netaddr_to_str_s(&nbuf[0], route->last_addr),
 				route->expires - time_now());
 		}
