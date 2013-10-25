@@ -7,6 +7,7 @@
 #include <msg.h>
 #include <net_help.h>
 #include <random.h>
+#include <mutex.h>
 
 #include "rfc5444/rfc5444_writer.h"
 
@@ -27,15 +28,9 @@ char receive_thread_stack[KERNEL_CONF_STACKSIZE_MAIN];
 
 static int sock;
 static sockaddr6_t sa_bcast;
-static char name[4];
+static char name[5];
 
-void enable_receive(void) {
-	// TODO
-}
-
-void disable_receive(void) {
-	// TODO
-}
+static mutex_t olsr_data;
 
 void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
@@ -43,7 +38,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
 	int bytes_send = sendto(sock, buffer, length, 0, &sa_bcast, sizeof sa_bcast);
 
-	DEBUG("write_packet(%d bytes), %d bytes send", length, bytes_send);
+	DEBUG("write_packet(%d bytes), %d bytes sent", length, bytes_send);
 }
 
 void receive_packet(void) {
@@ -64,8 +59,6 @@ void receive_packet(void) {
 	int32_t recsize;
 	uint32_t fromlen = sizeof sa;
 
-	char addr_str[IPV6_MAX_ADDR_STR_LEN];
-
 	struct netaddr _src;
 	_src._type = AF_INET6;
 	_src._prefix_len = 64;
@@ -74,25 +67,30 @@ void receive_packet(void) {
 		recsize = recvfrom(sock, &buffer, sizeof buffer, 0, &sa, &fromlen);
 
 		memcpy(&_src._addr, &sa.sin6_addr, sizeof _src._addr);
+		DEBUG("received %d bytes from %s", recsize, netaddr_to_str_s(&nbuf[0], &_src));
+
+		mutex_lock(&olsr_data);
 		reader_handle_packet(&buffer, recsize, &_src);
+		mutex_unlock(&olsr_data);
 	}
 }
 
-void init_random(void) {
+static void init_random(void) {
 	timex_t now;
     vtimer_now(&now);
     genrand_init(now.microseconds);
-    DEBUG("starting at %d", now.microseconds);
+    DEBUG("starting at %u", now.microseconds);
 }
 
-char* gen_name(char* dest, size_t len) {
+static char* gen_name(char* dest, const size_t len) {
 	int i;
-	for (i = 0; i < len; ++i)
+	for (i = 0; i < len - 1; ++i)
 		dest[i] = 'A' +  genrand_uint32() % ('Z' - 'A');
+	dest[i] = '\0';
 	return dest;
 }
 
-void ip_init(void) {
+static void ip_init(void) {
 	uint8_t hw_addr = genrand_uint32() % 256;
 
 	sixlowpan_lowpan_init(_trans_type, hw_addr, 0);
@@ -118,6 +116,7 @@ int main(void) {
 	local_name = gen_name(&name, sizeof name);
 #endif
 	node_init();
+	mutex_init(&olsr_data);
 	reader_init();
 	writer_init(write_packet);
 	ip_init();
@@ -128,7 +127,7 @@ int main(void) {
 	while (1) {
 		sleep_s(REFRESH_INTERVAL);
 
-		disable_receive();
+		mutex_lock(&olsr_data);
 
 		remove_expired(0);
 
@@ -140,7 +139,7 @@ int main(void) {
 		writer_send_tc();
 
 		DEBUG_TICK;
-		enable_receive();
+		mutex_unlock(&olsr_data);
 	}
 
 	reader_cleanup();
