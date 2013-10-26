@@ -7,7 +7,6 @@
 #include <sixlowpan/ip.h>
 #include <msg.h>
 #include <net_help.h>
-#include <random.h>
 #include <mutex.h>
 #include <rtc.h>
 #include <destiny.h>
@@ -23,8 +22,15 @@
 
 #if BOARD == native
 static uint8_t _trans_type = TRANSCEIVER_NATIVE;
+static uint16_t get_node_id() {
+	return getpid();
+}
 #elif BOARD == msba2
 static uint8_t _trans_type = TRANSCEIVER_CC1100;
+static uint16_t get_node_id() {
+	// TODO
+	return 23;
+}
 #endif
 
 static char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
@@ -43,7 +49,9 @@ static struct timer_msg msg_print = { .timer = {0}, .interval = { .seconds = REF
 
 static int sock;
 static sockaddr6_t sa_bcast;
+#ifdef ENABLE_DEBUG_OLSR
 static char name[5];
+#endif
 
 static mutex_t olsr_data;
 
@@ -104,18 +112,12 @@ static void olsr_sender_thread() {
 	}
 }
 
-static void init_random(void) {
-
-	// TODO: do we reliably obtain entropy on msba?
-	genrand_init(getpid());
-
-	DEBUG("starting at %u", genrand_uint32());
-}
-
 static char* gen_name(char* dest, const size_t len) {
+	int num = get_node_id();
+
 	int i;
 	for (i = 0; i < len - 1; ++i)
-		dest[i] = 'A' +  genrand_uint32() % ('Z' - 'A');
+		dest[i] = 'A' +  ((i+1) * num) % ('Z' - 'A');
 	dest[i] = '\0';
 	return dest;
 }
@@ -134,7 +136,7 @@ ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
 static void ip_init(void) {
 	destiny_init_transport_layer();
 
-	sixlowpan_lowpan_init(_trans_type, getpid(), 0);
+	sixlowpan_lowpan_init(_trans_type, get_node_id(), 0);
 
 	/* we always send to the same broadcast address, prepare it once */
 	sa_bcast.sin6_family = AF_INET6;
@@ -174,7 +176,6 @@ static void init_sender() {
 int main(void) {
 
 	rtc_enable();
-	init_random();
 #ifdef ENABLE_DEBUG_OLSR
 	local_name = gen_name(name, sizeof name);
 #endif

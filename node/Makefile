@@ -25,7 +25,7 @@ EXTERNAL_MODULES +=$(RIOTLIBS)
 EXTERNAL_MODULES +=$(OONFBASE)
 export EXTERNAL_MODULES
 
-export CFLAGS = -DRIOT -ggdb
+export CFLAGS = -DRIOT -DENABLE_DEBUG_OLSR -ggdb
 
 ## Modules to include. 
 
@@ -38,7 +38,6 @@ USEMODULE += destiny
 USEMODULE += uart0
 USEMODULE += posix
 USEMODULE += transceiver
-USEMODULE += random
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
 USEMODULE += compat_misc
