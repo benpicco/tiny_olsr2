@@ -13,6 +13,10 @@ static void _decrease_mpr_neigh(struct olsr_node* node) {
 	}
 }
 
+static int _addr_cmp(const void* a, const void* b) {
+	return memcmp(a, b, NETADDR_MAX_LENGTH);
+}
+
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 	return netaddr_cmp(a->addr, b->addr);
 }
@@ -20,7 +24,7 @@ int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 void node_init(void) {
 	_local_addr._refs = 1;
 	local_addr = (struct netaddr*) &_local_addr;
-	avl_init(&olsr_head, avl_comp_netaddr, false);
+	avl_init(&olsr_head, _addr_cmp, false);
 }
 
 struct olsr_node* get_node(struct netaddr* addr) {

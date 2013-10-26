@@ -1,4 +1,5 @@
 #ifdef RIOT
+#include <stdio.h>
 #include <thread.h>
 #include <vtimer.h>
 #include <destiny/socket.h>
@@ -120,6 +121,17 @@ static char* gen_name(char* dest, const size_t len) {
 	return dest;
 }
 
+ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
+	struct olsr_node* node = get_node((struct netaddr*) dest); // get_node will only look at the first few bytes
+	if (node == NULL)
+		return NULL;
+
+	if (node->next_addr == NULL)
+		return NULL;
+
+	return (ipv6_addr_t*) node->next_addr->_addr;
+}
+
 static void ip_init(void) {
 	destiny_init_transport_layer();
 
@@ -137,6 +149,8 @@ static void ip_init(void) {
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 64;
 	ipv6_iface_get_best_src_addr((ipv6_addr_t*) &local_addr->_addr, &sa_bcast.sin6_addr);
+
+	ipv6_iface_set_routing_provider(get_next_hop);
 }
 
 static void init_sender() {

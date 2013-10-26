@@ -2,7 +2,6 @@
 #define NODE_H_
 
 #include "common/avl.h"
-#include "common/avl_comp.h"
 #include "common/netaddr.h"
 
 #include "util.h"
