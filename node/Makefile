@@ -25,7 +25,7 @@ EXTERNAL_MODULES +=$(RIOTLIBS)
 EXTERNAL_MODULES +=$(OONFBASE)
 export EXTERNAL_MODULES
 
-export CFLAGS = -DRIOT -DENABLE_DEBUG_RIOT -ggdb
+export CFLAGS = -DRIOT -ggdb
 
 ## Modules to include. 
 

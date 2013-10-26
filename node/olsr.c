@@ -314,6 +314,8 @@ void print_topology_set(void) {
 
 	puts("");
 	puts("---[ Topology Set ]--");
+	printf(" [%s]\n", netaddr_to_str_s(&nbuf[0], local_addr));
+
 	avl_for_each_element(&olsr_head, node, node) {
 		printf("%s\t=> %s; %d hops, next: %s, %ld s [%d] %s %.2f [%d] %s\n",
 			netaddr_to_str_s(&nbuf[0], node->addr),

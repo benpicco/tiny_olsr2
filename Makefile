@@ -3,7 +3,7 @@ CC=clang
 INCLUDE=-I../oonf_api/src-api -I../oonf_api/build
 LIBDIR=../oonf_api/build
 
-CFLAGS=-Wall -Wextra -O3 -std=gnu99 -DENABLE_DEBUG $(INCLUDE)
+CFLAGS=-Wall -Wextra -O3 -std=gnu99 -DENABLE_DEBUG_OLSR $(INCLUDE)
 LDFLAGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
