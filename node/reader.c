@@ -164,6 +164,9 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (!cont->has_hopcount || !cont->has_hoplimit)
 		return RFC5444_DROP_PACKET;
 
+	if (!netaddr_cmp(local_addr, current_src))
+		return RFC5444_DROP_PACKET;
+
 	if (!netaddr_cmp(local_addr, &cont->orig_addr))
 		return RFC5444_DROP_PACKET;
 
