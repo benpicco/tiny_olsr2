@@ -30,7 +30,6 @@ export CFLAGS = -DRIOT -ggdb
 ## Modules to include. 
 
 USEMODULE += auto_init
-USEMODULE += hwtimer
 USEMODULE += vtimer
 USEMODULE += rtc
 USEMODULE += net_help

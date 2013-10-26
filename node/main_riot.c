@@ -11,7 +11,6 @@
 #include <mutex.h>
 #include <rtc.h>
 #include <destiny.h>
-#include <hwtimer.h>
 
 #include "rfc5444/rfc5444_writer.h"
 
@@ -108,7 +107,7 @@ static void olsr_sender_thread() {
 static void init_random(void) {
 
 	// TODO: do we reliably obtain entropy on msba?
-	genrand_init(hwtimer_now());
+	genrand_init(getpid());
 
 	DEBUG("starting at %u", genrand_uint32());
 }
@@ -135,7 +134,7 @@ ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
 static void ip_init(void) {
 	destiny_init_transport_layer();
 
-	sixlowpan_lowpan_init(_trans_type, genrand_uint32(), 0);
+	sixlowpan_lowpan_init(_trans_type, getpid(), 0);
 
 	/* we always send to the same broadcast address, prepare it once */
 	sa_bcast.sin6_family = AF_INET6;
