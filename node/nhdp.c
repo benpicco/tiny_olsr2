@@ -61,7 +61,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 	return n;
 }
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 void print_neighbors(void) {
 	struct olsr_node* node;
 

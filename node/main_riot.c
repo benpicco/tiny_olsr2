@@ -10,6 +10,7 @@
 #include <mutex.h>
 #include <rtc.h>
 #include <destiny.h>
+#include <hwtimer.h>
 
 #include "rfc5444/rfc5444_writer.h"
 
@@ -104,22 +105,11 @@ static void olsr_sender_thread() {
 }
 
 static void init_random(void) {
-#define ALLOC_SIZE 512
-	timex_t now;
-	vtimer_now(&now);
-	int i, entropy = 0;
-	uint32_t* ptr = malloc(sizeof(uint32_t) * ALLOC_SIZE);
-	for (i = 0; i < ALLOC_SIZE; ++i) {
-		if (ptr[i])
-			DEBUG("ptr[%d] = %d", i, ptr[i]);
-		entropy += ptr[i];
-	}
 
 	// TODO: do we reliably obtain entropy on msba?
-	genrand_init(entropy + now.microseconds + time_now());
-	free(ptr);
+	genrand_init(hwtimer_now());
 
-	DEBUG("starting at %u, entropy=%d", genrand_uint32(), entropy);
+	DEBUG("starting at %u", genrand_uint32());
 }
 
 static char* gen_name(char* dest, const size_t len) {
@@ -172,7 +162,7 @@ int main(void) {
 
 	rtc_enable();
 	init_random();
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 	local_name = gen_name(name, sizeof name);
 #endif
 	node_init();
@@ -180,10 +170,10 @@ int main(void) {
 	reader_init();
 	writer_init(write_packet);
 	ip_init();
-	init_sender();
 
 	DEBUG("This is node %s with IP %s",
 		local_name, netaddr_to_str_s(&nbuf[0], local_addr));
+	init_sender();
 }
 
 #endif /* RIOT */

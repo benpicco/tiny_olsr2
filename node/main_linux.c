@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
 	} else
 		this_name[size] = 0;
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 	local_name = strdup(this_name);
 #endif
 

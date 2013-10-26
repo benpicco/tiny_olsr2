@@ -1,7 +1,7 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 #ifndef RIOT
 #include <time.h>
 #include <execinfo.h>
@@ -54,7 +54,7 @@ static inline void print_trace(void) {
 
 #endif /* not RIOT */
 
-#else	/* no ENABLE_DEBUG */
+#else	/* no ENABLE_DEBUG_OLSR */
 
 #define DEBUG(...)
 #define DEBUG_TICK

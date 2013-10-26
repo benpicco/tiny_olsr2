@@ -25,11 +25,12 @@ EXTERNAL_MODULES +=$(RIOTLIBS)
 EXTERNAL_MODULES +=$(OONFBASE)
 export EXTERNAL_MODULES
 
-export CFLAGS = -DRIOT -DENABLE_DEBUG
+export CFLAGS = -DRIOT -DENABLE_DEBUG -ggdb
 
 ## Modules to include. 
 
 USEMODULE += auto_init
+USEMODULE += hwtimer
 USEMODULE += vtimer
 USEMODULE += rtc
 USEMODULE += net_help

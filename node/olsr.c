@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "common/netaddr.h"
 
@@ -18,7 +19,7 @@ static struct olsr_node* _new_olsr_node(struct netaddr* addr,
 	n->type = NODE_TYPE_OLSR;
 	n->distance = distance;
 	n->expires = time_now() + vtime;
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 	n->name = name;
 #endif
 
@@ -246,7 +247,7 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 	return true;
 }
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 void print_topology_set(void) {
 	DEBUG();
 	DEBUG("---[ Topology Set ]--");
@@ -305,6 +306,35 @@ void print_routing_graph(void) {
 
 }
 #else
-void print_topology_set(void) {}
+void print_topology_set(void) {
+	struct netaddr_str nbuf[3];
+
+	struct alt_route* route;
+	struct olsr_node* node;
+
+	puts("");
+	puts("---[ Topology Set ]--");
+	avl_for_each_element(&olsr_head, node, node) {
+		printf("%s\t=> %s; %d hops, next: %s, %ld s [%d] %s %.2f [%d] %s\n",
+			netaddr_to_str_s(&nbuf[0], node->addr),
+			netaddr_to_str_s(&nbuf[1], node->last_addr),
+			node->distance,
+			netaddr_to_str_s(&nbuf[2], node->next_addr),
+			node->expires - time_now(),
+			node->seq_no,
+			node->type != NODE_TYPE_NHDP ? "" : node->pending ? "pending" : "",
+			node->type != NODE_TYPE_NHDP ? 0 : h1_deriv(node)->link_quality,
+			node->type != NODE_TYPE_NHDP ? 0 : h1_deriv(node)->mpr_neigh,
+			node->type != NODE_TYPE_NHDP ? "" : node->mpr_selector ? "[S]" : "[ ]"
+			);
+		simple_list_for_each (node->other_routes, route) {
+			printf("\t\t\t=> %s; %ld s\n",
+				netaddr_to_str_s(&nbuf[0], route->last_addr),
+				route->expires - time_now());
+		}
+	}
+	puts("---------------------");
+
+}
 void print_routing_graph(void) {}
 #endif

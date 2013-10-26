@@ -1,4 +1,4 @@
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 #include <string.h>
 #endif
 
@@ -40,7 +40,7 @@ static struct rfc5444_writer_content_provider _nhdp_message_content_provider = {
 
 static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
 	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR },
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
@@ -53,7 +53,7 @@ static struct rfc5444_writer_content_provider _olsr_message_content_provider = {
 };
 
 static struct rfc5444_writer_tlvtype _olsr_addrtlvs[] = {
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
@@ -64,7 +64,7 @@ _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 	uint8_t time_encoded = rfc5444_timetlv_encode(REFRESH_INTERVAL);
 	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0, &time_encoded, sizeof(time_encoded));
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, local_name, strlen(local_name));
 #endif
 }
@@ -89,7 +89,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 		if (h1_deriv(neighbor)->mpr_neigh > 0) 
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR],
 				&h1_deriv(neighbor)->mpr_neigh, sizeof h1_deriv(neighbor)->mpr_neigh, false);
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 		if (neighbor->name)
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_NODE_NAME],
 				neighbor->name, strlen(neighbor->name), false);
@@ -103,7 +103,7 @@ _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr) {
 	uint8_t time_encoded = rfc5444_timetlv_encode(REFRESH_INTERVAL);
 	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0, &time_encoded, sizeof(time_encoded));
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, local_name, strlen(local_name));
 #endif
 }
@@ -127,7 +127,7 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 		struct rfc5444_writer_address *address __attribute__((unused));
 		address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
 
-#ifdef ENABLE_DEBUG
+#ifdef ENABLE_DEBUG_OLSR
 		if (node->name)
 			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_NODE_NAME],
 				node->name, strlen(node->name), false);
