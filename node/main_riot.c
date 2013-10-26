@@ -74,7 +74,7 @@ static void olsr_receiver_thread(void) {
 
 	struct netaddr _src;
 	_src._type = AF_INET6;
-	_src._prefix_len = 64;
+	_src._prefix_len = 128;
 
 	while (1) {
 		recsize = destiny_socket_recvfrom(sock, &buffer, sizeof buffer, 0, &sa, &fromlen);
@@ -147,7 +147,7 @@ static void ip_init(void) {
 	thread_create(receive_thread_stack, sizeof receive_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, olsr_receiver_thread, "olsr_rec");
 
 	local_addr->_type = AF_INET6;
-	local_addr->_prefix_len = 64;
+	local_addr->_prefix_len = 128;
 	ipv6_iface_get_best_src_addr((ipv6_addr_t*) &local_addr->_addr, &sa_bcast.sin6_addr);
 
 	ipv6_iface_set_routing_provider(get_next_hop);
