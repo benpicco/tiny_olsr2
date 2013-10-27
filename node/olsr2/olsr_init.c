@@ -35,8 +35,8 @@ struct timer_msg {
 	void (*func) (void);
 };
 
-struct timer_msg msg_hello = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_hello };
-struct timer_msg msg_tc = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_tc };
+struct timer_msg msg_hello = { .timer = {0}, .interval = { .seconds = HELLO_REFRESH_INTERVAL - 1, .microseconds = 0}, .func = writer_send_hello };
+struct timer_msg msg_tc = { .timer = {0}, .interval = { .seconds = TC_REFRESH_INTERVAL - 1, .microseconds = 0}, .func = writer_send_tc };
 
 static int sock;
 sockaddr6_t sa_bcast;
@@ -55,10 +55,6 @@ static char* gen_name(char* dest, const size_t len) {
 static void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
-
-	static int jitter = 0xfefe;
-	jitter = (jitter * genrand_uint32()) % MAX_JITTER;
-	vtimer_usleep(jitter);
 
 	int bytes_send = destiny_socket_sendto(sock, buffer, length, 0, &sa_bcast, sizeof sa_bcast);
 
@@ -109,7 +105,7 @@ static void olsr_sender_thread(void) {
 		mutex_unlock(&olsr_data);
 
 		/* add jitter */
-		tmsg->interval.microseconds = (tmsg->interval.microseconds * genrand_uint32()) % MAX_JITTER;
+		tmsg->interval.microseconds = genrand_uint32() % (MAX_JITTER * 1000);
 
 		if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), tmsg) != 0)
 			DEBUG("something went wrong");
