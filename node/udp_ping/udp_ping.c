@@ -1,19 +1,16 @@
+#include <stdio.h>
 #include <vtimer.h>
 #include <thread.h>
+#include <net_help.h>
 #include <destiny/socket.h>
 
 #include "udp_ping.h"
 
 #define PING_PORT       25431
 
-static int sock, id, tid;
+static char pong_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
 
-struct ping_packet {
-	uint32_t id;
-	uint32_t timestamp;
-	uint8_t hops;
-	uint8_t received;
-};
+static int sock, id, tid;
 
 void(*_ping_callback)(struct ping_packet*);
 
@@ -54,7 +51,7 @@ void ping_start_listen(void(*callback)(struct ping_packet*)) {
 void ping_stop_listen(void) {
 	id = 0;
 	thread_wakeup(tid);
-	close(sock);
+	destiny_socket_close(sock);
 }
 
 void ping_send(ipv6_addr_t* dest) {
@@ -70,7 +67,7 @@ void ping_send(ipv6_addr_t* dest) {
 	sockaddr6_t sa = {0};
 	sa.sin6_family = AF_INET6;
 	sa.sin6_port = HTONS(PING_PORT);
-	memcpy(&sa.sin6_addr, dest, sizeof ipv6_addr_t);
+	memcpy(&sa.sin6_addr, dest, sizeof(ipv6_addr_t));
 
 	destiny_socket_sendto(sock, &ping, sizeof ping, 0, &sa, sizeof sa);
 }

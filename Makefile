@@ -39,11 +39,14 @@ USEMODULE += sixlowpan
 USEMODULE += destiny
 USEMODULE += uart0
 USEMODULE += posix
+USEMODULE += shell
 USEMODULE += random
 USEMODULE += transceiver
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
 USEMODULE += compat_misc
+USEMODULE += olsr2
+USEMODULE += udp_ping
 ifeq ($(BOARD),native)
 	USEMODULE += nativenet
 endif
