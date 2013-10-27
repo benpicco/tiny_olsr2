@@ -64,8 +64,8 @@ void ping(char* str) {
 		vtimer_usleep(1000000);
 	}
 
-	printf("%u packets transmitted, %u received, %.2f%% packet loss, time %uµs (%.2f µs avg)\n",
-		packets, ping_received, 100 * (1 - (float) ping_received / packets), ping_time, (float) ping_time / packets);
+	printf("%u packets transmitted, %u received, %.2f%% packet loss, time %u ms (%.2f µs avg)\n",
+		packets, ping_received, 100 * (1 - (float) ping_received / packets), ping_time / 1000, (float) ping_time / packets);
 }
 #endif /* ENABLE_NAME */
 

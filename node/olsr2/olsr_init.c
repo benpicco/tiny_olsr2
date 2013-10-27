@@ -46,12 +46,9 @@ static mutex_t olsr_data;
 #ifdef ENABLE_NAME
 static char name[5];
 static char* gen_name(char* dest, const size_t len) {
-	int num = genrand_uint32();
-
-	int i;
-	for (i = 0; i < len - 1; ++i)
-		dest[i] = 'A' +  ((i+1) * num) % ('Z' - 'A');
-	dest[i] = '\0';
+	for (int i = 0; i < len - 1; ++i)
+		dest[i] = 'A' +  (genrand_uint32() % ('Z' - 'A'));
+	dest[len - 1] = '\0';
 	return dest;
 }
 #endif
