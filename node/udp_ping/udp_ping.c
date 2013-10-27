@@ -8,11 +8,9 @@
 
 #define PING_PORT       25431
 
-char pong_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
-
+static char pong_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
 static int sock, id, tid;
-
-void(*_ping_callback)(struct ping_packet*);
+static void(*_ping_callback)(struct ping_packet*);
 
 static void pong(void) {
 	struct ping_packet pong;

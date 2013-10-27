@@ -4,6 +4,14 @@
 
 #include "common/netaddr.h"
 
+struct netaddr_rc _local_addr;
+struct netaddr* local_addr;
+struct avl_tree olsr_head;
+
+#ifdef ENABLE_NAME
+char* local_name;
+#endif
+
 static void _decrease_mpr_neigh(struct olsr_node* node) {
 	/* update MPR information */
 	if (node->distance == 2) {

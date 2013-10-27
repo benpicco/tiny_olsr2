@@ -7,11 +7,11 @@
 #include "util.h"
 #include "debug.h"
 
-struct netaddr_rc _local_addr;
-struct netaddr* local_addr;
+extern struct netaddr_rc _local_addr;
+extern struct netaddr* local_addr;
 
 #ifdef ENABLE_NAME
-char* local_name;
+extern char* local_name;
 #endif
 
 enum {
@@ -19,7 +19,7 @@ enum {
 	NODE_TYPE_NHDP
 };
 
-struct avl_tree olsr_head;
+extern struct avl_tree olsr_head;
 
 /* simple list to store alternative routes */
 struct alt_route {

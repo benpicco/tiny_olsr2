@@ -26,8 +26,8 @@
 
 #include "olsr2.h"
 
-char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
-char sender_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
+static char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
+static char sender_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
 
 struct timer_msg {
 	vtimer_t timer;
@@ -35,12 +35,12 @@ struct timer_msg {
 	void (*func) (void);
 };
 
-struct timer_msg msg_hello = { .timer = {0}, .interval = { .seconds = HELLO_REFRESH_INTERVAL - 1, .microseconds = 0}, .func = writer_send_hello };
-struct timer_msg msg_tc = { .timer = {0}, .interval = { .seconds = TC_REFRESH_INTERVAL - 1, .microseconds = 0}, .func = writer_send_tc };
+static struct timer_msg msg_hello = { .timer = {0}, .interval = { .seconds = HELLO_REFRESH_INTERVAL - 1, .microseconds = 0}, .func = writer_send_hello };
+static struct timer_msg msg_tc = { .timer = {0}, .interval = { .seconds = TC_REFRESH_INTERVAL - 1, .microseconds = 0}, .func = writer_send_tc };
 
 static int sock;
-sockaddr6_t sa_bcast;
-mutex_t olsr_data;
+static sockaddr6_t sa_bcast;
+static mutex_t olsr_data;
 
 #ifdef ENABLE_NAME
 char _name[5];
@@ -105,7 +105,7 @@ static void olsr_sender_thread(void) {
 		mutex_unlock(&olsr_data);
 
 		/* add jitter */
-		tmsg->interval.microseconds = genrand_uint32() % (MAX_JITTER * 1000);
+		tmsg->interval.microseconds = genrand_uint32() % MAX_JITTER;
 
 		if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), tmsg) != 0)
 			DEBUG("something went wrong");
