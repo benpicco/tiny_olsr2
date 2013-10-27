@@ -15,15 +15,15 @@
 #include <olsr2.h>
 #include <udp_ping.h>
 
-#if BOARD == native
+#if defined(BOARD_NATIVE)
 #include <unistd.h>
 static uint8_t _trans_type = TRANSCEIVER_NATIVE;
-static uint16_t get_node_id() {
+static uint16_t get_node_id(void) {
 	return getpid();
 }
-#elif BOARD == msba2
+#elif defined(BOARD_MSBA2)
 static uint8_t _trans_type = TRANSCEIVER_CC1100;
-static uint16_t get_node_id() {
+static uint16_t get_node_id(void) {
 	// TODO
 	return 23;
 }

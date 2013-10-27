@@ -27,7 +27,7 @@ EXTERNAL_MODULES +=$(OONFBASE)
 EXTERNAL_MODULES +=$(OLSR_NODE)
 export EXTERNAL_MODULES
 
-export CFLAGS = -DRIOT -DENABLE_NAME -ggdb
+export CFLAGS = -DRIOT -DENABLE_NAME
 
 ## Modules to include. 
 
@@ -40,6 +40,7 @@ USEMODULE += destiny
 USEMODULE += uart0
 USEMODULE += posix
 USEMODULE += shell
+USEMODULE += shell_commands
 USEMODULE += random
 USEMODULE += transceiver
 USEMODULE += oonf_common
@@ -49,10 +50,12 @@ USEMODULE += olsr2
 USEMODULE += udp_ping
 ifeq ($(BOARD),native)
 	USEMODULE += nativenet
+	export CFLAGS += -DBOARD_NATIVE
 endif
 ifeq ($(BOARD),msba2)
 	USEMODULE += gpioint
 	USEMODULE += cc110x_ng
+	export CFLAGS += -DBOARD_MSBA2
 endif
 
 export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/net/destiny/include -I$(RIOTBASE)/drivers/cc110x_ng/include \
