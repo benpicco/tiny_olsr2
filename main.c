@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+
 #include <thread.h>
 #include <vtimer.h>
 #include <rtc.h>
@@ -27,6 +29,46 @@ static uint16_t get_node_id() {
 }
 #endif
 
+#ifdef ENABLE_NAME
+int ping_received;
+time_t ping_time;
+void ping_callback(struct ping_packet* pong) {
+	timex_t now;
+	vtimer_now(&now);
+	printf("\tpong [%u], hops=%u time=%u µs\n", pong->id,
+		pong->hops, now.microseconds - pong->timestamp);
+
+	ping_received++;
+	ping_time += now.microseconds - pong->timestamp;
+}
+
+void ping(char* str) {
+	str += strlen("ping ");
+	int packets = 10;
+
+	ipv6_addr_t* dest = get_ip_by_name(str);
+	if (dest == NULL) {
+		printf("Unknown node: %s\n", str);
+		return;
+	}
+
+	char addr_str[IPV6_MAX_ADDR_STR_LEN];
+	ipv6_addr_to_str(addr_str, dest);
+
+	ping_received = 0;
+	ping_time = 0;
+
+	for (int i = 0; i < packets; ++i) {
+		printf("sending %d bytes to %s\n", sizeof(struct ping_packet), addr_str);
+		ping_send(dest);
+		vtimer_usleep(1000000);
+	}
+
+	printf("%u packets transmitted, %u received, %.2f%% packet loss, time %uµs (%.2f µs avg)\n",
+		packets, ping_received, 100 * (1 - (float) ping_received / packets), ping_time, (float) ping_time / packets);
+}
+#endif /* ENABLE_NAME */
+
 void init(char *str) {
 
 	rtc_enable();
@@ -35,37 +77,10 @@ void init(char *str) {
 	sixlowpan_lowpan_init(_trans_type, get_node_id(), 0);
 
 	olsr_init();
-}
-
 #ifdef ENABLE_NAME
-void ping_callback(struct ping_packet* pong) {
-	timex_t now;
-	vtimer_now(&now);
-	printf("\tpong [%u], %u µs %u hops", pong->id,
-		now.microseconds - pong->timestamp, pong->hops);
-}
-
-void ping(char* str) {
-	ipv6_addr_t* dest = get_ip_by_name(str);
-	if (dest == NULL) {
-		puts("Unknown node");
-		return;
-	}
-
-	char addr_str[IPV6_MAX_ADDR_STR_LEN];
-	ipv6_addr_to_str(addr_str, dest);
-
 	ping_start_listen(ping_callback);
-
-	for (int i = 0; i < 10; ++i) {
-		printf("sending %d bytes to %s\n", sizeof(struct ping_packet), addr_str);
-		ping_send(dest);
-		vtimer_usleep(1000000);
-	}
-
-	ping_stop_listen();
+#endif
 }
-#endif /* ENABLE_NAME */
 
 const shell_command_t shell_commands[] = {
     {"init", "start the IP stack with OLSRv2", init},

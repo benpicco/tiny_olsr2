@@ -36,6 +36,7 @@ static void pong(void) {
 		else {
 			pong.hops = 23;	// TODO
 			pong.received = 1;
+			sa.sin6_port = HTONS(PING_PORT);
 			destiny_socket_sendto(sock, &pong, recsize, 0, &sa, fromlen);
 		}
 	}
