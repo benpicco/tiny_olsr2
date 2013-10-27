@@ -95,21 +95,27 @@ void init(char *str) {
 }
 
 const shell_command_t shell_commands[] = {
-    {"init", "start the IP stack with OLSRv2", init},
-    {"routes", "print all known nodes and routes", print_topology_set},
-#ifdef ENABLE_NAME
-    {"ping", "send packets to a node", ping},
+#ifndef INIT_ON_START
+	{"init", "start the IP stack with OLSRv2", init},
 #endif
-    {NULL, NULL, NULL}
+	{"routes", "print all known nodes and routes", print_topology_set},
+#ifdef ENABLE_NAME
+	{"ping", "send packets to a node", ping},
+#endif
+	{NULL, NULL, NULL}
 };
 
 int main(void) {
-    posix_open(uart0_handler_pid, 0);
+#ifdef INIT_ON_START
+	init(0);
+#endif
 
-    shell_t shell;
-    shell_init(&shell, shell_commands, uart0_readc, uart0_putc);
+	posix_open(uart0_handler_pid, 0);
 
-    shell_run(&shell);
+	shell_t shell;
+	shell_init(&shell, shell_commands, uart0_readc, uart0_putc);
 
-    return 0;
+	shell_run(&shell);
+
+	return 0;
 }

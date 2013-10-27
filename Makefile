@@ -39,6 +39,7 @@ USEMODULE += sixlowpan
 USEMODULE += destiny
 USEMODULE += uart0
 USEMODULE += posix
+USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += random
@@ -50,7 +51,7 @@ USEMODULE += olsr2
 USEMODULE += udp_ping
 ifeq ($(BOARD),native)
 	USEMODULE += nativenet
-	export CFLAGS += -DBOARD_NATIVE
+	export CFLAGS += -DBOARD_NATIVE -DINIT_ON_START
 endif
 ifeq ($(BOARD),msba2)
 	USEMODULE += gpioint
