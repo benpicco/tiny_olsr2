@@ -8,8 +8,8 @@
 #include <msg.h>
 #include <net_help.h>
 #include <mutex.h>
-#include <rtc.h>
 #include <destiny.h>
+#include <random.h>
 
 #include "rfc5444/rfc5444_writer.h"
 
@@ -20,18 +20,7 @@
 #include "reader.h"
 #include "writer.h"
 
-#if BOARD == native
-static uint8_t _trans_type = TRANSCEIVER_NATIVE;
-static uint16_t get_node_id() {
-	return getpid();
-}
-#elif BOARD == msba2
-static uint8_t _trans_type = TRANSCEIVER_CC1100;
-static uint16_t get_node_id() {
-	// TODO
-	return 23;
-}
-#endif
+#include "olsr2.h"
 
 static char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
 static char sender_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
@@ -45,7 +34,6 @@ struct timer_msg {
 static struct timer_msg msg_hello = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_hello };
 static struct timer_msg msg_tc = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_tc };
 
-static struct timer_msg msg_print = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = print_topology_set };
 
 static int sock;
 static sockaddr6_t sa_bcast;
@@ -54,7 +42,7 @@ static mutex_t olsr_data;
 #ifdef ENABLE_NAME
 static char name[5];
 static char* gen_name(char* dest, const size_t len) {
-	int num = get_node_id();
+	int num = genrand_uint32();
 
 	int i;
 	for (i = 0; i < len - 1; ++i)
@@ -64,12 +52,12 @@ static char* gen_name(char* dest, const size_t len) {
 }
 #endif
 
-void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
+static void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
 	static int jitter = 0xfefe;
-	jitter = (jitter * get_node_id()) % MAX_JITTER;
+	jitter = (jitter * genrand_uint32()) % MAX_JITTER;
 	vtimer_usleep(jitter);
 
 	int bytes_send = destiny_socket_sendto(sock, buffer, length, 0, &sa_bcast, sizeof sa_bcast);
@@ -121,14 +109,14 @@ static void olsr_sender_thread() {
 		mutex_unlock(&olsr_data);
 
 		/* add jitter */
-		tmsg->interval.microseconds = (tmsg->interval.microseconds * get_node_id()) % MAX_JITTER;
+		tmsg->interval.microseconds = (tmsg->interval.microseconds * genrand_uint32()) % MAX_JITTER;
 
 		if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), tmsg) != 0)
 			DEBUG("something went wrong");
 	}
 }
 
-ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
+static ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
 	struct olsr_node* node = get_node((struct netaddr*) dest); // get_node will only look at the first few bytes
 	if (node == NULL)
 		return NULL;
@@ -139,28 +127,36 @@ ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
 	return (ipv6_addr_t*) node->next_addr->_addr;
 }
 
-static void ip_init(void) {
-	destiny_init_transport_layer();
+void olsr_init(void) {
 
-	sixlowpan_lowpan_init(_trans_type, get_node_id(), 0);
+#ifdef ENABLE_NAME
+	local_name = gen_name(name, sizeof name);
+#endif
+	mutex_init(&olsr_data);
+	node_init();
+	reader_init();
+	writer_init(write_packet);
 
 	/* we always send to the same broadcast address, prepare it once */
 	sa_bcast.sin6_family = AF_INET6;
 	sa_bcast.sin6_port = HTONS(MANET_PORT);
 	ipv6_addr_set_all_nodes_addr(&sa_bcast.sin6_addr);
 
+	/* enable receive */
 	sock = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
-
 	thread_create(receive_thread_stack, sizeof receive_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, olsr_receiver_thread, "olsr_rec");
 
+	/* set local_addr */
 	local_addr->_type = AF_INET6;
 	local_addr->_prefix_len = 128;
 	ipv6_iface_get_best_src_addr((ipv6_addr_t*) &local_addr->_addr, &sa_bcast.sin6_addr);
 
+	/* register olsr for routing */
 	ipv6_iface_set_routing_provider(get_next_hop);
-}
 
-static void init_sender() {
+	DEBUG("This is node %s with IP %s", local_name, netaddr_to_str_s(&nbuf[0], local_addr));
+
+	/* enable sending */
 	int pid = thread_create(sender_thread_stack, sizeof sender_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, olsr_sender_thread, "olsr_snd");
 
 	msg_t m;
@@ -172,28 +168,6 @@ static void init_sender() {
 	DEBUG("setting up TC timer");
 	m.content.ptr = (char*) &msg_tc;
 	msg_send(&m, pid, false);
-
-	sleep_s(1);
-	DEBUG("setting up print TS timer");
-	m.content.ptr = (char*) &msg_print;
-	msg_send(&m, pid, false);
-}
-
-int main(void) {
-
-	rtc_enable();
-#ifdef ENABLE_NAME
-	local_name = gen_name(name, sizeof name);
-#endif
-	node_init();
-	mutex_init(&olsr_data);
-	reader_init();
-	writer_init(write_packet);
-	ip_init();
-
-	DEBUG("This is node %s with IP %s",
-		local_name, netaddr_to_str_s(&nbuf[0], local_addr));
-	init_sender();
 }
 
 #endif /* RIOT */
