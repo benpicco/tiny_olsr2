@@ -1,3 +1,7 @@
+/***********************************************
+ * This file is for easy testing on Linux only *
+ ***********************************************/
+
 #ifndef RIOT
 #define _GNU_SOURCE
 

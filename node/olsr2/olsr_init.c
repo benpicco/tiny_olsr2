@@ -1,3 +1,7 @@
+/***************************************************************
+ * This file is for initialisation of the olsr2 module on RIOT *
+ ***************************************************************/
+
 #ifdef RIOT
 #include <stdio.h>
 #include <thread.h>
