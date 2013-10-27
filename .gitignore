@@ -1,2 +1,5 @@
 *.o
+node
 dispatcher
+bin
+log
