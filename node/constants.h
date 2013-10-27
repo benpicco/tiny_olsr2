@@ -13,6 +13,8 @@
 #define HYST_LOW	0.3
 #define HYST_HIGH	0.8
 
+#define MAX_JITTER	500
+
 #define FLOODING_MPR_SELECTOR 1
 #define ROUTING_MPR_SELECTOR  2
 

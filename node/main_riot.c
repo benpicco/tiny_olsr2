@@ -59,6 +59,10 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
+	static int jitter = 0xfefe;
+	jitter = (jitter * get_node_id()) % MAX_JITTER;
+	vtimer_usleep(jitter);
+
 	int bytes_send = destiny_socket_sendto(sock, buffer, length, 0, &sa_bcast, sizeof sa_bcast);
 
 	DEBUG("write_packet(%d bytes), %d bytes sent", length, bytes_send);
@@ -106,6 +110,9 @@ static void olsr_sender_thread() {
 		mutex_lock(&olsr_data);
 		tmsg->func();
 		mutex_unlock(&olsr_data);
+
+		/* add jitter */
+		tmsg->interval.microseconds = (tmsg->interval.microseconds * get_node_id()) % MAX_JITTER;
 
 		if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), tmsg) != 0)
 			DEBUG("something went wrong");
