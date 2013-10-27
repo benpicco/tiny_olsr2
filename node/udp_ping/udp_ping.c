@@ -8,7 +8,7 @@
 
 #define PING_PORT       25431
 
-static char pong_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
+char pong_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
 
 static int sock, id, tid;
 

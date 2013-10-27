@@ -26,8 +26,8 @@
 
 #include "olsr2.h"
 
-static char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
-static char sender_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
+char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
+char sender_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
 
 struct timer_msg {
 	vtimer_t timer;
@@ -35,16 +35,15 @@ struct timer_msg {
 	void (*func) (void);
 };
 
-static struct timer_msg msg_hello = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_hello };
-static struct timer_msg msg_tc = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_tc };
-
+struct timer_msg msg_hello = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_hello };
+struct timer_msg msg_tc = { .timer = {0}, .interval = { .seconds = REFRESH_INTERVAL, .microseconds = 0}, .func = writer_send_tc };
 
 static int sock;
-static sockaddr6_t sa_bcast;
-static mutex_t olsr_data;
+sockaddr6_t sa_bcast;
+mutex_t olsr_data;
 
 #ifdef ENABLE_NAME
-static char name[5];
+char _name[5];
 static char* gen_name(char* dest, const size_t len) {
 	for (int i = 0; i < len - 1; ++i)
 		dest[i] = 'A' +  (genrand_uint32() % ('Z' - 'A'));
@@ -97,7 +96,7 @@ static void olsr_receiver_thread(void) {
 	}
 }
 
-static void olsr_sender_thread() {
+static void olsr_sender_thread(void) {
 	DEBUG("olsr_sender_thread, pid %d\n", thread_getpid());
 
 	while (1) {
@@ -143,7 +142,7 @@ ipv6_addr_t* get_ip_by_name(char* name) {
 void olsr_init(void) {
 
 #ifdef ENABLE_NAME
-	local_name = gen_name(name, sizeof name);
+	local_name = gen_name(_name, sizeof _name);
 #endif
 	mutex_init(&olsr_data);
 	node_init();
