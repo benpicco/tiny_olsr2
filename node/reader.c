@@ -39,14 +39,14 @@ static enum rfc5444_result _cb_msg_end_callback(struct rfc5444_reader_tlvblock_c
 /* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
 	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .mandatory = true },
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	[IDX_TLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
 
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
 	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR },
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
@@ -54,13 +54,13 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
 /* TC message */
 static struct rfc5444_reader_tlvblock_consumer_entry _olsr_message_tlvs[] = {
 	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .mandatory = true },
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	[IDX_TLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
 
 static struct rfc5444_reader_tlvblock_consumer_entry _olsr_address_tlvs[] = {
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
 };
@@ -104,7 +104,7 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __att
 
 	current_node = add_neighbor(current_src, vtime);
 
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
 		if (!current_node->name)
 			current_node->name = strndup((char*) _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
@@ -127,7 +127,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv;
 
 	char* name = 0;
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		name = strndup((char*) tlv->single_value, tlv->length); // memory leak
 		DEBUG("\t2-hop neighbor: %s (%s)", name, netaddr_to_str_s(&nbuf[0], &cont->addr));
@@ -175,7 +175,7 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (is_known_msg(&cont->orig_addr, cont->seqno, vtime))
 		return RFC5444_DROP_PACKET;
 
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
 		char* _name = strndup((char*) _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
 		DEBUG("\tfrom: %s (%s)", _name, netaddr_to_str_s(&nbuf[0], &cont->orig_addr));
@@ -202,7 +202,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (netaddr_cmp(local_addr, &cont->addr) == 0)
 		return RFC5444_DROP_ADDRESS;
 
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		name = strndup((char*) tlv->single_value, tlv->length);
 		DEBUG("\tannounces: %s (%s)", name, netaddr_to_str_s(&nbuf[0], &cont->addr));

@@ -49,11 +49,20 @@ static struct timer_msg msg_print = { .timer = {0}, .interval = { .seconds = REF
 
 static int sock;
 static sockaddr6_t sa_bcast;
-#ifdef ENABLE_DEBUG_OLSR
-static char name[5];
-#endif
-
 static mutex_t olsr_data;
+
+#ifdef ENABLE_NAME
+static char name[5];
+static char* gen_name(char* dest, const size_t len) {
+	int num = get_node_id();
+
+	int i;
+	for (i = 0; i < len - 1; ++i)
+		dest[i] = 'A' +  ((i+1) * num) % ('Z' - 'A');
+	dest[i] = '\0';
+	return dest;
+}
+#endif
 
 void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
@@ -119,16 +128,6 @@ static void olsr_sender_thread() {
 	}
 }
 
-static char* gen_name(char* dest, const size_t len) {
-	int num = get_node_id();
-
-	int i;
-	for (i = 0; i < len - 1; ++i)
-		dest[i] = 'A' +  ((i+1) * num) % ('Z' - 'A');
-	dest[i] = '\0';
-	return dest;
-}
-
 ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
 	struct olsr_node* node = get_node((struct netaddr*) dest); // get_node will only look at the first few bytes
 	if (node == NULL)
@@ -183,7 +182,7 @@ static void init_sender() {
 int main(void) {
 
 	rtc_enable();
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	local_name = gen_name(name, sizeof name);
 #endif
 	node_init();

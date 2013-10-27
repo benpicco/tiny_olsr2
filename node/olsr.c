@@ -19,7 +19,7 @@ static struct olsr_node* _new_olsr_node(struct netaddr* addr,
 	n->type = NODE_TYPE_OLSR;
 	n->distance = distance;
 	n->expires = time_now() + vtime;
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	n->name = name;
 #endif
 
@@ -314,11 +314,22 @@ void print_topology_set(void) {
 
 	puts("");
 	puts("---[ Topology Set ]--");
+#ifdef ENABLE_NAME
+	printf(" [ %s | %s ]\n", netaddr_to_str_s(&nbuf[0], local_addr), local_name);
+#else
 	printf(" [%s]\n", netaddr_to_str_s(&nbuf[0], local_addr));
+#endif
 
 	avl_for_each_element(&olsr_head, node, node) {
+#ifdef ENABLE_NAME
+		printf("%s (%s)\t=> %s; %d hops, next: %s, %ld s [%d] %s %.2f [%d] %s\n",
+#else
 		printf("%s\t=> %s; %d hops, next: %s, %ld s [%d] %s %.2f [%d] %s\n",
+#endif
 			netaddr_to_str_s(&nbuf[0], node->addr),
+#ifdef ENABLE_NAME
+			node->name,
+#endif
 			netaddr_to_str_s(&nbuf[1], node->last_addr),
 			node->distance,
 			netaddr_to_str_s(&nbuf[2], node->next_addr),

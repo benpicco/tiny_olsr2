@@ -10,7 +10,7 @@
 struct netaddr_rc _local_addr;
 struct netaddr* local_addr;
 
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 char* local_name;
 #endif
 
@@ -45,7 +45,7 @@ struct olsr_node {
 	uint8_t mpr_selector: 2;	/* whether the node selected us as a MPR - only 1-hop */
 	uint8_t pending		: 3;	/* whether the link can already be used - only 1-hop */
 
-#ifdef ENABLE_DEBUG_OLSR
+#ifdef ENABLE_NAME
 	char* name;					/* node name from graph.gv */
 #endif
 };
