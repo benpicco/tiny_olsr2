@@ -34,7 +34,8 @@ static uint16_t get_node_id(void) {
 			_node_id += buffer[i];
 		free(buffer);
 
-		_node_id = (uint16_t) _node_id;
+		genrand_init(_node_id);
+		_node_id = (uint16_t) genrand_uint32();
 	}
 	return (uint16_t) _node_id;
 }
