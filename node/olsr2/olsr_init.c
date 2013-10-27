@@ -131,6 +131,18 @@ static ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
 	return (ipv6_addr_t*) node->next_addr->_addr;
 }
 
+#ifdef ENABLE_NAME
+ipv6_addr_t* get_ip_by_name(char* name) {
+	struct olsr_node *node;
+	avl_for_each_element(&olsr_head, node, node) {
+		if (node->name != NULL && strcmp(node->name, name) == 0)
+			return (ipv6_addr_t*) node->addr;
+	}
+
+	return NULL;
+}
+#endif
+
 void olsr_init(void) {
 
 #ifdef ENABLE_NAME
