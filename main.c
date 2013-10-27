@@ -24,8 +24,19 @@ static uint16_t get_node_id(void) {
 #elif defined(BOARD_MSBA2)
 static uint8_t _trans_type = TRANSCEIVER_CC1100;
 static uint16_t get_node_id(void) {
-	// TODO
-	return 23;
+	static int _node_id = -1;
+
+	if (_node_id < 0) {
+		const int size = 1024;
+
+		uint8_t* buffer = malloc(size);
+		for (int i=0; i<size; ++i)
+			_node_id += buffer[i];
+		free(buffer);
+
+		_node_id = (uint16_t) _node_id;
+	}
+	return (uint16_t) _node_id;
 }
 #endif
 
