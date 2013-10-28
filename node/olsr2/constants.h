@@ -1,12 +1,13 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
+/* RFC5498 */
 #define MANET_PORT	269
 
+/* in seconds */
 #define HELLO_REFRESH_INTERVAL	2
 #define TC_REFRESH_INTERVAL	5
 #define HOLD_TIME		(3 * TC_REFRESH_INTERVAL)
-#define KEEP_EXPIRED		HOLD_TIME
 
 #define TC_HOP_LIMIT	16
 
@@ -14,7 +15,8 @@
 #define HYST_LOW	0.3
 #define HYST_HIGH	0.8
 
-#define MAX_JITTER	1000
+/* 1s */
+#define MAX_JITTER	1000000
 
 #define FLOODING_MPR_SELECTOR 1
 #define ROUTING_MPR_SELECTOR  2
