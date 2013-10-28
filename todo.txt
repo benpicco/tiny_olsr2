@@ -1,3 +1,6 @@
-- [ ] use different refresh intervals for TC and HELLO
-- [ ] jitter to avoid collisions
-- [ ] add routing to RIOT
+- [ ] linux version behaves strange now
+- [ ] work around vtimer issue
+- [ ] debug issue 272
+- [ ] write testcases
+- [ ] maybe we can git rid of one call to remove_expired
+- [ ] read hop count from IP header and display it in ping result
