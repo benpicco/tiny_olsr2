@@ -95,6 +95,10 @@ static void olsr_receiver_thread(void) {
 static void olsr_sender_thread(void) {
 	DEBUG("olsr_sender_thread, pid %d\n", thread_getpid());
 
+	/* message queue, so messages don't get lost */
+	msg_t msgq[2];
+	msg_init_queue(msgq, sizeof msgq);
+
 	while (1) {
 		msg_t m;
 		msg_receive(&m);

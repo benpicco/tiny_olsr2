@@ -1,5 +1,4 @@
 - [ ] linux version behaves strange now
-- [ ] work around vtimer issue
 - [ ] debug issue 272
 - [ ] write testcases
 - [ ] maybe we can git rid of one call to remove_expired
