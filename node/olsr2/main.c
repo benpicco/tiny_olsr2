@@ -154,11 +154,9 @@ int main(int argc, char** argv) {
 	writer_init(write_packet);
 
 	while (1) {
-		sleep_s(REFRESH_INTERVAL);
+		sleep_s(HELLO_REFRESH_INTERVAL);
 
 		disable_receive();
-
-		remove_expired(0);
 
 		// print_neighbors();
 		print_topology_set();

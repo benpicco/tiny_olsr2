@@ -10,9 +10,9 @@ subgraph bidirectional {
 	G -> H
 	H -> A
 
-	A -> X
-	B -> X
-	C -> X
+	A -> X	// 0.5
+	B -> X	// 0.5
+	C -> X	// 0.5
 	D -> X
 	E -> X
 	F -> X
