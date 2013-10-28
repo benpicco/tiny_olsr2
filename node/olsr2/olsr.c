@@ -190,6 +190,9 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		n = _new_olsr_node(addr, distance, vtime, name);
 
 	if (n->last_addr == NULL) {
+#ifdef ENABLE_NAME
+		n->name = name;
+#endif
 		add_other_route(n, last_addr, vtime);
 		add_free_node(n);
 

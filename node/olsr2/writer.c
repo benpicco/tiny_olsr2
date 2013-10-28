@@ -2,6 +2,10 @@
 #include "net_help.h"
 #endif
 
+#ifdef ENABLE_NAME
+#include <string.h>
+#endif
+
 #include "common/avl.h"
 #include "common/common_types.h"
 #include "common/netaddr.h"
