@@ -221,6 +221,7 @@ _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context __attri
 	uint8_t *buffer, size_t length) {
 	struct olsr_node* node = get_node(current_src);
 
+	/* only forward if node selected us as MPR */
 	if (node == NULL || node->mpr_selector == 0)
 		return;
 

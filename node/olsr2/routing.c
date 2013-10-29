@@ -71,17 +71,20 @@ void fill_routing_table(void) {
 					break;
 				}
 
+				/* see if we can find a better route */
 				struct olsr_node* _tmp = get_node(route->last_addr);
 				if (_tmp != NULL && _tmp->addr != NULL &&
-					_tmp->distance <= min_hops &&
+					_tmp->distance + 1 <= min_hops &&
 					_tmp->next_addr != NULL) {
 
+					if (_tmp->next_addr == NULL)
+						continue;
 					/* ignore pending nodes */
-					if (_tmp->type == NODE_TYPE_NHDP && _tmp->pending)
+					if (_tmp->distance == 1 && _tmp->pending)
 						continue;
 
 					/* try to minimize MPR count */
-					if (min_hops == 1) {
+					if (min_hops == 2) {
 						/* use the neighbor with the most 2-hop neighbors */
 						if (h1_deriv(node)->mpr_neigh > h1_deriv(_tmp)->mpr_neigh + 1)
 							continue;
