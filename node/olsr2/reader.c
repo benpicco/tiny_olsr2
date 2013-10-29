@@ -96,7 +96,7 @@ static enum rfc5444_result
 _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __attribute__((unused))) {
 	DEBUG("received HELLO message:");
 
-	if (netaddr_cmp(local_addr, current_src) == 0)
+	if (netaddr_cmp(get_local_addr(), current_src) == 0)
 		return RFC5444_DROP_PACKET;
 
 	/* VTIME is defined as mandatory */
@@ -135,7 +135,7 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #endif
 
 	/* node broadcasts us as it's neighbor */
-	if (netaddr_cmp(&cont->addr, local_addr) == 0) {
+	if (netaddr_cmp(&cont->addr, get_local_addr()) == 0) {
 
 		/* node selected us as mpr */
 		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv)) {
@@ -164,10 +164,10 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (!cont->has_hopcount || !cont->has_hoplimit)
 		return RFC5444_DROP_PACKET;
 
-	if (!netaddr_cmp(local_addr, current_src))
+	if (!netaddr_cmp(get_local_addr(), current_src))
 		return RFC5444_DROP_PACKET;
 
-	if (!netaddr_cmp(local_addr, &cont->orig_addr))
+	if (!netaddr_cmp(get_local_addr(), &cont->orig_addr))
 		return RFC5444_DROP_PACKET;
 
 	vtime = rfc5444_timetlv_decode(*_olsr_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
@@ -199,7 +199,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv __attribute__((unused));
 	char* name = NULL;
 
-	if (netaddr_cmp(local_addr, &cont->addr) == 0)
+	if (netaddr_cmp(get_local_addr(), &cont->addr) == 0)
 		return RFC5444_DROP_ADDRESS;
 
 #ifdef ENABLE_NAME

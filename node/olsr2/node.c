@@ -4,8 +4,7 @@
 
 #include "common/netaddr.h"
 
-struct netaddr_rc _local_addr;
-struct netaddr* local_addr;
+static struct netaddr_rc local_addr;
 struct avl_tree olsr_head;
 
 #ifdef ENABLE_NAME
@@ -30,9 +29,12 @@ int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 }
 
 void node_init(void) {
-	_local_addr._refs = 1;
-	local_addr = (struct netaddr*) &_local_addr;
+	local_addr._refs = 1;
 	avl_init(&olsr_head, _addr_cmp, false);
+}
+
+struct netaddr* get_local_addr() {
+	return (struct netaddr*) &local_addr;
 }
 
 struct olsr_node* get_node(struct netaddr* addr) {

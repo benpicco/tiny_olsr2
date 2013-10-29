@@ -148,7 +148,7 @@ _cb_add_tc_message_header(struct rfc5444_writer *wr, struct rfc5444_writer_messa
 	/* originator, hopcount, hoplimit, sequence number */
 	rfc5444_writer_set_msg_header(wr, message, true, true, true, true);
 	rfc5444_writer_set_msg_seqno(wr, message, seq_no++);
-	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(local_addr));
+	rfc5444_writer_set_msg_originator(wr, message, netaddr_get_binptr(get_local_addr()));
 
 	message->hoplimit = TC_HOP_LIMIT;
 }

@@ -104,7 +104,7 @@ static bool _route_expired(struct olsr_node* node, struct netaddr* last_addr) {
 
 static void _update_link_quality(struct nhdp_node* node) {
 	TRACE_FUN("%s", netaddr_to_str_s(&nbuf[0], h1_super(node)->addr));
-	if (_route_expired(h1_super(node), local_addr))
+	if (_route_expired(h1_super(node), get_local_addr()))
 		node->link_quality = node->link_quality * (1 - HYST_SCALING);
 	else
 		node->link_quality = node->link_quality * (1 - HYST_SCALING) + HYST_SCALING;
@@ -318,9 +318,9 @@ void print_topology_set(void) {
 	puts("");
 	puts("---[ Topology Set ]--");
 #ifdef ENABLE_NAME
-	printf(" [ %s | %s ]\n", netaddr_to_str_s(&nbuf[0], local_addr), local_name);
+	printf(" [ %s | %s ]\n", netaddr_to_str_s(&nbuf[0], get_local_addr()), local_name);
 #else
-	printf(" [%s]\n", netaddr_to_str_s(&nbuf[0], local_addr));
+	printf(" [%s]\n", netaddr_to_str_s(&nbuf[0], get_local_addr()));
 #endif
 
 	avl_for_each_element(&olsr_head, node, node) {

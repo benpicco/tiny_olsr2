@@ -155,15 +155,15 @@ void olsr_init(void) {
 	sock = destiny_socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 	thread_create(receive_thread_stack, sizeof receive_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, olsr_receiver_thread, "olsr_rec");
 
-	/* set local_addr */
-	local_addr->_type = AF_INET6;
-	local_addr->_prefix_len = 128;
-	ipv6_iface_get_best_src_addr((ipv6_addr_t*) &local_addr->_addr, &sa_bcast.sin6_addr);
+	/* set get_local_addr() */
+	get_local_addr()->_type = AF_INET6;
+	get_local_addr()->_prefix_len = 128;
+	ipv6_iface_get_best_src_addr((ipv6_addr_t*) &get_local_addr()->_addr, &sa_bcast.sin6_addr);
 
 	/* register olsr for routing */
 	ipv6_iface_set_routing_provider(get_next_hop);
 
-	DEBUG("This is node %s with IP %s", local_name, netaddr_to_str_s(&nbuf[0], local_addr));
+	DEBUG("This is node %s with IP %s", local_name, netaddr_to_str_s(&nbuf[0], get_local_addr()));
 
 	/* enable sending */
 	int pid = thread_create(sender_thread_stack, sizeof sender_thread_stack, PRIORITY_MAIN-1, CREATE_STACKTEST, olsr_sender_thread, "olsr_snd");

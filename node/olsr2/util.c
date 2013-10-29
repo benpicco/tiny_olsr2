@@ -28,8 +28,8 @@ struct netaddr* netaddr_use(struct netaddr* addr) {
 }
 
 struct netaddr* netaddr_reuse(struct netaddr* addr) {
-	if (netaddr_cmp(addr, local_addr) == 0)
-		return netaddr_use(local_addr);
+	if (netaddr_cmp(addr, get_local_addr()) == 0)
+		return netaddr_use(get_local_addr());
 
 	struct olsr_node* n = get_node(addr);
 	if (!n) {

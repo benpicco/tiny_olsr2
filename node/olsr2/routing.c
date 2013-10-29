@@ -62,7 +62,7 @@ void fill_routing_table(void) {
 			simple_list_for_each(fn->node->other_routes, route) {
 
 				/* the node is actually a neighbor of ours */
-				if (netaddr_cmp(route->last_addr, local_addr) == 0) {
+				if (netaddr_cmp(route->last_addr, get_local_addr()) == 0) {
 					/* don't use pending nodes */
 					if (fn->node->pending)
 						continue;
@@ -103,7 +103,7 @@ void fill_routing_table(void) {
 				fn->node->next_addr = netaddr_use(fn->node->addr);
 				fn->node->distance = 1;
 
-				pop_other_route(fn->node, local_addr);
+				pop_other_route(fn->node, get_local_addr());
 				simple_list_for_each_remove(&head, fn, prev);
 
 			} else if (node != NULL) {

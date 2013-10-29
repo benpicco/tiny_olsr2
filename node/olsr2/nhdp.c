@@ -58,7 +58,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 	if (n->next_addr == NULL)
 		n->expires = time_now() + vtime;
 
-	add_other_route(n, local_addr, vtime);
+	add_other_route(n, get_local_addr(), vtime);
 
 	return n;
 }
@@ -83,7 +83,7 @@ void print_neighbors(void) {
 				node->name, netaddr_to_str_s(&nbuf[0], node->addr),
 				netaddr_to_str_s(&nbuf[1], node->next_addr),
 				local_name,
-				netaddr_to_str_s(&nbuf[2], local_addr));
+				netaddr_to_str_s(&nbuf[2], get_local_addr()));
 	}
 }
 #else

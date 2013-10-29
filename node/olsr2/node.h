@@ -7,9 +7,6 @@
 #include "util.h"
 #include "debug.h"
 
-extern struct netaddr_rc _local_addr;
-extern struct netaddr* local_addr;
-
 #ifdef ENABLE_NAME
 extern char* local_name;
 #endif
@@ -53,7 +50,7 @@ struct olsr_node {
 struct nhdp_node {
 	struct olsr_node super;
 
-	uint8_t mpr_neigh;			/* number of 2-hop neighbors reached through this node 
+	uint8_t mpr_neigh;			/* number of 2-hop neighbors reached through this node
 								   aka if this value is > 0, it's a MPR */
 	float link_quality;			/* average packet loss, decides if it should be used as 1-hop neigh */
 };
@@ -70,6 +67,7 @@ static inline struct nhdp_node* h1_deriv(struct olsr_node* n) {
 }
 
 void node_init(void);
+struct netaddr* get_local_addr(void);
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b);
 struct olsr_node* get_node(struct netaddr* addr);
 

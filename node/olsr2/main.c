@@ -40,7 +40,7 @@ void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 
 	struct ip_lite* new_buffer = malloc(sizeof(struct ip_lite) + length);
 	memcpy(new_buffer + 1, buffer, length);
-	memcpy(&new_buffer->src, local_addr, sizeof(struct netaddr));
+	memcpy(&new_buffer->src, get_local_addr(), sizeof(struct netaddr));
 	new_buffer->length = length;
 
 	sendto(sockfd, new_buffer, sizeof(struct ip_lite) + new_buffer->length, 0,
@@ -143,12 +143,12 @@ int main(int argc, char** argv) {
 
 	node_init();
 
-	local_addr->_type = AF_INET6;
-	local_addr->_prefix_len = 128;
-	inet_pton(AF_INET6, this_ip, local_addr->_addr);
+	get_local_addr()->_type = AF_INET6;
+	get_local_addr()->_prefix_len = 128;
+	inet_pton(AF_INET6, this_ip, get_local_addr()->_addr);
 
 	DEBUG("This is node %s with IP %s",
-		local_name, netaddr_to_str_s(&nbuf[0], local_addr));
+		local_name, netaddr_to_str_s(&nbuf[0], get_local_addr()));
 
 	reader_init();
 	writer_init(write_packet);
