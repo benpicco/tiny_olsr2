@@ -5,7 +5,7 @@
 #include "common/netaddr.h"
 
 static struct netaddr_rc local_addr;
-struct avl_tree olsr_head;
+static struct avl_tree olsr_head;
 
 #ifdef ENABLE_NAME
 char* local_name;
@@ -30,18 +30,22 @@ int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b) {
 
 void node_init(void) {
 	local_addr._refs = 1;
-	avl_init(&olsr_head, _addr_cmp, false);
+	avl_init(get_olsr_head(), _addr_cmp, false);
 }
 
 struct netaddr* get_local_addr() {
 	return (struct netaddr*) &local_addr;
 }
 
+struct avl_tree* get_olsr_head(void) {
+	return &olsr_head;
+}
+
 struct olsr_node* get_node(struct netaddr* addr) {
 	struct olsr_node *n; // for typeof
 	if (addr == NULL)
 		return NULL;
-	return avl_find_element(&olsr_head, addr, n, node);
+	return avl_find_element(get_olsr_head(), addr, n, node);
 }
 
 void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t vtime) {

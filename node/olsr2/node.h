@@ -16,8 +16,6 @@ enum {
 	NODE_TYPE_NHDP
 };
 
-extern struct avl_tree olsr_head;
-
 /* simple list to store alternative routes */
 struct alt_route {
 	struct alt_route* next;
@@ -68,6 +66,7 @@ static inline struct nhdp_node* h1_deriv(struct olsr_node* n) {
 
 void node_init(void);
 struct netaddr* get_local_addr(void);
+struct avl_tree* get_olsr_head(void);
 int olsr_node_cmp(struct olsr_node* a, struct olsr_node* b);
 struct olsr_node* get_node(struct netaddr* addr);
 

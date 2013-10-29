@@ -23,7 +23,7 @@ static struct olsr_node* _new_olsr_node(struct netaddr* addr,
 	n->name = name;
 #endif
 
-	avl_insert(&olsr_head, &n->node);
+	avl_insert(get_olsr_head(), &n->node);
 	return n;
 }
 
@@ -36,7 +36,7 @@ static void _update_children(struct netaddr* last_addr, struct netaddr* lost_nod
 		netaddr_to_str_s(&nbuf[1], lost_node_addr));
 
 	struct olsr_node *node;
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 
 		if (lost_node_addr != NULL)
 			remove_other_route(node, lost_node_addr);
@@ -69,7 +69,7 @@ static void _olsr_node_expired(struct olsr_node* node) {
 static void _remove_olsr_node(struct olsr_node* node) {
 	TRACE_FUN();
 
-	avl_remove(&olsr_head, &node->node);
+	avl_remove(get_olsr_head(), &node->node);
 	remove_free_node(node);
 
 	/* remove other routes from node that is about to be deleted */
@@ -140,7 +140,7 @@ void remove_expired(struct netaddr* force_addr) {
 
 	time_t _now = time_now();
 	struct olsr_node *node, *safe;
-	avl_for_each_element_safe(&olsr_head, node, node, safe) {
+	avl_for_each_element_safe(get_olsr_head(), node, node, safe) {
 		/* only use HELLO for link quality calculation */
 		/* only do so in the periodic checks */
 		if (node->type == NODE_TYPE_NHDP && force_addr == NULL)
@@ -257,7 +257,7 @@ void print_topology_set(void) {
 
 	struct olsr_node* node;
 	struct alt_route* route;
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 		DEBUG("%s (%s)\t=> %s; %d hops, next: %s, %ld s [%d] %s %.2f [%d] %s",
 			netaddr_to_str_s(&nbuf[0], node->addr),
 			node->name,
@@ -286,7 +286,7 @@ void print_routing_graph(void) {
 	puts("subgraph routing {");
 	puts("\tedge [ color = red ]");
 	struct olsr_node* node, *tmp;
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 		if (node->addr != NULL && node->last_addr != NULL) {
 			tmp = get_node(node->last_addr);
 			printf("\t%s -> %s\n", tmp ? tmp->name : local_name, node->name);
@@ -297,7 +297,7 @@ void print_routing_graph(void) {
 	puts("subgraph mpr {");
 	puts("\tedge [ color = blue ]");
 	puts("// BEGIN MPR");
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 		if (node->distance == 1 && node->mpr_selector) {
 			printf("\t%s -> %s\n", node->name, local_name);
 		}
@@ -323,7 +323,7 @@ void print_topology_set(void) {
 	printf(" [%s]\n", netaddr_to_str_s(&nbuf[0], get_local_addr()));
 #endif
 
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 #ifdef ENABLE_NAME
 		printf("%s (%s)\t=> %s; %d hops, next: %s, %ld s [%d] %s %.2f [%d] %s\n",
 #else

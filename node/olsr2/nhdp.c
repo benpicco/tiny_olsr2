@@ -15,7 +15,7 @@ static struct olsr_node* _node_replace(struct olsr_node* old_n) {
 	struct olsr_node* new_n = calloc(1, sizeof (struct nhdp_node));
 
 	/* remove things that held a pointer to this */
-	avl_remove(&olsr_head, &old_n->node);
+	avl_remove(get_olsr_head(), &old_n->node);
 	bool _free_node = remove_free_node(old_n);
 
 	memcpy(new_n, old_n, sizeof(struct olsr_node));
@@ -23,7 +23,7 @@ static struct olsr_node* _node_replace(struct olsr_node* old_n) {
 
 	new_n->type = NODE_TYPE_NHDP;
 	new_n->node.key = new_n->addr;
-	avl_insert(&olsr_head, &new_n->node);
+	avl_insert(get_olsr_head(), &new_n->node);
 
 	free(old_n);
 
@@ -47,7 +47,7 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		n->pending = 1;
 
 		n->node.key = n->addr;
-		avl_insert(&olsr_head, &n->node);
+		avl_insert(get_olsr_head(), &n->node);
 	} else if (n->type != NODE_TYPE_NHDP) {
 		DEBUG("\tconverting olsr node %s to nhdp node",
 			netaddr_to_str_s(&nbuf[0], n->addr));
@@ -68,7 +68,7 @@ void print_neighbors(void) {
 	struct olsr_node* node;
 
 	DEBUG("1-hop neighbors:");
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 		if (node->distance == 1)
 			DEBUG("\tneighbor: %s (%s) (mpr for %d nodes)",
 				node->name,
@@ -77,7 +77,7 @@ void print_neighbors(void) {
 	}
 
 	DEBUG("2-hop neighbors:");
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 		if (node->distance == 2)
 			DEBUG("\t%s (%s) -> %s -> %s (%s)",
 				node->name, netaddr_to_str_s(&nbuf[0], node->addr),

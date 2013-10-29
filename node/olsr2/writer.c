@@ -75,7 +75,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 	struct olsr_node* neighbor;
 
 	/* add all neighbors */
-	avl_for_each_element(&olsr_head, neighbor, node) {
+	avl_for_each_element(get_olsr_head(), neighbor, node) {
 		if (neighbor->distance != 1)
 			continue;
 
@@ -114,7 +114,7 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 	struct olsr_node* node;
 
 	/* add all neighbors */
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 		if (node->distance != 1)
 			continue;
 

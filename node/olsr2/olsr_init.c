@@ -127,7 +127,7 @@ static ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
 #ifdef ENABLE_NAME
 ipv6_addr_t* get_ip_by_name(char* name) {
 	struct olsr_node *node;
-	avl_for_each_element(&olsr_head, node, node) {
+	avl_for_each_element(get_olsr_head(), node, node) {
 		if (node->name != NULL && strcmp(node->name, name) == 0)
 			return (ipv6_addr_t*) node->addr;
 	}
@@ -158,7 +158,7 @@ void olsr_init(void) {
 	/* set get_local_addr() */
 	get_local_addr()->_type = AF_INET6;
 	get_local_addr()->_prefix_len = 128;
-	ipv6_iface_get_best_src_addr((ipv6_addr_t*) &get_local_addr()->_addr, &sa_bcast.sin6_addr);
+	ipv6_iface_get_best_src_addr((ipv6_addr_t*) get_local_addr(), &sa_bcast.sin6_addr);
 
 	/* register olsr for routing */
 	ipv6_iface_set_routing_provider(get_next_hop);
