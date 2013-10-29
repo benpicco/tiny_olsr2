@@ -26,8 +26,8 @@
 
 #include "olsr2.h"
 
-static char receive_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
-static char sender_thread_stack[KERNEL_CONF_STACKSIZE_DEFAULT];
+static char receive_thread_stack[KERNEL_CONF_STACKSIZE_MAIN];
+static char sender_thread_stack[KERNEL_CONF_STACKSIZE_MAIN];
 
 struct timer_msg {
 	vtimer_t timer;
@@ -43,7 +43,7 @@ static sockaddr6_t sa_bcast;
 static mutex_t olsr_data;
 
 #ifdef ENABLE_NAME
-char _name[5];
+static char _name[5];
 static char* gen_name(char* dest, const size_t len) {
 	for (int i = 0; i < len - 1; ++i)
 		dest[i] = 'A' +  (genrand_uint32() % ('Z' - 'A'));
