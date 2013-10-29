@@ -51,12 +51,12 @@ USEMODULE += olsr2
 USEMODULE += udp_ping
 ifeq ($(BOARD),native)
 	USEMODULE += nativenet
-	export CFLAGS += -DBOARD_NATIVE -DINIT_ON_START
+	export CFLAGS += -DBOARD_NATIVE -DINIT_ON_START -ggdb
 endif
 ifeq ($(BOARD),msba2)
 	USEMODULE += gpioint
 	USEMODULE += cc110x_ng
-	export CFLAGS += -DBOARD_MSBA2
+	export CFLAGS += -DBOARD_MSBA2 -DINIT_ON_START
 endif
 
 export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/net/destiny/include -I$(RIOTBASE)/drivers/cc110x_ng/include \
