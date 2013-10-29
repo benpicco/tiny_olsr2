@@ -153,7 +153,10 @@ int main(int argc, char** argv) {
 	reader_init();
 	writer_init(write_packet);
 
+	bool dont_skip_tc = true;
 	while (1) {
+		/* TC messages have a longer interval */
+		dont_skip_tc = !dont_skip_tc;
 		sleep_s(HELLO_REFRESH_INTERVAL);
 
 		disable_receive();
@@ -163,7 +166,8 @@ int main(int argc, char** argv) {
 		print_routing_graph();
 
 		writer_send_hello();
-		writer_send_tc();
+		if (dont_skip_tc)
+			writer_send_tc();
 
 		DEBUG_TICK;
 		enable_receive();
