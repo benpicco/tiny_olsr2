@@ -38,6 +38,7 @@ USEMODULE += net_help
 USEMODULE += sixlowpan
 USEMODULE += destiny
 USEMODULE += uart0
+USEMODULE += semaphore
 USEMODULE += posix
 USEMODULE += ps
 USEMODULE += shell
