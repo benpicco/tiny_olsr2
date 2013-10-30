@@ -121,10 +121,7 @@ static ipv6_addr_t* get_next_hop(ipv6_addr_t* dest) {
 	if (node == NULL)
 		return NULL;
 
-	if (node->next_addr == NULL)
-		return NULL;
-
-	return (ipv6_addr_t*) node->next_addr->_addr;
+	return (ipv6_addr_t*) node->next_addr;
 }
 
 #ifdef ENABLE_NAME
