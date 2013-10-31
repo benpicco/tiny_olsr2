@@ -22,22 +22,41 @@ static uint16_t get_node_id(void) {
 	return getpid();
 }
 #elif defined(BOARD_MSBA2)
+#include <config.h>
+
 static uint8_t _trans_type = TRANSCEIVER_CC1100;
-static uint16_t get_node_id(void) {
-	static int _node_id = -1;
+static uint16_t generate_node_id(void) {
+	int _node_id;
+	const int size = 1024;
 
-	if (_node_id < 0) {
-		const int size = 1024;
+	uint8_t* buffer = malloc(size);
+	for (int i=0; i<size; ++i)
+		_node_id += buffer[i];
+	free(buffer);
 
-		uint8_t* buffer = malloc(size);
-		for (int i=0; i<size; ++i)
-			_node_id += buffer[i];
-		free(buffer);
+	genrand_init(_node_id);
+	_node_id = (uint16_t) genrand_uint32();
 
-		genrand_init(_node_id);
-		_node_id = (uint16_t) genrand_uint32();
-	}
 	return (uint16_t) _node_id;
+}
+
+static uint16_t get_node_id(void) {
+	static bool first_run = true;;
+
+	if (first_run) {
+		first_run = false;
+		config_load();
+
+		if (sysconfig.radio_address == 0) {
+			sysconfig.id = generate_node_id();
+			sysconfig.radio_address = (uint8_t) sysconfig.id;
+			sysconfig.radio_channel = 1;
+
+			config_save();
+		}
+	}
+
+	return sysconfig.id;
 }
 #endif
 

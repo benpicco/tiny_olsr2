@@ -27,7 +27,7 @@ EXTERNAL_MODULES +=$(OONFBASE)
 EXTERNAL_MODULES +=$(OLSR_NODE)
 export EXTERNAL_MODULES
 
-export CFLAGS = -DRIOT -DENABLE_NAME
+export CFLAGS = -DRIOT -DENABLE_NAME -ggdb
 
 ## Modules to include. 
 
@@ -44,6 +44,7 @@ USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += random
+USEMODULE += config
 USEMODULE += transceiver
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
@@ -52,7 +53,7 @@ USEMODULE += olsr2
 USEMODULE += udp_ping
 ifeq ($(BOARD),native)
 	USEMODULE += nativenet
-	export CFLAGS += -DBOARD_NATIVE -DINIT_ON_START -ggdb
+	export CFLAGS += -DBOARD_NATIVE -DINIT_ON_START
 endif
 ifeq ($(BOARD),msba2)
 	USEMODULE += gpioint
