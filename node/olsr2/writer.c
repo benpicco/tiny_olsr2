@@ -207,7 +207,7 @@ void writer_send_hello(void) {
 }
 
 void writer_send_tc(void) {
-	if (!send_tc_messages)
+	if (!is_sending_tc())
 		return;
 
 	DEBUG("[TC]");

@@ -118,10 +118,10 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __att
 #endif
 
 	/* reset MPR selector state, will be set by _cb_nhdp_blocktlv_address_okay */
-	if (current_node->mpr_selector == 0)
-		send_tc_messages = false;
-	else
-		current_node->mpr_selector = 0;
+	current_node->mpr_selector = 0;
+
+	if (current_node->pending)
+		return RFC5444_DROP_PACKET;
 
 	return RFC5444_OKAY;
 }
@@ -143,14 +143,11 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (netaddr_cmp(&cont->addr, get_local_addr()) == 0) {
 
 		/* node selected us as mpr */
-		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv)) {
+		if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_MPR].tlv))
 			current_node->mpr_selector = 1;
-			send_tc_messages = true;
-		}
-	} else {
-		if (!current_node->pending)
-			add_olsr_node(&cont->addr, current_src, vtime, 2, name);
-	}
+
+	} else
+		add_olsr_node(&cont->addr, current_src, vtime, 2, name);
 
 	return RFC5444_OKAY;
 }

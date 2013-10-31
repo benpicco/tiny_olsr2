@@ -11,7 +11,7 @@
 
 #define TC_HOP_LIMIT	16
 
-#define HYST_SCALING	0.5
+#define HYST_SCALING	0.4
 #define HYST_LOW	0.3
 #define HYST_HIGH	0.8
 

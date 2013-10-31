@@ -6,8 +6,6 @@
 
 #include "node.h"
 
-extern bool send_tc_messages;		/* only send TC messages when we are selected as MPR */
-
 struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime);
 
 void print_neighbors(void);

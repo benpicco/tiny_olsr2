@@ -9,8 +9,6 @@
 
 #include "common/avl.h"
 
-bool send_tc_messages;
-
 static struct olsr_node* _node_replace(struct olsr_node* old_n) {
 	struct olsr_node* new_n = calloc(1, sizeof (struct nhdp_node));
 

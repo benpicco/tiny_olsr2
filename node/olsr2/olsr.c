@@ -14,6 +14,12 @@
 #include "constants.h"
 #include "list.h"
 
+static bool send_tc_messages;
+
+bool is_sending_tc(void) {
+	return send_tc_messages;
+}
+
 static struct olsr_node* _new_olsr_node(struct netaddr* addr,
 	uint8_t distance, uint8_t vtime, char* name) {
 
@@ -157,6 +163,7 @@ static void _update_link_quality(struct nhdp_node* node) {
 void remove_expired(struct netaddr* force_addr) {
 	TRACE_FUN("%s", netaddr_to_str_s(&nbuf[0], force_addr));
 
+	send_tc_messages = false;
 	time_t _now = time_now();
 	struct olsr_node *node, *safe;
 	avl_for_each_element_safe(get_olsr_head(), node, node, safe) {
@@ -164,6 +171,9 @@ void remove_expired(struct netaddr* force_addr) {
 		/* only do so in the periodic checks */
 		if (node->type == NODE_TYPE_NHDP && force_addr == NULL)
 			_update_link_quality(h1_deriv(node));
+
+		if (node->type == NODE_TYPE_NHDP && node->mpr_selector)
+			send_tc_messages = true;
 
 		char skipped;
 		struct alt_route *route, *prev;
