@@ -5,7 +5,7 @@ LIBDIR=../../oonf_api/build
 
 SRC=../node/olsr2
 
-CFLAGS=-Wall -Wextra -O3 -std=gnu99 -DENABLE_NAME -DENABLE_DEBUG_OLSR $(INCLUDE)
+CFLAGS=-Wall -Wextra -O3 -ggdb -std=gnu99 -DENABLE_NAME -DENABLE_DEBUG_OLSR $(INCLUDE)
 LDFLAGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run

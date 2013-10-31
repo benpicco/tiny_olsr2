@@ -14,6 +14,9 @@ bool send_tc_messages;
 static struct olsr_node* _node_replace(struct olsr_node* old_n) {
 	struct olsr_node* new_n = calloc(1, sizeof (struct nhdp_node));
 
+	if (new_n == NULL)
+		return old_n;
+
 	/* remove things that held a pointer to this */
 	avl_remove(get_olsr_head(), &old_n->node);
 	bool _free_node = remove_free_node(old_n);
@@ -39,7 +42,16 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 	if (n == NULL) {
 		DEBUG("\tadding new neighbor: %s", netaddr_to_str_s(&nbuf[0], addr));
 		n = calloc(1, sizeof(struct nhdp_node));
+
+		if (n == NULL)
+			return NULL;
+
 		n->addr = netaddr_dup(addr);
+
+		if (n->addr == NULL) {
+			free(n);
+			return NULL;
+		}
 
 		n->type = NODE_TYPE_NHDP;
 		n->distance = 1;
@@ -69,7 +81,7 @@ void print_neighbors(void) {
 
 	DEBUG("1-hop neighbors:");
 	avl_for_each_element(get_olsr_head(), node, node) {
-		if (node->distance == 1)
+		if (node->distance == 1 && node->type == NODE_TYPE_NHDP)
 			DEBUG("\tneighbor: %s (%s) (mpr for %d nodes)",
 				node->name,
 				netaddr_to_str_s(&nbuf[0], node->addr),

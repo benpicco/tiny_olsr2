@@ -65,7 +65,7 @@ _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0, &time_encoded, sizeof(time_encoded));
 
 #ifdef ENABLE_NAME
-	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, local_name, strlen(local_name));
+	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, local_name, strlen(local_name) + 1);
 #endif
 }
 
@@ -92,7 +92,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 #ifdef ENABLE_NAME
 		if (neighbor->name)
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_NODE_NAME],
-				neighbor->name, strlen(neighbor->name), false);
+				neighbor->name, strlen(neighbor->name) + 1, false);
 #endif
 	}
 }
@@ -104,7 +104,7 @@ _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr) {
 	rfc5444_writer_add_messagetlv(wr, RFC5444_MSGTLV_VALIDITY_TIME, 0, &time_encoded, sizeof(time_encoded));
 
 #ifdef ENABLE_NAME
-	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, local_name, strlen(local_name));
+	rfc5444_writer_add_messagetlv(wr, RFC5444_TLV_NODE_NAME, 0, local_name, strlen(local_name) + 1);
 #endif
 }
 
@@ -130,7 +130,7 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 #ifdef ENABLE_NAME
 		if (node->name)
 			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_NODE_NAME],
-				node->name, strlen(node->name), false);
+				node->name, strlen(node->name) + 1, false);
 #endif
 	}
 }

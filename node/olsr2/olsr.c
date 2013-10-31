@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef ENABLE_NAME
+#include <string.h>
+#endif
+
 #include "common/netaddr.h"
 
 #include "olsr.h"
@@ -14,13 +18,24 @@ static struct olsr_node* _new_olsr_node(struct netaddr* addr,
 	uint8_t distance, uint8_t vtime, char* name) {
 
 	struct olsr_node* n = calloc(1, sizeof(struct olsr_node));
+
+	if (n == NULL)
+		return NULL;
+
 	n->addr = netaddr_dup(addr);
+
+	if (n->addr == NULL) {
+		free(n);
+		return NULL;
+	}
+
 	n->node.key = n->addr;
 	n->type = NODE_TYPE_OLSR;
 	n->distance = distance;
 	n->expires = time_now() + vtime;
 #ifdef ENABLE_NAME
-	n->name = name;
+	if (name)
+		n->name = strdup(name);
 #endif
 
 	avl_insert(get_olsr_head(), &n->node);
@@ -83,6 +98,10 @@ static void _remove_olsr_node(struct olsr_node* node) {
 	remove_default_node(node);
 	_update_children(node->addr, node->addr);
 
+#ifdef ENABLE_NAME
+	if (node->name)
+		free(node->name);
+#endif
 	netaddr_free(node->addr);
 	free(node);
 }
@@ -189,9 +208,15 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 	if (n == NULL)
 		n = _new_olsr_node(addr, distance, vtime, name);
 
+	if (n == NULL) {
+		puts("ERROR: add_olsr_node failed - out of memory");
+		return;
+	}
+
 	if (n->last_addr == NULL) {
 #ifdef ENABLE_NAME
-		n->name = name;
+		if (n->name == NULL)
+			n->name = strdup(name);
 #endif
 		add_other_route(n, last_addr, vtime);
 		add_free_node(n);

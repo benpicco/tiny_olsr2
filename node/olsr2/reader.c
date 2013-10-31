@@ -104,6 +104,11 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __att
 
 	current_node = add_neighbor(current_src, vtime);
 
+	if (current_node == NULL) {
+		puts("ERROR: add_neighbor failed - out of memory");
+		return RFC5444_DROP_PACKET;
+	}
+
 #ifdef ENABLE_NAME
 	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
 		if (!current_node->name)
@@ -126,10 +131,10 @@ static enum rfc5444_result
 _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	struct rfc5444_reader_tlvblock_entry* tlv;
 
-	char* name = 0;
+	char* name = NULL;
 #ifdef ENABLE_NAME
 	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
-		name = strndup((char*) tlv->single_value, tlv->length); // memory leak
+		name = (char*) tlv->single_value;
 		DEBUG("\t2-hop neighbor: %s (%s)", name, netaddr_to_str_s(&nbuf[0], &cont->addr));
 	}
 #endif
@@ -175,14 +180,7 @@ _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (is_known_msg(&cont->orig_addr, cont->seqno, vtime))
 		return RFC5444_DROP_PACKET;
 
-#ifdef ENABLE_NAME
-	if (_olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
-		char* _name = strndup((char*) _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _olsr_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
-		DEBUG("\tfrom: %s (%s)", _name, netaddr_to_str_s(&nbuf[0], &cont->orig_addr));
-		free(_name);
-	}
-#endif
-
+	DEBUG("\tfrom: %s", netaddr_to_str_s(&nbuf[0], &cont->orig_addr));
 	DEBUG("\tsender: %s", netaddr_to_str_s(&nbuf[0], current_src));
 	DEBUG("\tseqno: %d", cont->seqno);
 	DEBUG("\thops: %d", cont->hopcount);
@@ -204,7 +202,7 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 
 #ifdef ENABLE_NAME
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
-		name = strndup((char*) tlv->single_value, tlv->length);
+		name = (char*) tlv->single_value;
 		DEBUG("\tannounces: %s (%s)", name, netaddr_to_str_s(&nbuf[0], &cont->addr));
 	}
 #endif

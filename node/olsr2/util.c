@@ -18,6 +18,10 @@ const char* netaddr_to_str_s(struct netaddr_str* dst, const struct netaddr* src)
 
 struct netaddr* netaddr_dup(struct netaddr* addr) {
 	struct netaddr_rc* addr_new = calloc(1, sizeof(struct netaddr_rc));
+
+	if (addr_new == NULL)
+		return NULL;
+
 	addr_new->_refs = 1;
 	return memcpy(addr_new, addr, sizeof(struct netaddr));
 }
