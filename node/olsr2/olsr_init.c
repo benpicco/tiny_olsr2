@@ -14,6 +14,7 @@
 #include <mutex.h>
 #include <destiny.h>
 #include <random.h>
+#include <config.h>
 
 #include "rfc5444/rfc5444_writer.h"
 
@@ -139,7 +140,10 @@ ipv6_addr_t* get_ip_by_name(char* name) {
 void olsr_init(void) {
 
 #ifdef ENABLE_NAME
-	local_name = gen_name(_name, sizeof _name);
+	if (sysconfig.radio_channel == 0)
+		local_name = gen_name(_name, sizeof _name);
+	else
+		local_name = &sysconfig.name;
 #endif
 	mutex_init(&olsr_data);
 	node_init();

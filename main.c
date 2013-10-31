@@ -100,6 +100,20 @@ void ping(char* str) {
 }
 #endif /* ENABLE_NAME */
 
+void set_id(char* str) {
+	str += strlen("set_id ");
+	uint16_t id = atoi(str);
+
+	sysconfig.id = id;
+	sysconfig.radio_address = (uint8_t) id;
+
+	char* name = strstr(str, " ") + 1;
+	if (name != NULL)
+		strncpy(&sysconfig.name, name, sizeof sysconfig.name);
+
+	config_save();
+}
+
 void init(char *str) {
 
 	rtc_enable();
@@ -118,6 +132,7 @@ const shell_command_t shell_commands[] = {
 	{"init", "start the IP stack with OLSRv2", init},
 #endif
 	{"routes", "print all known nodes and routes", print_topology_set},
+	{"set_id", "", set_id},
 #ifdef ENABLE_NAME
 	{"ping", "send packets to a node", ping},
 #endif
