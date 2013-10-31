@@ -143,7 +143,7 @@ void olsr_init(void) {
 	if (sysconfig.radio_channel == 0)
 		local_name = gen_name(_name, sizeof _name);
 	else
-		local_name = &sysconfig.name;
+		local_name = sysconfig.name;
 #endif
 	mutex_init(&olsr_data);
 	node_init();
