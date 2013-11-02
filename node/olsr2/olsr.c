@@ -225,7 +225,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 
 	if (n->last_addr == NULL) {
 #ifdef ENABLE_NAME
-		if (n->name == NULL)
+		if (n->name == NULL && name != NULL)
 			n->name = strdup(name);
 #endif
 		add_other_route(n, last_addr, vtime);
