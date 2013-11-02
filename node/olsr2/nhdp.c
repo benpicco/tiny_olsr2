@@ -34,7 +34,7 @@ static struct olsr_node* _node_replace(struct olsr_node* old_n) {
 	return new_n;
 }
 
-struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
+struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime, char* name) {
 	struct olsr_node* n = get_node(addr);
 
 	if (n == NULL) {
@@ -55,6 +55,10 @@ struct olsr_node* add_neighbor(struct netaddr* addr, uint8_t vtime) {
 		n->distance = 1;
 		h1_deriv(n)->link_quality = HYST_SCALING;
 		n->pending = 1;
+#ifdef ENABLE_NAME
+		if (name != NULL)
+			n->name = strdup(name);
+#endif
 
 		n->node.key = n->addr;
 		avl_insert(get_olsr_head(), &n->node);

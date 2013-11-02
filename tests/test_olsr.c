@@ -20,8 +20,16 @@ static struct netaddr addrs[] = {
 };
 
 static void test_add_neighbors() {
-	add_neighbor(&addrs[0], 5);
-	add_olsr_node(&addrs[1], &addrs[1], 5, 1, 0);
+	add_neighbor(&addrs[0], 5, 0);
+	add_olsr_node(&addrs[1], &addrs[0], 5, 1, 0);
+
+	remove_expired(0);
+	remove_expired(0);
+	remove_expired(0);
+
+	add_olsr_node(&addrs[2], &addrs[1], 5, 1, 0);
+
+	print_topology_set();
 }
 
 int main(void) {

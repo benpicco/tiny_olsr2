@@ -102,20 +102,20 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __att
 	/* VTIME is defined as mandatory */
 	vtime = rfc5444_timetlv_decode(*_nhdp_message_tlvs[IDX_TLV_VTIME].tlv->single_value);
 
-	current_node = add_neighbor(current_src, vtime);
+	char* name = NULL;
+#ifdef ENABLE_NAME
+	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
+		name = _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value;
+		DEBUG("\tfrom: %s (%s)", name, netaddr_to_str_s(&nbuf[0], current_src));
+	}
+#endif
+
+	current_node = add_neighbor(current_src, vtime, name);
 
 	if (current_node == NULL) {
 		puts("ERROR: add_neighbor failed - out of memory");
 		return RFC5444_DROP_PACKET;
 	}
-
-#ifdef ENABLE_NAME
-	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
-		if (!current_node->name)
-			current_node->name = strndup((char*) _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value, _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->length);
-		DEBUG("\tfrom: %s (%s)", current_node->name, netaddr_to_str_s(&nbuf[0], current_src));
-	}
-#endif
 
 	/* reset MPR selector state, will be set by _cb_nhdp_blocktlv_address_okay */
 	current_node->mpr_selector = 0;
