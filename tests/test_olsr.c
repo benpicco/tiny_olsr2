@@ -19,6 +19,30 @@ static struct netaddr addrs[] = {
 	{ {0x20,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,6 }, AF_INET6, 128 }
 };
 
+static bool is_next_hop(uint8_t a, uint8_t b) {
+	struct olsr_node* an = get_node(&addrs[a]);
+	struct olsr_node* bn = get_node(&addrs[b]);
+
+	return netaddr_cmp(bn->addr, an->next_addr) == 0;
+}
+
+static bool is_last_hop(uint8_t a, uint8_t b) {
+	struct olsr_node* an = get_node(&addrs[a]);
+	struct olsr_node* bn = get_node(&addrs[b]);
+
+	return netaddr_cmp(bn->addr, an->last_addr) == 0;
+}
+
+static bool is_mpr_neigh(uint8_t a, uint8_t count) {
+	struct olsr_node* n = get_node(&addrs[a]);
+	if (n->type != NODE_TYPE_NHDP) {
+		puts("ERROR: wrong node type");
+		return false;
+	}
+
+	return h1_deriv(n)->mpr_neigh == count;
+}
+
 static void test_add_neighbors() {
 	add_neighbor(&addrs[0], 5, 0);
 	add_olsr_node(&addrs[1], &addrs[0], 5, 1, 0);
@@ -28,8 +52,18 @@ static void test_add_neighbors() {
 	remove_expired(0);
 
 	add_olsr_node(&addrs[2], &addrs[1], 5, 1, 0);
+	remove_expired(&addrs[2]);
 
 	print_topology_set();
+
+	START_TEST();
+
+	CHECK_TRUE(is_last_hop(1, 0), "is_last_hop(%u, %u)", 1, 0);
+	CHECK_TRUE(is_next_hop(1, 0), "is_next_hop(%u, %u)", 1, 0);
+	CHECK_TRUE(is_next_hop(2, 0), "is_next_hop(%u, %u)", 2, 0);
+	CHECK_TRUE(is_mpr_neigh(0, 1), "mpr_neigh(%u) != %u", 0, 1);
+
+	END_TEST();
 }
 
 int main(void) {
