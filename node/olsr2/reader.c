@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "common/common_types.h"
 #include "common/netaddr.h"
@@ -105,7 +106,7 @@ _cb_nhdp_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont __att
 	char* name = NULL;
 #ifdef ENABLE_NAME
 	if (_nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv) {
-		name = _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->_value;
+		name = (char*) _nhdp_message_tlvs[IDX_TLV_NODE_NAME].tlv->single_value;
 		DEBUG("\tfrom: %s (%s)", name, netaddr_to_str_s(&nbuf[0], current_src));
 	}
 #endif
