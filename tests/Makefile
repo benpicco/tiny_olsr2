@@ -12,7 +12,8 @@ test_list: test_list.c ../node/olsr2/list.c cunit/cunit.c
 test_olsr: $(objects) test_olsr.o
 	cc $(objects) test_olsr.o -o test_olsr $(LDFLAGS)
 
-run:	test_olsr
+run:	test_list test_olsr
+	LD_LIBRARY_PATH=$(LIBDIR) ./test_list
 	LD_LIBRARY_PATH=$(LIBDIR) ./test_olsr
 
 clean:

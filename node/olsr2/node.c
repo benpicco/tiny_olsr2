@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "node.h"
 #include "list.h"
 #include "debug.h"
@@ -62,6 +64,12 @@ void add_other_route(struct olsr_node* node, struct netaddr* last_addr, uint8_t 
 	}
 
 	route = simple_list_add_head(&node->other_routes);
+
+	if (route == NULL) {
+		printf("ERROR: out of memory in %s\n", __FUNCTION__);
+		return;
+	}
+
 	route->last_addr = netaddr_reuse(last_addr);
 	route->expires = time_now() + vtime;
 }
@@ -71,6 +79,7 @@ void remove_default_node(struct olsr_node* node) {
 		_decrease_mpr_neigh(node);
 		node->last_addr = netaddr_free(node->last_addr);
 	}
+
 	node->next_addr = netaddr_free(node->next_addr);
 }
 
@@ -85,12 +94,19 @@ void push_default_route(struct olsr_node* node) {
 
 	_decrease_mpr_neigh(node);
 	struct alt_route* route = simple_list_find_memcmp(node->other_routes, last_addr);
+
 	if (route != NULL) {
 		node->last_addr = netaddr_free(node->last_addr);
 		return;
 	}
 
 	route = simple_list_add_head(&node->other_routes);
+
+	if (route == NULL) {
+		printf("ERROR: out of memory in %s\n", __FUNCTION__);
+		return;
+	}
+
 	route->expires = node->expires;
 	route->last_addr = node->last_addr;
 	node->last_addr = NULL;

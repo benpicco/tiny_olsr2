@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "olsr.h"
 #include "list.h"
@@ -24,6 +25,11 @@ void add_free_node(struct olsr_node* node) {
 	if (n == NULL) {
 		uint8_t hops = node->distance;
 		n = simple_list_add_before(&_pending_head, hops);
+	}
+
+	if (n == NULL) {
+		printf("ERROR: out of memory in %s\n", __FUNCTION__);
+		return;
 	}
 
 	n->node = node;

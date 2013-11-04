@@ -8,9 +8,14 @@ struct simple_list_elem {
 
 void* _simple_list_add_tail(struct simple_list_elem** head, size_t size) {
 	struct simple_list_elem* _head = *head;
+	void* mem;
+
+	/* check out-of-memory condition */
+	if ((mem = calloc(1, size)) == NULL)
+		return NULL;
 
 	if (!_head) {
-		*head = calloc(1, size);
+		*head = mem;
 		return *head;
 	}
 
@@ -18,14 +23,19 @@ void* _simple_list_add_tail(struct simple_list_elem** head, size_t size) {
 		_head = _head->next;
 	}
 
-	_head = _head->next = calloc(1, size);
+	_head = _head->next = mem;
 	return _head;
 }
 
 void* _simple_list_add_head(struct simple_list_elem** head, size_t size) {
 	struct simple_list_elem* _head = *head;
+	void* mem;
 
-	*head = calloc(size, 1);
+	/* check out-of-memory condition */
+	if ((mem = calloc(1, size)) == NULL)
+		return NULL;
+
+	*head = mem;
 	(*head)->next = _head;
 
 	return *head;
@@ -34,9 +44,14 @@ void* _simple_list_add_head(struct simple_list_elem** head, size_t size) {
 void* _simple_list_add_before(struct simple_list_elem** head, size_t size, int needle, int offset) {
 	struct simple_list_elem* _head = *head;
 	struct simple_list_elem* prev = 0;
+	void* mem;
+
+	/* check out-of-memory condition */
+	if ((mem = calloc(1, size)) == NULL)
+		return NULL;
 
 	if (!_head) {
-		*head = calloc(1, size);
+		*head = mem;
 		return *head;
 	}
 
@@ -44,12 +59,12 @@ void* _simple_list_add_before(struct simple_list_elem** head, size_t size, int n
 		int* buff = (void*) _head + offset;
 		if (*buff > needle) {
 			if (prev) {
-				prev->next = calloc(1, size);
+				prev->next = mem;
 				prev->next->next = _head;
 				return prev->next;
 			}
 
-			prev = calloc(1, size);
+			prev = mem;
 			prev->next = _head;
 			*head = prev;
 			return prev;
@@ -58,7 +73,7 @@ void* _simple_list_add_before(struct simple_list_elem** head, size_t size, int n
 		_head = _head->next;
 	}
 
-	_head = prev->next = calloc(1, size);
+	_head = prev->next = mem;
 	return _head;
 }
 
