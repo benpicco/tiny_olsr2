@@ -143,8 +143,7 @@ void test_for_each_remove() {
 	}
 	CHECK_TRUE(i == max / 2 - 1, "missed an entry");
 
-	simple_list_for_each_safe(head, node, prev, skipped)
-		simple_list_for_each_remove(&head, node, prev);
+	simple_list_clear(&head);
 
 	CHECK_TRUE(head == NULL, "list not cleared properly");
 

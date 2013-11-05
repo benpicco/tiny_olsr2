@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "list.h"
 
@@ -6,12 +7,11 @@ struct simple_list_elem {
 	struct simple_list_elem* next;
 };
 
-void* _simple_list_add_tail(struct simple_list_elem** head, size_t size) {
+void* _simple_list_add_tail(struct simple_list_elem** head, void* mem) {
 	struct simple_list_elem* _head = *head;
-	void* mem;
 
 	/* check out-of-memory condition */
-	if ((mem = calloc(1, size)) == NULL)
+	if (mem == NULL)
 		return NULL;
 
 	if (!_head) {
@@ -27,12 +27,11 @@ void* _simple_list_add_tail(struct simple_list_elem** head, size_t size) {
 	return _head;
 }
 
-void* _simple_list_add_head(struct simple_list_elem** head, size_t size) {
+void* _simple_list_add_head(struct simple_list_elem** head, void* mem) {
 	struct simple_list_elem* _head = *head;
-	void* mem;
 
 	/* check out-of-memory condition */
-	if ((mem = calloc(1, size)) == NULL)
+	if (mem == NULL)
 		return NULL;
 
 	*head = mem;
@@ -41,13 +40,12 @@ void* _simple_list_add_head(struct simple_list_elem** head, size_t size) {
 	return *head;
 }
 
-void* _simple_list_add_before(struct simple_list_elem** head, size_t size, int needle, int offset) {
+void* _simple_list_add_before(struct simple_list_elem** head, void* mem, int needle, int offset) {
 	struct simple_list_elem* _head = *head;
 	struct simple_list_elem* prev = 0;
-	void* mem;
 
 	/* check out-of-memory condition */
-	if ((mem = calloc(1, size)) == NULL)
+	if (mem == NULL)
 		return NULL;
 
 	if (!_head) {
@@ -104,7 +102,7 @@ void* _simple_list_find_cmp(struct simple_list_elem* head, void* needle, int off
 	return 0;
 }
 
-bool _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem* node) {
+void* _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem* node, int keep) {
 	struct simple_list_elem* _head = *head;
 	struct simple_list_elem* prev = 0;
 
@@ -113,14 +111,31 @@ bool _simple_list_remove(struct simple_list_elem** head, struct simple_list_elem
 		_head = _head->next;
 	}
 
+	/* not found */
 	if (_head != node)
-		return false; // not found
+		return NULL;
 
-	if (!prev)	// remove head
+	/* remove head */
+	if (!prev)
 		*head = _head->next;
 	else
 		prev->next = node->next;
 
+	if (keep)
+		return node;
+
 	free(node);
-	return true;
+	return (void*) 1;
+}
+
+void _simple_list_clear(struct simple_list_elem** head) {
+	struct simple_list_elem *tmp, *_head = *head;
+
+	while (_head != NULL) {
+		tmp = _head;
+		_head = _head->next;
+		free(tmp);
+	}
+
+	*head = NULL;
 }

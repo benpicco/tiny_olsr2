@@ -289,6 +289,7 @@ bool is_known_msg(struct netaddr* addr, uint16_t seq_no, uint8_t vtime) {
 void print_topology_set(void) {
 	DEBUG();
 	DEBUG("---[ Topology Set ]--");
+	DEBUG(" [ %s | %s ]\n", netaddr_to_str_s(&nbuf[0], get_local_addr()), local_name);
 
 	struct olsr_node* node;
 	struct alt_route* route;
