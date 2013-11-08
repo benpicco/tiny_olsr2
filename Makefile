@@ -38,7 +38,6 @@ USEMODULE += net_help
 USEMODULE += sixlowpan
 USEMODULE += destiny
 USEMODULE += uart0
-USEMODULE += semaphore
 USEMODULE += posix
 USEMODULE += ps
 USEMODULE += shell
@@ -61,8 +60,8 @@ ifeq ($(BOARD),msba2)
 	export CFLAGS += -DBOARD_MSBA2 -DINIT_ON_START
 endif
 
-export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/sys/net/destiny/include -I$(RIOTBASE)/drivers/cc110x_ng/include \
-		-I$(RIOTBASE)/sys/net/sixlowpan/include -I$(RIOTBASE)/sys/net/net_help/ -I$(OONFBASE)/src-api -I$(RIOTLIBS) \
+export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/drivers/cc110x_ng/include \
+		-I$(RIOTBASE)/sys/net/include -I$(OONFBASE)/src-api -I$(RIOTLIBS) \
 		-I$(OLSR_NODE)/udp_ping/include -I$(OLSR_NODE)/olsr2/include
 
 include $(RIOTBASE)/Makefile.include
