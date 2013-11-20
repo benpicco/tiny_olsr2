@@ -107,10 +107,11 @@ void set_id(char* str) {
 	sysconfig.id = id;
 	sysconfig.radio_address = (uint8_t) id;
 
+#ifdef ENABLE_NAME
 	char* name = strstr(str, " ") + 1;
 	if (name != NULL)
 		strncpy(sysconfig.name, name, sizeof sysconfig.name);
-
+#endif
 	config_save();
 }
 
