@@ -169,13 +169,13 @@ writer_init(write_packet_func_ptr ptr) {
 	struct rfc5444_writer_message *_tc_msg;
 
 	writer.msg_buffer = msg_buffer;
-	writer.msg_size	 = sizeof(msg_buffer);
+	writer.msg_size = sizeof(msg_buffer);
 	writer.addrtlv_buffer = msg_addrtlvs;
 	writer.addrtlv_size	 = sizeof(msg_addrtlvs);
 
 	interface.packet_buffer = packet_buffer;
-	interface.packet_size	 = sizeof(packet_buffer);
-	interface.sendPacket		= ptr;
+	interface.packet_size	= sizeof(packet_buffer);
+	interface.sendPacket	= ptr;
 
 	/* initialize writer */
 	rfc5444_writer_init(&writer);

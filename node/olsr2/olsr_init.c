@@ -100,7 +100,7 @@ static void olsr_sender_thread(void) {
 	DEBUG("olsr_sender_thread, pid %d\n", thread_getpid());
 
 	/* message queue, so messages don't get lost */
-	msg_t msgq[2];
+	msg_t msgq[1];
 	msg_init_queue(msgq, sizeof msgq);
 
 	while (1) {
@@ -116,7 +116,7 @@ static void olsr_sender_thread(void) {
 		tmsg->interval.microseconds = genrand_uint32() % MAX_JITTER;
 
 		if (vtimer_set_msg(&tmsg->timer, tmsg->interval, thread_getpid(), tmsg) != 0)
-			DEBUG("something went wrong");
+			DEBUG("vtimer_set_msg failed, stopped sending");
 	}
 }
 

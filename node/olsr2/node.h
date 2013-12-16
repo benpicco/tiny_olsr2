@@ -48,9 +48,11 @@ struct olsr_node {
 struct nhdp_node {
 	struct olsr_node super;
 
-	uint8_t mpr_neigh;			/* number of 2-hop neighbors reached through this node
-								   aka if this value is > 0, it's a MPR */
-	float link_quality;			/* average packet loss, decides if it should be used as 1-hop neigh */
+	/* number of 2-hop neighbors reached through this node aka if this value is > 0, it's a MPR */
+	uint8_t mpr_neigh;
+
+	/* average packet loss, decides if it should be used as 1-hop neigh */
+	float link_quality;
 };
 
 static inline struct olsr_node* h1_super(struct nhdp_node* n)		{ return (struct olsr_node*) n; }
