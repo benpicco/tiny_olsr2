@@ -26,7 +26,7 @@ EXTERNAL_MODULES +=$(OONFBASE)
 EXTERNAL_MODULES +=$(OLSR_NODE)
 export EXTERNAL_MODULES
 
-export CFLAGS = -DRIOT -ggdb
+export CFLAGS = -DRIOT -DENABLE_NAME -ggdb
 
 ## Modules to include. 
 

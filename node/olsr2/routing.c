@@ -55,7 +55,7 @@ void fill_routing_table(void) {
 	DEBUG("update routing table");
 
 	struct free_node* fn;
-	bool noop = false;	/* when in an iteration there was nothing remove from free nodes */
+	bool noop = false;	/* when in an iteration there was nothing removed from free nodes */
 	while (head && !noop) {
 		noop = true;	/* if no nodes could be removed in an iteration, abort */
 		struct free_node *prev;
