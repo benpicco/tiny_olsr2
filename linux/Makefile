@@ -10,7 +10,8 @@ LDFLGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
 
-NODES := $(shell grep -- -\> graph.gv | while read line; do for w in $$line; do echo $$w; done; done | grep [Aa-Zz] | sort | uniq | wc -l)
+GRAPH ?= graph.gv
+NODES := $(shell grep -- -\> ${GRAPH} | while read line; do for w in $$line; do echo $$w; done; done | grep [Aa-Zz] | sort | uniq | wc -l)
 LOG_DIR := log
 
 objects = $(SRC)/main.o $(SRC)/routing.o $(SRC)/list.o $(SRC)/node.o $(SRC)/reader.o $(SRC)/writer.o $(SRC)/nhdp.o $(SRC)/olsr.o $(SRC)/util.o
@@ -22,19 +23,19 @@ dispatcher:	dispatcher.o
 
 topology_generator: topology_generator.o $(SRC)/list.o
 
-graph.pdf: graph.gv
-	-neato -Tpdf graph.gv > graph.pdf
+graph.pdf: ${GRAPH}
+	-neato -Tpdf ${GRAPH} > graph.pdf
 
-mpr_graph.pdf: graph.gv log/*.log
+mpr_graph.pdf: ${GRAPH} log/*.log
 	@for i in $(shell seq 1 ${NODES}) ; do \
 		tac log/$$i.log | sed '1,/END MPR/d' | sed '/BEGIN MPR/,$$d' | tac >> /tmp/mprs.gv ; \
-		{ cat graph.gv ; echo "subgraph mpr {" ; echo "edge [ color = blue ]" ; cat /tmp/mprs.gv ; echo "}}" ;} | neato -Tpdf > mpr_graph.pdf ; \
+		{ cat ${GRAPH} ; echo "subgraph mpr {" ; echo "edge [ color = blue ]" ; cat /tmp/mprs.gv ; echo "}}" ;} | neato -Tpdf > mpr_graph.pdf ; \
 	done
 	@rm /tmp/mprs.gv
 
-routing_graphs: graph.gv log/*.log
+routing_graphs: ${GRAPH} log/*.log
 	@for i in $(shell seq 1 ${NODES}) ; do \
-		{ cat graph.gv; tac log/$$i.log | sed '1,/END ROUTING GRAPH/d' | sed '/BEGIN ROUTING GRAPH/,$$d' | tac; echo }; } | neato -Tpdf > log/routing_graph_$$i.pdf ; \
+		{ cat ${GRAPH}; tac log/$$i.log | sed '1,/END ROUTING GRAPH/d' | sed '/BEGIN ROUTING GRAPH/,$$d' | tac; echo }; } | neato -Tpdf > log/routing_graph_$$i.pdf ; \
 	done
 
 clean:
@@ -56,7 +57,8 @@ kill:
 	-killall dispatcher
 
 run:	dispatcher node kill graph.pdf
-	LD_LIBRARY_PATH=$(LIBDIR) ./dispatcher graph.gv 9000 &
+	@echo Starting ${NODES} nodes
+	LD_LIBRARY_PATH=$(LIBDIR) ./dispatcher ${GRAPH} 9000 &
 
 	@mkdir -p $(LOG_DIR)
 	@for i in $(shell seq 1 ${NODES}) ; do \
