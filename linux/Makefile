@@ -11,6 +11,8 @@ LDFLGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 .PHONY: clean run
 
 GRAPH ?= graph.gv
+DOT   ?= neato
+
 NODES := $(shell grep -- -\> ${GRAPH} | while read line; do for w in $$line; do echo $$w; done; done | grep [Aa-Zz] | sort | uniq | wc -l)
 LOG_DIR := log
 
@@ -24,18 +26,18 @@ dispatcher:	dispatcher.o
 topology_generator: topology_generator.o $(SRC)/list.o
 
 graph.pdf: ${GRAPH}
-	-neato -Tpdf ${GRAPH} > graph.pdf
+	-${DOT} -Tpdf ${GRAPH} > graph.pdf
 
 mpr_graph.pdf: ${GRAPH} log/*.log
 	@for i in $(shell seq 1 ${NODES}) ; do \
 		tac log/$$i.log | sed '1,/END MPR/d' | sed '/BEGIN MPR/,$$d' | tac >> /tmp/mprs.gv ; \
-		{ cat ${GRAPH} ; echo "subgraph mpr {" ; echo "edge [ color = blue ]" ; cat /tmp/mprs.gv ; echo "}}" ;} | neato -Tpdf > mpr_graph.pdf ; \
+		{ cat ${GRAPH} ; echo "subgraph mpr {" ; echo "edge [ color = blue ]" ; cat /tmp/mprs.gv ; echo "}}" ;} | ${DOT} -Tpdf > mpr_graph.pdf ; \
 	done
 	@rm /tmp/mprs.gv
 
 routing_graphs: ${GRAPH} log/*.log
 	@for i in $(shell seq 1 ${NODES}) ; do \
-		{ cat ${GRAPH}; tac log/$$i.log | sed '1,/END ROUTING GRAPH/d' | sed '/BEGIN ROUTING GRAPH/,$$d' | tac; echo }; } | neato -Tpdf > log/routing_graph_$$i.pdf ; \
+		{ cat ${GRAPH}; tac log/$$i.log | sed '1,/END ROUTING GRAPH/d' | sed '/BEGIN ROUTING GRAPH/,$$d' | tac; echo }; } | ${DOT} -Tpdf > log/routing_graph_$$i.pdf ; \
 	done
 
 clean:

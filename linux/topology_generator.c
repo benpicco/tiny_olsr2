@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 			generate_links(node);
 	}
 
-	puts("}}");
+	puts("}");
 
 	return 0;
 }
