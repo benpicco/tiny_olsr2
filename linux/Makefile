@@ -1,12 +1,12 @@
 CC=clang
 
-INCLUDE=-I../../oonf_api/src-api -I../../oonf_api/build
+INCLUDE=-I../../oonf_api/src-api -I../../oonf_api/build -I../node/olsr2
 LIBDIR=../../oonf_api/build
 
 SRC=../node/olsr2
 
 CFLAGS=-Wall -Wextra -O3 -ggdb -std=gnu99 -DENABLE_NAME -DENABLE_DEBUG_OLSR $(INCLUDE)
-LDFLAGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
+LDFLGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
 
@@ -16,9 +16,11 @@ LOG_DIR := log
 objects = $(SRC)/main.o $(SRC)/routing.o $(SRC)/list.o $(SRC)/node.o $(SRC)/reader.o $(SRC)/writer.o $(SRC)/nhdp.o $(SRC)/olsr.o $(SRC)/util.o
 
 node:	$(objects)
-	cc $(objects) -o $(SRC)/node $(LDFLAGS)
+	cc $(objects) -o $(SRC)/node $(LDFLGS)
 
 dispatcher:	dispatcher.o
+
+topology_generator: topology_generator.o $(SRC)/list.o
 
 graph.pdf: graph.gv
 	-neato -Tpdf graph.gv > graph.pdf
