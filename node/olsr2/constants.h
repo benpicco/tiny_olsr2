@@ -36,6 +36,7 @@ enum {
 	IDX_ADDRTLV_LINK_STATUS,	/* link status TODO */
 	IDX_ADDRTLV_MPR,		/* neighbor selected as mpr */
 	IDX_ADDRTLV_NODE_NAME,		/* 'name' of a node from graph.gv */
+	IDX_ADDRTLV_METRIC,
 };
 
 #endif /* CONSTANTS_H_ */

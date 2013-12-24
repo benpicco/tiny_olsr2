@@ -56,6 +56,7 @@ static struct rfc5444_writer_tlvtype _olsr_addrtlvs[] = {
 #ifdef ENABLE_NAME
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
+	[IDX_ADDRTLV_METRIC] = { .type = RFC5444_LINKMETRIC_OUTGOING_LINK },
 };
 
 /* add TLVs to HELLO message */

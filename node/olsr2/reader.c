@@ -64,6 +64,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _olsr_address_tlvs[] = {
 #ifdef ENABLE_NAME
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
+	[IDX_ADDRTLV_METRIC] = { .type = RFC5444_LINKMETRIC_OUTGOING_LINK },
 };
 
 /* define callbacks for HELLO message */
