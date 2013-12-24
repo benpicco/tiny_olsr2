@@ -10,7 +10,7 @@ LDFLAGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
 
-NODES = $(shell grep -- -\> graph.gv | grep -o . | sort | grep [A-Z] | uniq | wc -l)
+NODES := $(shell grep -- -\> graph.gv | while read line; do for w in $$line; do echo $$w; done; done | grep [Aa-Zz] | sort | uniq | wc -l)
 LOG_DIR := log
 
 objects = $(SRC)/main.o $(SRC)/routing.o $(SRC)/list.o $(SRC)/node.o $(SRC)/reader.o $(SRC)/writer.o $(SRC)/nhdp.o $(SRC)/olsr.o $(SRC)/util.o
