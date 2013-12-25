@@ -19,9 +19,9 @@
 #include "olsr.h"
 #include "debug.h"
 
-uint8_t msg_buffer[128];
-uint8_t msg_addrtlvs[1000];
-uint8_t packet_buffer[128];
+uint8_t msg_buffer[256];
+uint8_t msg_addrtlvs[512];
+uint8_t packet_buffer[256];
 
 uint16_t seq_no = 1;
 
