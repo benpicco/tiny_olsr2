@@ -135,12 +135,6 @@ int main(int argc, char** argv) {
 	local_name = strdup(this_name);
 #endif
 
-	/* Initialize the signal mask. */
-	sigemptyset (&block_io);
-	sigaddset (&block_io, SIGIO);
-
-	enable_asynch(sockfd);
-
 	node_init();
 
 	get_local_addr()->_type = AF_INET6;
@@ -152,6 +146,12 @@ int main(int argc, char** argv) {
 
 	reader_init();
 	writer_init(write_packet);
+
+	/* Initialize the signal mask. */
+	sigemptyset (&block_io);
+	sigaddset (&block_io, SIGIO);
+
+	enable_asynch(sockfd);
 
 	bool dont_skip_tc = true;
 	while (1) {
