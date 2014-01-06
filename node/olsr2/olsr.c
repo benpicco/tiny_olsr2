@@ -14,12 +14,6 @@
 #include "constants.h"
 #include "list.h"
 
-static bool send_tc_messages;
-
-bool is_sending_tc(void) {
-	return send_tc_messages;
-}
-
 static struct olsr_node* _new_olsr_node(struct netaddr* addr,
 	uint8_t distance, uint8_t vtime, char* name) {
 
@@ -136,6 +130,7 @@ static void _update_link_quality(struct nhdp_node* node) {
 
 	if (!h1_super(node)->pending && node->link_quality < HYST_LOW) {
 		h1_super(node)->pending = 1;
+		h1_super(node)->lost = 1;
 		node->mpr_neigh = 0;
 
 		add_free_node(h1_super(node));
@@ -145,6 +140,7 @@ static void _update_link_quality(struct nhdp_node* node) {
 
 	if (h1_super(node)->pending && node->link_quality > HYST_HIGH) {
 		h1_super(node)->pending = 0;
+		h1_super(node)->lost = 0;
 
 		/* node may just have become a 1-hop node */
 		if (h1_super(node)->last_addr != NULL)
@@ -154,62 +150,37 @@ static void _update_link_quality(struct nhdp_node* node) {
 	}
 }
 
-/*
- * iterate over all elements and remove expired entries
- * if force_addr is set, we just received a TC message from this address
- * all entries, that use force_addr but were *not* updated thus were not
- * included in the last TC message, which means they should be removed
- */
-void remove_expired(struct netaddr* force_addr) {
-	TRACE_FUN("%s", netaddr_to_str_s(&nbuf[0], force_addr));
-
-	send_tc_messages = false;
+bool remove_expired(struct olsr_node* node) {
 	time_t _now = time_now();
-	struct olsr_node *node, *safe;
-	avl_for_each_element_safe(get_olsr_head(), node, node, safe) {
-		/* only use HELLO for link quality calculation */
-		/* only do so in the periodic checks */
-		if (node->type == NODE_TYPE_NHDP && force_addr == NULL)
-			_update_link_quality(h1_deriv(node));
 
-		if (node->type == NODE_TYPE_NHDP && node->mpr_selector)
-			send_tc_messages = true;
+	if (node->type == NODE_TYPE_NHDP)
+		_update_link_quality(h1_deriv(node));
 
-		char skipped;
-		struct alt_route *route, *prev;
-		simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
-			if (force_addr == NULL && _now - route->expires < HOLD_TIME)
-				continue;
-			if (force_addr != NULL && _now <= route->expires)
-				continue;
-			if (force_addr != NULL && netaddr_cmp(force_addr, route->last_addr))
-				continue;
+	char skipped;
+	struct alt_route *route, *prev;
+	simple_list_for_each_safe(node->other_routes, route, prev, skipped) {
+		if (_now - route->expires < HOLD_TIME)
+			continue;
 
-			DEBUG("alternative route to %s (%s) via %s expired, removing it",
-				node->name, netaddr_to_str_s(&nbuf[0], node->addr),
-				netaddr_to_str_s(&nbuf[1], route->last_addr));
-			simple_list_for_each_remove(&node->other_routes, route, prev);
-		}
+		DEBUG("alternative route to %s (%s) via %s expired, removing it",
+			node->name, netaddr_to_str_s(&nbuf[0], node->addr),
+			netaddr_to_str_s(&nbuf[1], route->last_addr));
+		simple_list_for_each_remove(&node->other_routes, route, prev);
+	}
 
-		if (force_addr == NULL && _now - node->expires < HOLD_TIME)
-			continue;
-		if (force_addr != NULL && _now <= node->expires)
-			continue;
-		if (force_addr != NULL && node->last_addr == NULL)
-			continue;
-		if (force_addr != NULL && netaddr_cmp(force_addr, node->last_addr))
-			continue;
+	if (_now - node->expires > HOLD_TIME) {
 
 		DEBUG("%s (%s) expired",
 			node->name, netaddr_to_str_s(&nbuf[0], node->addr));
 
-		if (node->other_routes == NULL)
+		if (node->other_routes == NULL) {
 			_remove_olsr_node(node);
-		else
+			return true;
+		} else
 			_olsr_node_expired(node);
 	}
 
-	fill_routing_table();
+	return false;
 }
 
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {

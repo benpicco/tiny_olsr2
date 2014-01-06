@@ -34,9 +34,6 @@ static enum rfc5444_result _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_
 static enum rfc5444_result _cb_olsr_blocktlv_packet_okay(struct rfc5444_reader_tlvblock_context *cont);
 static enum rfc5444_result _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont);
 
-/* will be used both for HELLO and TC messages */
-static enum rfc5444_result _cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped);
-
 /* HELLO message */
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
 	[IDX_TLV_VTIME] = { .type = RFC5444_MSGTLV_VALIDITY_TIME, .mandatory = true },
@@ -47,6 +44,7 @@ static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_message_tlvs[] = {
 
 static struct rfc5444_reader_tlvblock_consumer_entry _nhdp_address_tlvs[] = {
 	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR },
+	[IDX_ADDRTLV_LINK_STATUS] = { .type = RFC5444_ADDRTLV_LINK_STATUS },
 #ifdef ENABLE_NAME
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -61,17 +59,16 @@ static struct rfc5444_reader_tlvblock_consumer_entry _olsr_message_tlvs[] = {
 };
 
 static struct rfc5444_reader_tlvblock_consumer_entry _olsr_address_tlvs[] = {
+	[IDX_ADDRTLV_LINK_STATUS] = { .type = RFC5444_ADDRTLV_LINK_STATUS },
 #ifdef ENABLE_NAME
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
-	[IDX_ADDRTLV_METRIC] = { .type = RFC5444_LINKMETRIC_OUTGOING_LINK },
 };
 
 /* define callbacks for HELLO message */
 static struct rfc5444_reader_tlvblock_consumer _nhdp_consumer = {
 	.msg_id = RFC5444_MSGTYPE_HELLO,
 	.block_callback = _cb_nhdp_blocktlv_packet_okay,
-	.end_callback = _cb_msg_end_callback,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
@@ -84,7 +81,6 @@ static struct rfc5444_reader_tlvblock_consumer _nhdp_address_consumer = {
 static struct rfc5444_reader_tlvblock_consumer _olsr_consumer = {
 	.msg_id = RFC5444_MSGTYPE_TC,
 	.block_callback = _cb_olsr_blocktlv_packet_okay,
-	.end_callback = _cb_msg_end_callback,
 };
 
 static struct rfc5444_reader_tlvblock_consumer _olsr_address_consumer = {
@@ -140,6 +136,10 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		DEBUG("\t2-hop neighbor: %s (%s)", name, netaddr_to_str_s(&nbuf[0], &cont->addr));
 	}
 #endif
+
+	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv) && tlv->single_value == RFC5444_LINKSTATUS_LOST) {
+		// TODO, remove expired link
+	}
 
 	/* node broadcasts us as it's neighbor */
 	if (netaddr_cmp(&cont->addr, get_local_addr()) == 0) {
@@ -199,6 +199,10 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (netaddr_cmp(get_local_addr(), &cont->addr) == 0)
 		return RFC5444_DROP_ADDRESS;
 
+	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv) && tlv->single_value == RFC5444_LINKSTATUS_LOST) {
+		// TODO, remove expired link
+	}
+
 #ifdef ENABLE_NAME
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		name = (char*) tlv->single_value;
@@ -226,29 +230,6 @@ _cb_olsr_forward_message(struct rfc5444_reader_tlvblock_context *context __attri
 		rfc5444_writer_flush(&writer, &interface, true);
 	else
 		DEBUG("\tfailed forwarding package");
-}
-
-/* we finished processing a HELLO or TC message, both require the same treatment */
-static enum rfc5444_result
-_cb_msg_end_callback(struct rfc5444_reader_tlvblock_context *context, bool dropped) {
-	if (dropped) {
-		DEBUG("\t(dropped)");
-		return RFC5444_DROP_PACKET;
-	}
-
-	/*
-	 * removes all routes that were previously announced by orig_addr
-	 * but were not updates (aka left out) with this message.
-	 * Omitting addresses is specified as the way to signal their removal
-	 * 
-	 * remove_expired() will also call fill_routing_table() if necessary 
-	 */
-	 if (context->has_origaddr)
-		remove_expired(&context->orig_addr);
-	 else
-		remove_expired(current_src);
-
-	return RFC5444_OKAY;
 }
 
 /**

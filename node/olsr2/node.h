@@ -39,6 +39,7 @@ struct olsr_node {
 	uint8_t type		: 1;	/* node type */
 	uint8_t mpr_selector: 2;	/* whether the node selected us as a MPR - only 1-hop */
 	uint8_t pending		: 3;	/* whether the link can already be used - only 1-hop */
+	uint8_t lost		: 4;	/* if set, the node will be annouced as lost - only 1-hop */
 
 #ifdef ENABLE_NAME
 	char* name;					/* node name from graph.gv */

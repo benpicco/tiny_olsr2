@@ -18,12 +18,15 @@
 #include "nhdp.h"
 #include "olsr.h"
 #include "debug.h"
+#include "routing.h"
 
 uint8_t msg_buffer[256];
 uint8_t msg_addrtlvs[512];
 uint8_t packet_buffer[256];
 
 uint16_t seq_no = 1;
+
+static bool send_tc_messages;
 
 static void _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr);
 static void _cb_add_nhdp_addresses(struct rfc5444_writer *wr);
@@ -40,6 +43,7 @@ static struct rfc5444_writer_content_provider _nhdp_message_content_provider = {
 
 static struct rfc5444_writer_tlvtype _nhdp_addrtlvs[] = {
 	[IDX_ADDRTLV_MPR] = { .type = RFC5444_ADDRTLV_MPR },
+	[IDX_ADDRTLV_LINK_STATUS] = { .type = RFC5444_ADDRTLV_LINK_STATUS },
 #ifdef ENABLE_NAME
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
@@ -53,10 +57,10 @@ static struct rfc5444_writer_content_provider _olsr_message_content_provider = {
 };
 
 static struct rfc5444_writer_tlvtype _olsr_addrtlvs[] = {
+	[IDX_ADDRTLV_LINK_STATUS] = { .type = RFC5444_ADDRTLV_LINK_STATUS },
 #ifdef ENABLE_NAME
 	[IDX_ADDRTLV_NODE_NAME] = { .type = RFC5444_TLV_NODE_NAME },
 #endif
-	[IDX_ADDRTLV_METRIC] = { .type = RFC5444_LINKMETRIC_OUTGOING_LINK },
 };
 
 /* add TLVs to HELLO message */
@@ -73,27 +77,42 @@ _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 /* add addresses to HELLO message */
 static void
 _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
-	struct olsr_node* neighbor;
+	struct olsr_node* node, *safe;
+	send_tc_messages = false;
 
 	/* add all neighbors */
-	avl_for_each_element(get_olsr_head(), neighbor, node) {
-		if (neighbor->distance != 1)
+	avl_for_each_element_safe(get_olsr_head(), node, node, safe) {
+
+		/* if the node was just removed entirely from the database, continue */
+		if (remove_expired(node))
 			continue;
 
-		if (neighbor->pending)
+		if (node->distance != 1)
 			continue;
+
+		if (node->pending && !node->lost)
+			continue;
+
+		if (!node->pending && node->mpr_selector)
+			send_tc_messages = true;
 
 		struct rfc5444_writer_address *address = rfc5444_writer_add_address(wr, 
-			_nhdp_message_content_provider.creator, neighbor->addr, false);
+			_nhdp_message_content_provider.creator, node->addr, false);
 
-		/* node is a mpr - TODO sensible value*/
-		if (h1_deriv(neighbor)->mpr_neigh > 0) 
+		/* node is a mpr */
+		if (h1_deriv(node)->mpr_neigh > 0) 
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR],
-				&h1_deriv(neighbor)->mpr_neigh, sizeof h1_deriv(neighbor)->mpr_neigh, false);
+				&h1_deriv(node)->mpr_neigh, sizeof h1_deriv(node)->mpr_neigh, false);
+
+		if (node->lost) {
+			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
+				RFC5444_LINKSTATUS_LOST, 1, false);
+			/* TC will reset lost status, TODO: what happens if send_tc_messages? */
+		}
 #ifdef ENABLE_NAME
-		if (neighbor->name)
+		if (node->name)
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_NODE_NAME],
-				neighbor->name, strlen(neighbor->name) + 1, false);
+				node->name, strlen(node->name) + 1, false);
 #endif
 	}
 }
@@ -122,11 +141,17 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 		if (!node->mpr_selector)
 			continue;
 
-		if (node->pending)
+		if (node->pending && !node->lost)
 			continue;
 
 		struct rfc5444_writer_address *address __attribute__((unused));
 		address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
+
+		if (node->lost) {
+			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
+				RFC5444_LINKSTATUS_LOST, 1, false);
+			node->lost = 0;
+		}
 
 #ifdef ENABLE_NAME
 		if (node->name)
@@ -204,11 +229,11 @@ void writer_send_hello(void) {
 	rfc5444_writer_create_message_alltarget(&writer, RFC5444_MSGTYPE_HELLO);
 	rfc5444_writer_flush(&writer, &interface, false);
 
-	remove_expired(0);
+	fill_routing_table();
 }
 
 void writer_send_tc(void) {
-	if (!is_sending_tc())
+	if (!send_tc_messages)
 		return;
 
 	DEBUG("[TC]");

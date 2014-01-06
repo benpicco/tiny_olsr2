@@ -10,8 +10,7 @@
 
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name);
 bool is_known_msg(struct netaddr* src, uint16_t seq_no, uint8_t vtime);
-bool is_sending_tc(void);
-void remove_expired(struct netaddr* force_addr);
+bool remove_expired(struct olsr_node* node);
 
 void print_topology_set(void);
 void print_routing_graph(void);
