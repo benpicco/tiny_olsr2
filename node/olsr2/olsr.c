@@ -130,7 +130,8 @@ static void _update_link_quality(struct nhdp_node* node) {
 
 	if (!h1_super(node)->pending && node->link_quality < HYST_LOW) {
 		h1_super(node)->pending = 1;
-		h1_super(node)->lost = 1;
+		h1_super(node)->lost_hello = 1;
+		h1_super(node)->lost_tc = 1;
 		node->mpr_neigh = 0;
 
 		add_free_node(h1_super(node));
@@ -140,7 +141,8 @@ static void _update_link_quality(struct nhdp_node* node) {
 
 	if (h1_super(node)->pending && node->link_quality > HYST_HIGH) {
 		h1_super(node)->pending = 0;
-		h1_super(node)->lost = 0;
+		h1_super(node)->lost_hello = 0;
+		h1_super(node)->lost_tc = 0;
 
 		/* node may just have become a 1-hop node */
 		if (h1_super(node)->last_addr != NULL)

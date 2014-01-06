@@ -90,7 +90,7 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 		if (node->distance != 1)
 			continue;
 
-		if (node->pending && !node->lost)
+		if (node->pending && !node->lost_hello)
 			continue;
 
 		if (!node->pending && node->mpr_selector)
@@ -104,10 +104,10 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR],
 				&h1_deriv(node)->mpr_neigh, sizeof h1_deriv(node)->mpr_neigh, false);
 
-		if (node->lost) {
+		if (node->lost_hello) {
 			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
 				RFC5444_LINKSTATUS_LOST, 1, false);
-			/* TC will reset lost status, TODO: what happens if send_tc_messages? */
+			node->lost_hello = 0;
 		}
 #ifdef ENABLE_NAME
 		if (node->name)
@@ -141,16 +141,16 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 		if (!node->mpr_selector)
 			continue;
 
-		if (node->pending && !node->lost)
+		if (node->pending && !node->lost_tc)
 			continue;
 
 		struct rfc5444_writer_address *address __attribute__((unused));
 		address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
 
-		if (node->lost) {
+		if (node->lost_tc) {
 			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
 				RFC5444_LINKSTATUS_LOST, 1, false);
-			node->lost = 0;
+			node->lost_tc = 0;
 		}
 
 #ifdef ENABLE_NAME
