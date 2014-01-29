@@ -185,6 +185,20 @@ bool remove_expired(struct olsr_node* node) {
 	return false;
 }
 
+void route_expired(struct olsr_node* node, struct netaddr* last_addr) {
+	DEBUG("%s (%s) over %s expired",
+			node->name, netaddr_to_str_s(&nbuf[0], node->addr),
+			netaddr_to_str_s(&nbuf[1], last_addr));
+
+	if (netaddr_cmp(node->last_addr, last_addr) == 0) {
+		if (node->other_routes == NULL)
+			_remove_olsr_node(node);
+		else
+			_olsr_node_expired(node);		
+	} else
+		remove_other_route(node, last_addr);
+}
+
 void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtime, uint8_t distance, char* name) {
 	struct olsr_node* n = get_node(addr);
 

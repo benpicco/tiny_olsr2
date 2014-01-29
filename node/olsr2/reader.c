@@ -138,7 +138,9 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 #endif
 
 	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv) && tlv->single_value == RFC5444_LINKSTATUS_LOST) {
-		// TODO, remove expired link
+		struct olsr_node* lost = get_node(&cont->addr);
+		route_expired(lost, current_node->addr);
+		return RFC5444_DROP_ADDRESS;
 	}
 
 	/* node broadcasts us as it's neighbor */
@@ -200,7 +202,9 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		return RFC5444_DROP_ADDRESS;
 
 	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv) && tlv->single_value == RFC5444_LINKSTATUS_LOST) {
-		// TODO, remove expired link
+		struct olsr_node* lost = get_node(&cont->addr);
+		route_expired(lost, current_node->addr);
+		return RFC5444_DROP_ADDRESS;
 	}
 
 #ifdef ENABLE_NAME
