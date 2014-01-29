@@ -233,7 +233,7 @@ void add_olsr_node(struct netaddr* addr, struct netaddr* last_addr, uint8_t vtim
 		distance, netaddr_to_str_s(&nbuf[1], last_addr));
 
 	n->distance = distance;
-	_update_children(n->addr, 0);
+	_update_children(n->addr, NULL);
 	push_default_route(n);
 	add_other_route(n, last_addr, vtime);
 	add_free_node(n);

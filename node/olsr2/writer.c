@@ -78,6 +78,7 @@ _cb_add_nhdp_message_TLVs(struct rfc5444_writer *wr) {
 static void
 _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 	struct olsr_node* node, *safe;
+	int value;
 	send_tc_messages = false;
 
 	/* add all neighbors */
@@ -105,8 +106,9 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 				&h1_deriv(node)->mpr_neigh, sizeof h1_deriv(node)->mpr_neigh, false);
 
 		if (node->lost_hello) {
-			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
-				RFC5444_LINKSTATUS_LOST, 1, false);
+			value = RFC5444_LINKSTATUS_LOST;
+			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
+				&value, sizeof value, false);
 			node->lost_hello = 0;
 		}
 #ifdef ENABLE_NAME
@@ -132,6 +134,7 @@ _cb_add_olsr_message_TLVs(struct rfc5444_writer *wr) {
 static void
 _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 	struct olsr_node* node;
+	int value;
 
 	/* add all neighbors */
 	avl_for_each_element(get_olsr_head(), node, node) {
@@ -148,8 +151,9 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 		address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
 
 		if (node->lost_tc) {
+			value = RFC5444_LINKSTATUS_LOST;
 			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
-				RFC5444_LINKSTATUS_LOST, 1, false);
+				&value, sizeof value, false);
 			node->lost_tc = 0;
 		}
 

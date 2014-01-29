@@ -66,4 +66,5 @@ run:	dispatcher node kill graph.pdf
 	@for i in $(shell seq 1 ${NODES}) ; do \
 		sleep 0.1;	\
 		LD_LIBRARY_PATH=$(LIBDIR) stdbuf -oL -eL $(SRC)/node 127.0.0.1 9000 2001::$$i > $(LOG_DIR)/$$i.log 2>&1 & \
+#		xterm -e env LD_LIBRARY_PATH=$(LIBDIR) gdb -ex run --args $(SRC)/node 127.0.0.1 9000 2001::$$i &	\
 	done
