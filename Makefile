@@ -17,11 +17,9 @@ endif
 
 # this has to be the absolute path of the RIOT-base dir
 export RIOTBASE = $(CURDIR)/../riot/RIOT
-export RIOTLIBS = $(RIOTBASE)/../riot-libs
 export OONFBASE = $(CURDIR)/../oonf_api
 export OLSR_NODE= $(CURDIR)/node
 
-EXTERNAL_MODULES +=$(RIOTLIBS)
 EXTERNAL_MODULES +=$(OONFBASE)
 EXTERNAL_MODULES +=$(OLSR_NODE)
 export EXTERNAL_MODULES
@@ -46,7 +44,6 @@ USEMODULE += config
 USEMODULE += transceiver
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
-USEMODULE += compat_misc
 USEMODULE += olsr2
 USEMODULE += udp_ping
 ifeq ($(BOARD),native)
@@ -60,7 +57,7 @@ ifeq ($(BOARD),msba2)
 endif
 
 export INCLUDES += -I$(RIOTBASE)/sys/include -I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/drivers/cc110x_ng/include \
-		-I$(RIOTBASE)/sys/net/include -I$(OONFBASE)/src-api -I$(RIOTLIBS) \
+		-I$(RIOTBASE)/sys/net/include -I$(OONFBASE)/src-api \
 		-I$(OLSR_NODE)/udp_ping/include -I$(OLSR_NODE)/olsr2/include
 
 include $(RIOTBASE)/Makefile.include
