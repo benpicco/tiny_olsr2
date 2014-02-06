@@ -120,7 +120,6 @@ void init(char *str) {
 
 	rtc_enable();
 	genrand_init(get_node_id());
-	destiny_init_transport_layer();
 	sixlowpan_lowpan_init(_trans_type, get_node_id(), 0);
 
 	olsr_init();
