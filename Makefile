@@ -17,11 +17,11 @@ endif
 
 # this has to be the absolute path of the RIOT-base dir
 export RIOTBASE = $(CURDIR)/../riot/RIOT
-export OONFBASE = $(CURDIR)/../oonf_api
+export OONFBASE = $(RIOTBASE)/pkg/oonf_api/oonf_api
 export OLSR_NODE= $(CURDIR)/node
 
-EXTERNAL_MODULES +=$(OONFBASE)
 EXTERNAL_MODULES +=$(OLSR_NODE)
+EXTERNAL_MODULES +=$(RIOTBASE)/pkg/oonf_api
 export EXTERNAL_MODULES
 
 export CFLAGS = -DRIOT -DENABLE_NAME -ggdb
