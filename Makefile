@@ -48,7 +48,6 @@ USEMODULE += transceiver
 USEMODULE += oonf_common
 USEMODULE += oonf_rfc5444
 USEMODULE += olsr2
-USEMODULE += udp_ping
 ifeq ($(BOARD),native)
 	USEMODULE += nativenet
 	export CFLAGS += -DBOARD_NATIVE -DINIT_ON_START
@@ -59,7 +58,7 @@ ifeq ($(BOARD),msba2)
 	export CFLAGS += -DBOARD_MSBA2 -DINIT_ON_START
 endif
 
-export INCLUDES += -I$(OLSR_NODE)/udp_ping/include -I$(OLSR_NODE)/olsr2/include -I$(OONFBASE)/src-api \
+export INCLUDES += -I$(OLSR_NODE)/olsr2/include -I$(OONFBASE)/src-api \
 		-I$(RIOTBASE)/sys/include -I$(RIOTBASE)/sys/net/include \
 		-I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/drivers/cc110x_ng/include
 

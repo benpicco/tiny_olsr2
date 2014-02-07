@@ -1,6 +1,3 @@
-ifneq (,$(findstring udp_ping,$(USEMODULE)))
-	DIRS += udp_ping
-endif
 ifneq (,$(findstring olsr2,$(USEMODULE)))
 	DIRS += olsr2
 endif

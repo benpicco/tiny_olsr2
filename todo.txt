@@ -2,7 +2,7 @@
 - [ ] read hop count from IP header and display it in ping result
 - [ ] [RIOT] add warning if message could not be queued
 - [ ] [optimisation] add_olsr_node: use node for last_addr to cut one call to get_node
-- [ ] remove connections if they were annouced with RFC5444_LINKSTATUS_LOST
+- [x] remove connections if they were annouced with RFC5444_LINKSTATUS_LOST
 - [ ] [RIOT] crashes when many packets are received at once, both on msba2 and native
 - [ ] implement metrics
-- [ ] find a way to include olsr2 and oonf_api in the RIOT repo
+- [x] find a way to include olsr2 and oonf_api in the RIOT repo

@@ -8,13 +8,13 @@
 #include <random.h>
 #include <destiny.h>
 #include <transceiver.h>
+#include <sixlowpan/icmp.h>
 
 #include <shell.h>
 #include <posix_io.h>
 #include <board_uart0.h>
 
 #include <olsr2.h>
-#include <udp_ping.h>
 
 #if defined(BOARD_NATIVE)
 #include <unistd.h>
@@ -62,19 +62,10 @@ static uint16_t get_node_id(void) {
 #endif
 
 #ifdef ENABLE_NAME
-int ping_received;
-time_t ping_time;
-void ping_callback(struct ping_packet* pong) {
-	timex_t now;
-	vtimer_now(&now);
-	printf("\tpong [%u], hops=%u time=%u µs\n", pong->id,
-		pong->hops, now.microseconds - pong->timestamp);
-
-	ping_received++;
-	ping_time += now.microseconds - pong->timestamp;
-}
 
 void ping(char* str) {
+	static uint16_t id = 0;
+	id++;
 	str += strlen("ping ");
 	int packets = 10;
 
@@ -87,17 +78,13 @@ void ping(char* str) {
 	char addr_str[IPV6_MAX_ADDR_STR_LEN];
 	ipv6_addr_to_str(addr_str, dest);
 
-	ping_received = 0;
-	ping_time = 0;
+	char payload[] = "foobar";
 
 	for (int i = 0; i < packets; ++i) {
-		printf("sending %d bytes to %s\n", sizeof(struct ping_packet), addr_str);
-		ping_send(dest);
+		printf("sending %u bytes to %s\n", sizeof payload, addr_str);
+		icmpv6_send_echo_request(dest, id, i, payload, sizeof payload);
 		vtimer_usleep(1000000);
 	}
-
-	printf("%u packets transmitted, %u received, %.2f%% packet loss, time %d ms (%.2f µs avg)\n",
-		packets, ping_received, 100 * (1 - (float) ping_received / packets), ping_time / 1000, (float) ping_time / packets);
 }
 #endif /* ENABLE_NAME */
 
@@ -123,9 +110,6 @@ void init(char *str) {
 	sixlowpan_lowpan_init(_trans_type, get_node_id(), 0);
 
 	olsr_init();
-#ifdef ENABLE_NAME
-	ping_start_listen(ping_callback);
-#endif
 }
 
 const shell_command_t shell_commands[] = {
