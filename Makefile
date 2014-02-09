@@ -43,6 +43,7 @@ USEMODULE += ps
 USEMODULE += shell
 USEMODULE += shell_commands
 USEMODULE += random
+USEMODULE += list
 USEMODULE += config
 USEMODULE += transceiver
 USEMODULE += oonf_common
