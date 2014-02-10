@@ -55,7 +55,7 @@ endif
 ifeq ($(BOARD),msba2)
 	USEMODULE += gpioint
 	USEMODULE += cc110x_ng
-	export CFLAGS += -DBOARD_MSBA2 -DINIT_ON_START
+	export CFLAGS += -DBOARD_MSBA2 -DINIT_ON_START -DENABLE_LEDS
 endif
 
 export INCLUDES += -I$(OLSR_NODE)/olsr2/include -I$(OONFBASE)/src-api \
