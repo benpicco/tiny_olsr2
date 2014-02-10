@@ -60,6 +60,6 @@ endif
 
 export INCLUDES += -I$(OLSR_NODE)/olsr2/include -I$(OONFBASE)/src-api \
 		-I$(RIOTBASE)/sys/include -I$(RIOTBASE)/sys/net/include \
-		-I$(RIOTBASE)/drivers/include -I$(RIOTBASE)/drivers/cc110x_ng/include
+		-I$(RIOTBASE)/drivers/include
 
 include $(RIOTBASE)/Makefile.include

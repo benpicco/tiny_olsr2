@@ -58,7 +58,9 @@ static void write_packet(struct rfc5444_writer *wr __attribute__ ((unused)),
 	struct rfc5444_writer_target *iface __attribute__((unused)),
 	void *buffer, size_t length) {
 
+#ifdef BOARD_MSBA2
 	LED_GREEN_TOGGLE;
+#endif
 	int bytes_send = destiny_socket_sendto(sock, buffer, length, 0, &sa_bcast, sizeof sa_bcast);
 
 	DEBUG("write_packet(%d bytes), %d bytes sent", length, bytes_send);
@@ -85,8 +87,9 @@ static void olsr_receiver_thread(void) {
 
 	while (1) {
 		recsize = destiny_socket_recvfrom(sock, &buffer, sizeof buffer, 0, &sa, &fromlen);
+#ifdef BOARD_MSBA2
 		LED_RED_TOGGLE;
-
+#endif
 		memcpy(&_src._addr, &sa.sin6_addr, sizeof _src._addr);
 		DEBUG("received %d bytes from %s", recsize, netaddr_to_str_s(&nbuf[0], &_src));
 

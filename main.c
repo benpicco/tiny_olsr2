@@ -63,7 +63,11 @@ static uint16_t get_node_id(void) {
 
 #ifdef ENABLE_NAME
 
-void ping(char* str) {
+static void handle_echo_reply(ipv6_hdr_t *ipv6_buf, icmpv6_echo_reply_hdr_t *echo_buf) {
+	printf("received PONG, id = %d, seq = %d\n", echo_buf->id, echo_buf->seq);
+}
+
+static void ping(char* str) {
 	static uint16_t id = 0;
 	id++;
 	str += strlen("ping ");
@@ -74,6 +78,8 @@ void ping(char* str) {
 		printf("Unknown node: %s\n", str);
 		return;
 	}
+
+	icmpv6_register_echo_reply_handler(handle_echo_reply);
 
 	char addr_str[IPV6_MAX_ADDR_STR_LEN];
 	ipv6_addr_to_str(addr_str, dest);
@@ -88,7 +94,7 @@ void ping(char* str) {
 }
 #endif /* ENABLE_NAME */
 
-void set_id(char* str) {
+static void set_id(char* str) {
 	str += strlen("set_id ");
 	uint16_t id = atoi(str);
 
@@ -103,7 +109,7 @@ void set_id(char* str) {
 	config_save();
 }
 
-void init(char *str) {
+static void init(char *str) {
 
 	rtc_enable();
 	genrand_init(get_node_id());
