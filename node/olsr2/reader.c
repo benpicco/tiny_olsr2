@@ -137,10 +137,18 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	}
 #endif
 
-	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv) && tlv->single_value == RFC5444_LINKSTATUS_LOST) {
-		struct olsr_node* lost = get_node(&cont->addr);
-		route_expired(lost, current_node->addr);
-		return RFC5444_DROP_ADDRESS;
+	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv)) {
+		switch (* (char*) tlv->single_value) {
+		struct olsr_node* lost;
+		case RFC5444_LINKSTATUS_LOST:
+			lost = get_node(&cont->addr);
+			DEBUG("\texpired node reported, removing it (HELLO)");
+			route_expired(lost, current_node->addr);
+
+			return RFC5444_DROP_ADDRESS;
+		default:
+			DEBUG("\tunknown LINKSTATUS = %d", * (char*) tlv->single_value);
+		}
 	}
 
 	/* node broadcasts us as it's neighbor */
@@ -201,18 +209,26 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 	if (netaddr_cmp(get_local_addr(), &cont->addr) == 0)
 		return RFC5444_DROP_ADDRESS;
 
-	if ((tlv = _nhdp_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv) && tlv->single_value == RFC5444_LINKSTATUS_LOST) {
-		struct olsr_node* lost = get_node(&cont->addr);
-		route_expired(lost, current_node->addr);
-		return RFC5444_DROP_ADDRESS;
-	}
-
 #ifdef ENABLE_NAME
 	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_NODE_NAME].tlv)) {
 		name = (char*) tlv->single_value;
 		DEBUG("\tannounces: %s (%s)", name, netaddr_to_str_s(&nbuf[0], &cont->addr));
 	}
 #endif
+
+	if ((tlv = _olsr_address_tlvs[IDX_ADDRTLV_LINK_STATUS].tlv)) {
+		switch (* (char*) tlv->single_value) {
+		struct olsr_node* lost;
+		case RFC5444_LINKSTATUS_LOST:
+			lost = get_node(&cont->addr);
+			DEBUG("\texpired node reported, removing it (TC)");
+			route_expired(lost, current_node->addr);
+
+			return RFC5444_DROP_ADDRESS;
+		default:
+			DEBUG("\tunknown LINKSTATUS = %d", * (char*) tlv->single_value);
+		}
+	}
 
 	/* hops is hopcount to orig_addr, addr is one more hop */
 	add_olsr_node(&cont->addr, &cont->orig_addr, vtime, hops + 1, name);

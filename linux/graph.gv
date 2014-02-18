@@ -3,24 +3,14 @@ subgraph bidirectional {
 	edge [arrowhead = none]
 	A -> B
 	B -> C
-	C -> D
+	A -> D
+	B -> E
 	D -> E
+	C -> F
 	E -> F
-	F -> G
+	E -> G
+	F -> H
 	G -> H
-	H -> A
-
-	A -> X	// 0.5
-	B -> X	// 0.5
-	C -> X	// 0.5
-	D -> X
-	E -> X
-	F -> X
-	G -> X
-	H -> X
-
-	Y -> X
-	Y -> D
 }
 
 subgraph directional {
