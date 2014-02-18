@@ -12,6 +12,7 @@ LDFLGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 GRAPH ?= graph.gv
 DOT   ?= neato
+ID    ?= 1
 
 NODES := $(shell grep -- -\> ${GRAPH} | while read line; do for w in $$line; do echo $$w; done; done | grep [Aa-Zz] | sort | uniq | wc -l)
 LOG_DIR := log
@@ -49,10 +50,10 @@ clean:
 	rm log/*
 	-rm mpr_graph.pdf
 stop:
-	kill -STOP $(shell pidof -s node)
+	kill -STOP $(shell pgrep -f 2001::$(ID))
 
 cont:
-	kill -CONT $(shell pidof -s node)
+	kill -CONT $(shell pgrep -f 2001::$(ID))
 
 kill:
 	-killall node
