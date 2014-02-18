@@ -142,8 +142,10 @@ _cb_nhdp_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		struct olsr_node* lost;
 		case RFC5444_LINKSTATUS_LOST:
 			lost = get_node(&cont->addr);
-			DEBUG("\texpired node reported, removing it (HELLO)");
-			route_expired(lost, current_node->addr);
+			DEBUG("\texpired node reported, removing it (HELLO)%s", lost ? "" : " [not found]");
+
+			if (lost != NULL)
+				route_expired(lost, current_node->addr);
 
 			return RFC5444_DROP_ADDRESS;
 		default:
@@ -221,8 +223,10 @@ _cb_olsr_blocktlv_address_okay(struct rfc5444_reader_tlvblock_context *cont) {
 		struct olsr_node* lost;
 		case RFC5444_LINKSTATUS_LOST:
 			lost = get_node(&cont->addr);
-			DEBUG("\texpired node reported, removing it (TC)");
-			route_expired(lost, current_node->addr);
+			DEBUG("\texpired node reported, removing it (TC)%s", lost ? "" : " [not found]");
+
+			if (lost != NULL)
+				route_expired(lost, current_node->addr);
 
 			return RFC5444_DROP_ADDRESS;
 		default:

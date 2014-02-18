@@ -88,10 +88,10 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 		if (remove_expired(node))
 			continue;
 
-		if (node->distance != 1)
+		if (node->distance != 1 && !node->lost)
 			continue;
 
-		if (node->pending && !node->lost_hello)
+		if (node->pending && !node->lost)
 			continue;
 
 		if (!node->pending && node->mpr_selector)
@@ -105,12 +105,11 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_MPR],
 				&h1_deriv(node)->mpr_neigh, sizeof h1_deriv(node)->mpr_neigh, false);
 
-		if (node->lost_hello) {
+		if (node->lost) {
 			DEBUG("LINKSTATUS: neighbor %s lost (HELLO)", node->name);
 			value = RFC5444_LINKSTATUS_LOST;
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
 				&value, sizeof value, false);
-			node->lost_hello = 0;
 		}
 #ifdef ENABLE_NAME
 		if (node->name)
@@ -139,24 +138,23 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 
 	/* add all neighbors */
 	avl_for_each_element(get_olsr_head(), node, node) {
-		if (node->distance != 1)
-			continue;
-
 		if (!node->mpr_selector)
 			continue;
 
-		if (node->pending && !node->lost_tc)
+		if (node->distance != 1 && !node->lost)
+			continue;
+
+		if (node->pending && !node->lost)
 			continue;
 
 		struct rfc5444_writer_address *address __attribute__((unused));
 		address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
 
-		if (node->lost_tc) {
+		if (node->lost) {
 			DEBUG("LINKSTATUS: neighbor %s lost (TC)", node->name);
 			value = RFC5444_LINKSTATUS_LOST;
 			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
 				&value, sizeof value, false);
-			node->lost_tc = 0;
 		}
 
 #ifdef ENABLE_NAME
