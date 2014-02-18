@@ -17,15 +17,12 @@ endif
 
 # this has to be the absolute path of the RIOT-base dir
 export RIOTBASE = $(CURDIR)/../riot/RIOT
-export OONFBASE = $(RIOTBASE)/pkg/oonf_api/oonf_api
-# export OONFBASE = $(CURDIR)/../oonf_api
 export OLSR_NODE= $(CURDIR)/node
 
 # build oonf_api before the rest, otherwise includes are missing (it's a pkg that is just fetched at compile time)
-EXTERNAL_MODULES +=$(RIOTBASE)/pkg/oonf_api
-# EXTERNAL_MODULES +=$(OONFBASE)
-EXTERNAL_MODULES +=$(OLSR_NODE)
-export EXTERNAL_MODULES
+USEPKG += oonf_api
+USEPKG += olsr2
+export USEPKG
 
 export CFLAGS = -DRIOT -DENABLE_NAME -ggdb
 
@@ -58,8 +55,6 @@ ifeq ($(BOARD),msba2)
 	export CFLAGS += -DBOARD_MSBA2 -DINIT_ON_START -DENABLE_LEDS
 endif
 
-export INCLUDES += -I$(OLSR_NODE)/olsr2/include -I$(OONFBASE)/src-api \
-		-I$(RIOTBASE)/sys/include -I$(RIOTBASE)/sys/net/include \
-		-I$(RIOTBASE)/drivers/include
+export INCLUDES += -I$(RIOTBASE)/sys/net/include
 
 include $(RIOTBASE)/Makefile.include
