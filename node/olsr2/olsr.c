@@ -130,7 +130,7 @@ static void _update_link_quality(struct nhdp_node* node) {
 
 	if (!h1_super(node)->pending && node->link_quality < HYST_LOW) {
 		h1_super(node)->pending = 1;
-		h1_super(node)->lost = 1;
+		h1_super(node)->lost = LOST_ITER_MAX;
 		node->mpr_neigh = 0;
 
 		add_free_node(h1_super(node));

@@ -129,7 +129,6 @@ void fill_routing_table(void) {
 
 				fn->node->distance = node->distance + 1;
 				fn->node->next_addr = netaddr_use(node->next_addr);
-				fn->node->lost = 0;
 
 				pop_other_route(fn->node, node->addr);
 				simple_list_for_each_remove(&head, fn, prev);

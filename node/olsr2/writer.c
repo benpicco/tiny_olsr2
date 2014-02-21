@@ -106,10 +106,13 @@ _cb_add_nhdp_addresses(struct rfc5444_writer *wr) {
 				&h1_deriv(node)->mpr_neigh, sizeof h1_deriv(node)->mpr_neigh, false);
 
 		if (node->lost) {
-			DEBUG("LINKSTATUS: neighbor %s lost (HELLO)", node->name);
+			DEBUG("LINKSTATUS: neighbor %s lost (HELLO) [%d]", node->name, node->lost);
 			value = RFC5444_LINKSTATUS_LOST;
 			rfc5444_writer_add_addrtlv(wr, address, &_nhdp_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
 				&value, sizeof value, false);
+
+			if (!send_tc_messages)
+				node->lost--;
 		}
 #ifdef ENABLE_NAME
 		if (node->name)
@@ -151,10 +154,12 @@ _cb_add_olsr_addresses(struct rfc5444_writer *wr) {
 		address = rfc5444_writer_add_address(wr, _olsr_message_content_provider.creator, node->addr, false);
 
 		if (node->lost) {
-			DEBUG("LINKSTATUS: neighbor %s lost (TC)", node->name);
+			DEBUG("LINKSTATUS: neighbor %s lost (TC) [%d]", node->name, node->lost);
 			value = RFC5444_LINKSTATUS_LOST;
 			rfc5444_writer_add_addrtlv(wr, address, &_olsr_addrtlvs[IDX_ADDRTLV_LINK_STATUS],
 				&value, sizeof value, false);
+
+			node->lost--;
 		}
 
 #ifdef ENABLE_NAME
