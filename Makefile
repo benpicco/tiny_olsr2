@@ -17,7 +17,6 @@ endif
 
 # this has to be the absolute path of the RIOT-base dir
 export RIOTBASE = $(CURDIR)/../riot/RIOT
-export OLSR_NODE= $(CURDIR)/node
 
 # build oonf_api before the rest, otherwise includes are missing (it's a pkg that is just fetched at compile time)
 USEPKG += oonf_api
@@ -55,6 +54,6 @@ ifeq ($(BOARD),msba2)
 	export CFLAGS += -DBOARD_MSBA2 -DINIT_ON_START -DENABLE_LEDS
 endif
 
-export INCLUDES += -I$(RIOTBASE)/sys/net/include
+export INCLUDES += -I$(RIOTBASE)/sys/net/include -I$(CURDIR)/node/olsr2/include
 
 include $(RIOTBASE)/Makefile.include
