@@ -1,59 +1,73 @@
-####
-#### Sample Makefile for building apps with the RIOT OS
-####
-#### The Sample Filesystem Layout is:
-#### /this makefile
-#### ../../RIOT 
-#### ../../boards   for board definitions (if you have one or more)
-#### 
+CC=clang
 
-# name of your project
-export PROJECT =olsr_node
+SRC:=../riot/RIOT/sys/net/routing/olsr2
 
-# for easy switching of boards
-ifeq ($(strip $(BOARD)),)
-	export BOARD = native
-endif
+INCLUDE=-I../oonf_api/src-api -I../oonf_api/build -I$(SRC)
+LIBDIR=../oonf_api/build
 
-# this has to be the absolute path of the RIOT-base dir
-export RIOTBASE = $(CURDIR)/../riot/RIOT
 
-# build oonf_api before the rest, otherwise includes are missing (it's a pkg that is just fetched at compile time)
-USEPKG += oonf_api
-USEPKG += olsr2
-export USEPKG
+CFLAGS=-Wall -Wextra -O3 -ggdb -std=gnu99 -DENABLE_NAME -DENABLE_DEBUG_OLSR $(INCLUDE)
+LDFLGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
-export CFLAGS = -DRIOT -DENABLE_NAME -ggdb
+.PHONY: clean run
 
-## Modules to include. 
+GRAPH ?= graph.gv
+DOT   ?= neato
+ID    ?= 1
 
-USEMODULE += auto_init
-USEMODULE += vtimer
-USEMODULE += rtc
-USEMODULE += net_help
-USEMODULE += sixlowpan
-USEMODULE += destiny
-USEMODULE += uart0
-USEMODULE += posix
-USEMODULE += ps
-USEMODULE += shell
-USEMODULE += shell_commands
-USEMODULE += random
-USEMODULE += config
-USEMODULE += transceiver
-USEMODULE += oonf_common
-USEMODULE += oonf_rfc5444
-USEMODULE += olsr2
-ifeq ($(BOARD),native)
-	USEMODULE += nativenet
-	export CFLAGS += -DBOARD_NATIVE -DINIT_ON_START
-endif
-ifeq ($(BOARD),msba2)
-	USEMODULE += gpioint
-	USEMODULE += cc110x_ng
-	export CFLAGS += -DBOARD_MSBA2 -DINIT_ON_START -DENABLE_LEDS
-endif
+NODES := $(shell grep -- -\> ${GRAPH} | while read line; do for w in $$line; do echo $$w; done; done | grep [Aa-Zz] | sort | uniq | wc -l)
+LOG_DIR := log
 
-export INCLUDES += -I$(RIOTBASE)/sys/net/include -I$(CURDIR)/node/olsr2/include
+objects = $(SRC)/main.o $(SRC)/routing.o $(SRC)/list.o $(SRC)/node.o $(SRC)/reader.o $(SRC)/writer.o $(SRC)/nhdp.o $(SRC)/olsr.o $(SRC)/util.o
 
-include $(RIOTBASE)/Makefile.include
+node:	$(objects)
+	cc $(objects) -o node $(LDFLGS)
+
+dispatcher:	dispatcher.o
+
+topology_generator: topology_generator.o $(SRC)/list.o
+
+graph.pdf: ${GRAPH}
+	-${DOT} -Tpdf ${GRAPH} > graph.pdf
+
+mpr_graph.pdf: ${GRAPH} log/*.log
+	@for i in $(shell seq 1 ${NODES}) ; do \
+		tac log/$$i.log | sed '1,/END MPR/d' | sed '/BEGIN MPR/,$$d' | tac >> /tmp/mprs.gv ; \
+		{ cat ${GRAPH} ; echo "subgraph mpr {" ; echo "edge [ color = blue ]" ; cat /tmp/mprs.gv ; echo "}}" ;} | ${DOT} -Tpdf > mpr_graph.pdf ; \
+	done
+	@rm /tmp/mprs.gv
+
+routing_graphs: ${GRAPH} log/*.log
+	@for i in $(shell seq 1 ${NODES}) ; do \
+		{ cat ${GRAPH}; tac log/$$i.log | sed '1,/END ROUTING GRAPH/d' | sed '/BEGIN ROUTING GRAPH/,$$d' | tac; echo }; } | ${DOT} -Tpdf > log/routing_graph_$$i.pdf ; \
+	done
+
+clean:
+	find $(SRC) -name '*.o' -type f -delete
+	rm node
+	rm dispatcher.o
+	rm dispatcher
+	rm topology_generator
+	rm graph.pdf
+	rm log/*
+	-rm mpr_graph.pdf
+stop:
+	kill -STOP $(shell pgrep -f 2001::$(ID))
+
+cont:
+	kill -CONT $(shell pgrep -f 2001::$(ID))
+
+kill:
+	-killall node
+	-killall dispatcher
+
+run:	dispatcher node kill graph.pdf
+	@echo Starting ${NODES} nodes
+	LD_LIBRARY_PATH=$(LIBDIR) ./dispatcher ${GRAPH} 9000 &
+
+	@mkdir -p $(LOG_DIR)
+	@for i in $(shell seq 1 ${NODES}) ; do \
+		sleep 0.1;	\
+		LD_LIBRARY_PATH=$(LIBDIR) stdbuf -oL -eL ./node 127.0.0.1 9000 2001::$$i > $(LOG_DIR)/$$i.log 2>&1 & \
+#		xterm -e env LD_LIBRARY_PATH=$(LIBDIR) gdb -ex run --args ./node 127.0.0.1 9000 2001::$$i &	\
+	done
