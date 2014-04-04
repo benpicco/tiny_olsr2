@@ -63,7 +63,7 @@ void sigio_handler(int sig __attribute__((unused))) {
 	while (recvfrom(sockfd, &buffer, sizeof buffer, 0, (struct sockaddr*)&sender, &sendsize) > 0) {
 		struct ip_lite* header = (struct ip_lite*) &buffer;
 
-		reader_handle_packet(header + 1, header->length, &header->src, header->ether.magic);
+		reader_handle_packet(header + 1, header->length, &header->src, header->ether.metric);
 	}
 	enable_receive();
 }

@@ -6,7 +6,7 @@ INCLUDE=-I../oonf_api/src-api -I../oonf_api/build -I$(SRC)
 LIBDIR=../oonf_api/build
 
 
-CFLAGS=-Wall -Wextra -O3 -ggdb -std=gnu99 -DENABLE_NAME -DENABLE_DEBUG_OLSR $(INCLUDE)
+CFLAGS=-Wall -Wextra -O3 -ggdb -std=gnu99 -DENABLE_NAME -DENABLE_DEBUG_OLSR -DENABLE_HYSTERESIS $(INCLUDE)
 LDFLGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
