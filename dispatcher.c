@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "fake_metric.h"
+
 struct node {
 	char* name;
 	struct sockaddr_in addr;
@@ -99,9 +101,14 @@ static struct node* get_node(struct sockaddr_in addr) {
 static void write_packet(struct node* n, int socket, void *buffer, size_t length) {
 	printf("%snode %s sending %zd byte\t", time(0) % 2 ? "\t" : "" , n->name, length);
 
+	struct packet* ether = buffer;
+
 	struct connection* con = n->connections;
 	while (con) {
 		if (con->node->addr.sin_port && (con->loss * RAND_MAX < random())) {
+			if (ether->magic == METRIC_MAGIC)
+				ether->metric = con->loss ? con->loss * METRIC_MAX : 1;
+
 			sendto(socket, buffer, length, 0, (struct sockaddr*) &con->node->addr, con->node->addr_len);
 			printf(".");
 		} else

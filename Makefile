@@ -18,7 +18,7 @@ ID    ?= 1
 NODES := $(shell grep -- -\> ${GRAPH} | while read line; do for w in $$line; do echo $$w; done; done | grep [Aa-Zz] | sort | uniq | wc -l)
 LOG_DIR := log
 
-objects = $(SRC)/main.o $(SRC)/routing.o $(SRC)/list.o $(SRC)/node.o $(SRC)/reader.o $(SRC)/writer.o $(SRC)/nhdp.o $(SRC)/olsr.o $(SRC)/util.o
+objects = main.o $(SRC)/routing.o $(SRC)/list.o $(SRC)/node.o $(SRC)/reader.o $(SRC)/writer.o $(SRC)/nhdp.o $(SRC)/olsr.o $(SRC)/util.o
 
 node:	$(objects)
 	cc $(objects) -o node $(LDFLGS)
