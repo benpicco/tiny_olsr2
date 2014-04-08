@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
 
 	int matches = 0;
 	bool bidirectional = false;
-	while (EOF != (matches = fscanf(fp, "%s -> %s\t// %f\n", a, b, &loss))) {
+	while (EOF != (matches = fscanf(fp, "%s -> %s\t[label = %f]\n", a, b, &loss))) {
 		if (matches == 2)
 			connect_node(add_node(a), add_node(b), 0, bidirectional);
 		else if (matches == 3)

@@ -6,7 +6,7 @@ INCLUDE=-I../oonf_api/src-api -I../oonf_api/build -I$(SRC)
 LIBDIR=../oonf_api/build
 
 
-CFLAGS=-Wall -Wextra -O3 -ggdb -std=gnu99 -DENABLE_NAME -DENABLE_DEBUG_OLSR -DENABLE_HYSTERESIS $(INCLUDE)
+CFLAGS=-Wall -Wextra -O3 -ggdb -std=gnu99 -DENABLE_NAME -DENABLE_DEBUG_OLSR $(INCLUDE)
 LDFLGS=-L$(LIBDIR) -loonf_rfc5444 -loonf_common
 
 .PHONY: clean run
@@ -15,7 +15,7 @@ GRAPH ?= graph.gv
 DOT   ?= neato
 ID    ?= 1
 
-NODES := $(shell grep -- -\> ${GRAPH} | while read line; do for w in $$line; do echo $$w; done; done | grep [Aa-Zz] | sort | uniq | wc -l)
+NODES := $(shell grep -- -\> ${GRAPH} | while read line; do for w in $$line; do echo $$w; done; done | grep [A-Z] | sort | uniq | wc -l)
 LOG_DIR := log
 
 objects = main.o $(SRC)/routing.o $(SRC)/list.o $(SRC)/node.o $(SRC)/reader.o $(SRC)/writer.o $(SRC)/nhdp.o $(SRC)/olsr.o $(SRC)/util.o
