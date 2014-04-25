@@ -1,4 +1,5 @@
 - [ ] write testcases
 - [ ] [RIOT] add warning if message could not be queued
 - [ ] [optimisation] add_olsr_node: use node for last_addr to cut one call to get_node
-- [ ] [RIOT] fix routing of ICMP messages
+- [x] [RIOT] fix routing of ICMP messages
+- [x] flood_mpr is broken

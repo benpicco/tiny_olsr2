@@ -4,7 +4,7 @@ subgraph bidirectional {
 	A -> B
 	B -> C
 	A -> D
-	B -> E
+	B -> E [label=0.3]
 	D -> E
 	C -> F
 	E -> F
